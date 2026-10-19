@@ -21,6 +21,10 @@ const SUMMER_OLYMPICS = '9998,,,,,,,Summer Olympics 2020,35.6491,139.7737,Summer
 const WINTER_OLYMPICS = '9997,,,,,,,Winter Olympics 2022,39.9042,116.4074,Winter Olympics 2022,';
 
 describe('parseCsv', () => {
+  it('strips a leading UTF-8 BOM from the first cell', () => {
+    expect(parseCsv('\uFEFFUID,iso2\n1,BR\n')[0]).toEqual(['UID', 'iso2']);
+  });
+
   it('handles quoted fields with commas and escaped quotes', () => {
     expect(parseCsv('a,"b, c","say ""hi"""\r\n1,2,3\n')).toEqual([
       ['a', 'b, c', 'say "hi"'],
