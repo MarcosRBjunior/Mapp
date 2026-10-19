@@ -1,0 +1,23 @@
+# Dependências
+node_modules/
+
+# Build e cobertura
+dist/
+coverage/
+*.tsbuildinfo
+
+# Playwright
+web/playwright-report/
+web/test-results/
+web/blob-report/
+web/playwright/.cache/
+
+# Variáveis de ambiente (nunca commitar)
+.env
+.env.*
+!.env.example
+
+# Logs e sistema
+*.log
+npm-debug.log*
+.DS_Store
