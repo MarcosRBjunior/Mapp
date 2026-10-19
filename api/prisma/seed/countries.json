@@ -1,0 +1,1820 @@
+[
+  {
+    "code": "AFG",
+    "name": "Afeganistão",
+    "kind": "country",
+    "lat": 33.93911,
+    "lng": 67.709953,
+    "population": 38928341,
+    "sourceName": "Afghanistan"
+  },
+  {
+    "code": "AGO",
+    "name": "Angola",
+    "kind": "country",
+    "lat": -11.2027,
+    "lng": 17.8739,
+    "population": 32866268,
+    "sourceName": "Angola"
+  },
+  {
+    "code": "ALB",
+    "name": "Albânia",
+    "kind": "country",
+    "lat": 41.1533,
+    "lng": 20.1683,
+    "population": 2877800,
+    "sourceName": "Albania"
+  },
+  {
+    "code": "AND",
+    "name": "Andorra",
+    "kind": "country",
+    "lat": 42.5063,
+    "lng": 1.5218,
+    "population": 77265,
+    "sourceName": "Andorra"
+  },
+  {
+    "code": "ARE",
+    "name": "Emirados Árabes Unidos",
+    "kind": "country",
+    "lat": 23.424076,
+    "lng": 53.847818,
+    "population": 9890400,
+    "sourceName": "United Arab Emirates"
+  },
+  {
+    "code": "ARG",
+    "name": "Argentina",
+    "kind": "country",
+    "lat": -38.4161,
+    "lng": -63.6167,
+    "population": 45195777,
+    "sourceName": "Argentina"
+  },
+  {
+    "code": "ARM",
+    "name": "Armênia",
+    "kind": "country",
+    "lat": 40.0691,
+    "lng": 45.0382,
+    "population": 2963234,
+    "sourceName": "Armenia"
+  },
+  {
+    "code": "ATA",
+    "name": "Antártida",
+    "kind": "country",
+    "lat": -71.9499,
+    "lng": 23.347,
+    "population": null,
+    "sourceName": "Antarctica"
+  },
+  {
+    "code": "ATG",
+    "name": "Antígua e Barbuda",
+    "kind": "country",
+    "lat": 17.0608,
+    "lng": -61.7964,
+    "population": 97928,
+    "sourceName": "Antigua and Barbuda"
+  },
+  {
+    "code": "AUS",
+    "name": "Austrália",
+    "kind": "country",
+    "lat": -25,
+    "lng": 133,
+    "population": 25459700,
+    "sourceName": "Australia"
+  },
+  {
+    "code": "AUT",
+    "name": "Áustria",
+    "kind": "country",
+    "lat": 47.5162,
+    "lng": 14.5501,
+    "population": 9006400,
+    "sourceName": "Austria"
+  },
+  {
+    "code": "AZE",
+    "name": "Azerbaijão",
+    "kind": "country",
+    "lat": 40.1431,
+    "lng": 47.5769,
+    "population": 10139175,
+    "sourceName": "Azerbaijan"
+  },
+  {
+    "code": "BDI",
+    "name": "Burundi",
+    "kind": "country",
+    "lat": -3.3731,
+    "lng": 29.9189,
+    "population": 11890781,
+    "sourceName": "Burundi"
+  },
+  {
+    "code": "BEL",
+    "name": "Bélgica",
+    "kind": "country",
+    "lat": 50.8333,
+    "lng": 4.469936,
+    "population": 11492641,
+    "sourceName": "Belgium"
+  },
+  {
+    "code": "BEN",
+    "name": "Benin",
+    "kind": "country",
+    "lat": 9.3077,
+    "lng": 2.3158,
+    "population": 12123198,
+    "sourceName": "Benin"
+  },
+  {
+    "code": "BFA",
+    "name": "Burquina Faso",
+    "kind": "country",
+    "lat": 12.2383,
+    "lng": -1.5616,
+    "population": 20903278,
+    "sourceName": "Burkina Faso"
+  },
+  {
+    "code": "BGD",
+    "name": "Bangladesh",
+    "kind": "country",
+    "lat": 23.685,
+    "lng": 90.3563,
+    "population": 164689383,
+    "sourceName": "Bangladesh"
+  },
+  {
+    "code": "BGR",
+    "name": "Bulgária",
+    "kind": "country",
+    "lat": 42.7339,
+    "lng": 25.4858,
+    "population": 6948445,
+    "sourceName": "Bulgaria"
+  },
+  {
+    "code": "BHR",
+    "name": "Barein",
+    "kind": "country",
+    "lat": 26.0275,
+    "lng": 50.55,
+    "population": 1701583,
+    "sourceName": "Bahrain"
+  },
+  {
+    "code": "BHS",
+    "name": "Bahamas",
+    "kind": "country",
+    "lat": 25.025885,
+    "lng": -78.035889,
+    "population": 393248,
+    "sourceName": "Bahamas"
+  },
+  {
+    "code": "BIH",
+    "name": "Bósnia e Herzegovina",
+    "kind": "country",
+    "lat": 43.9159,
+    "lng": 17.6791,
+    "population": 3280815,
+    "sourceName": "Bosnia and Herzegovina"
+  },
+  {
+    "code": "BLR",
+    "name": "Bielorrússia",
+    "kind": "country",
+    "lat": 53.7098,
+    "lng": 27.9534,
+    "population": 9449321,
+    "sourceName": "Belarus"
+  },
+  {
+    "code": "BLZ",
+    "name": "Belize",
+    "kind": "country",
+    "lat": 17.1899,
+    "lng": -88.4976,
+    "population": 397621,
+    "sourceName": "Belize"
+  },
+  {
+    "code": "BOL",
+    "name": "Bolívia",
+    "kind": "country",
+    "lat": -16.2902,
+    "lng": -63.5887,
+    "population": 11673029,
+    "sourceName": "Bolivia"
+  },
+  {
+    "code": "BRA",
+    "name": "Brasil",
+    "kind": "country",
+    "lat": -14.235,
+    "lng": -51.9253,
+    "population": 212559409,
+    "sourceName": "Brazil"
+  },
+  {
+    "code": "BRB",
+    "name": "Barbados",
+    "kind": "country",
+    "lat": 13.1939,
+    "lng": -59.5432,
+    "population": 287371,
+    "sourceName": "Barbados"
+  },
+  {
+    "code": "BRN",
+    "name": "Brunei",
+    "kind": "country",
+    "lat": 4.5353,
+    "lng": 114.7277,
+    "population": 437483,
+    "sourceName": "Brunei"
+  },
+  {
+    "code": "BTN",
+    "name": "Butão",
+    "kind": "country",
+    "lat": 27.5142,
+    "lng": 90.4336,
+    "population": 771612,
+    "sourceName": "Bhutan"
+  },
+  {
+    "code": "BWA",
+    "name": "Botsuana",
+    "kind": "country",
+    "lat": -22.3285,
+    "lng": 24.6849,
+    "population": 2351625,
+    "sourceName": "Botswana"
+  },
+  {
+    "code": "CAF",
+    "name": "República Centro-Africana",
+    "kind": "country",
+    "lat": 6.6111,
+    "lng": 20.9394,
+    "population": 4829764,
+    "sourceName": "Central African Republic"
+  },
+  {
+    "code": "CAN",
+    "name": "Canadá",
+    "kind": "country",
+    "lat": 60,
+    "lng": -95,
+    "population": 38246108,
+    "sourceName": "Canada"
+  },
+  {
+    "code": "CHE",
+    "name": "Suíça",
+    "kind": "country",
+    "lat": 46.8182,
+    "lng": 8.2275,
+    "population": 8654618,
+    "sourceName": "Switzerland"
+  },
+  {
+    "code": "CHL",
+    "name": "Chile",
+    "kind": "country",
+    "lat": -35.6751,
+    "lng": -71.543,
+    "population": 19116209,
+    "sourceName": "Chile"
+  },
+  {
+    "code": "CHN",
+    "name": "China",
+    "kind": "country",
+    "lat": 35.8617,
+    "lng": 104.19545,
+    "population": 1411778724,
+    "sourceName": "China"
+  },
+  {
+    "code": "CIV",
+    "name": "Costa do Marfim",
+    "kind": "country",
+    "lat": 7.54,
+    "lng": -5.5471,
+    "population": 26378275,
+    "sourceName": "Cote d'Ivoire"
+  },
+  {
+    "code": "CMR",
+    "name": "Camarões",
+    "kind": "country",
+    "lat": 3.848,
+    "lng": 11.5021,
+    "population": 26545864,
+    "sourceName": "Cameroon"
+  },
+  {
+    "code": "COD",
+    "name": "República Democrática do Congo",
+    "kind": "country",
+    "lat": -4.0383,
+    "lng": 21.7587,
+    "population": 89561404,
+    "sourceName": "Congo (Kinshasa)"
+  },
+  {
+    "code": "COG",
+    "name": "República do Congo",
+    "kind": "country",
+    "lat": -0.228,
+    "lng": 15.8277,
+    "population": 5518092,
+    "sourceName": "Congo (Brazzaville)"
+  },
+  {
+    "code": "COL",
+    "name": "Colômbia",
+    "kind": "country",
+    "lat": 4.5709,
+    "lng": -74.2973,
+    "population": 50882884,
+    "sourceName": "Colombia"
+  },
+  {
+    "code": "COM",
+    "name": "Comores",
+    "kind": "country",
+    "lat": -11.6455,
+    "lng": 43.3333,
+    "population": 869595,
+    "sourceName": "Comoros"
+  },
+  {
+    "code": "CPV",
+    "name": "Cabo Verde",
+    "kind": "country",
+    "lat": 16.5388,
+    "lng": -23.0418,
+    "population": 555988,
+    "sourceName": "Cabo Verde"
+  },
+  {
+    "code": "CRI",
+    "name": "Costa Rica",
+    "kind": "country",
+    "lat": 9.7489,
+    "lng": -83.7534,
+    "population": 5094114,
+    "sourceName": "Costa Rica"
+  },
+  {
+    "code": "CUB",
+    "name": "Cuba",
+    "kind": "country",
+    "lat": 21.521757,
+    "lng": -77.781167,
+    "population": 11326616,
+    "sourceName": "Cuba"
+  },
+  {
+    "code": "CYP",
+    "name": "Chipre",
+    "kind": "country",
+    "lat": 35.1264,
+    "lng": 33.4299,
+    "population": 1207361,
+    "sourceName": "Cyprus"
+  },
+  {
+    "code": "CZE",
+    "name": "Tchéquia",
+    "kind": "country",
+    "lat": 49.8175,
+    "lng": 15.473,
+    "population": 10708982,
+    "sourceName": "Czechia"
+  },
+  {
+    "code": "DEU",
+    "name": "Alemanha",
+    "kind": "country",
+    "lat": 51.165691,
+    "lng": 10.451526,
+    "population": 83155031,
+    "sourceName": "Germany"
+  },
+  {
+    "code": "DJI",
+    "name": "Djibuti",
+    "kind": "country",
+    "lat": 11.8251,
+    "lng": 42.5903,
+    "population": 988002,
+    "sourceName": "Djibouti"
+  },
+  {
+    "code": "DMA",
+    "name": "Dominica",
+    "kind": "country",
+    "lat": 15.415,
+    "lng": -61.371,
+    "population": 71991,
+    "sourceName": "Dominica"
+  },
+  {
+    "code": "DNK",
+    "name": "Dinamarca",
+    "kind": "country",
+    "lat": 56.2639,
+    "lng": 9.5018,
+    "population": 5837213,
+    "sourceName": "Denmark"
+  },
+  {
+    "code": "DOM",
+    "name": "República Dominicana",
+    "kind": "country",
+    "lat": 18.7357,
+    "lng": -70.1627,
+    "population": 10847904,
+    "sourceName": "Dominican Republic"
+  },
+  {
+    "code": "DZA",
+    "name": "Argélia",
+    "kind": "country",
+    "lat": 28.0339,
+    "lng": 1.6596,
+    "population": 43851043,
+    "sourceName": "Algeria"
+  },
+  {
+    "code": "ECU",
+    "name": "Equador",
+    "kind": "country",
+    "lat": -1.8312,
+    "lng": -78.1834,
+    "population": 17643060,
+    "sourceName": "Ecuador"
+  },
+  {
+    "code": "EGY",
+    "name": "Egito",
+    "kind": "country",
+    "lat": 26.820553,
+    "lng": 30.802498,
+    "population": 102334403,
+    "sourceName": "Egypt"
+  },
+  {
+    "code": "ERI",
+    "name": "Eritreia",
+    "kind": "country",
+    "lat": 15.1794,
+    "lng": 39.7823,
+    "population": 3546427,
+    "sourceName": "Eritrea"
+  },
+  {
+    "code": "ESH",
+    "name": "Saara Ocidental",
+    "kind": "country",
+    "lat": 24.2155,
+    "lng": -12.8858,
+    "population": 597330,
+    "sourceName": "Western Sahara"
+  },
+  {
+    "code": "ESP",
+    "name": "Espanha",
+    "kind": "country",
+    "lat": 40.463667,
+    "lng": -3.74922,
+    "population": 46754783,
+    "sourceName": "Spain"
+  },
+  {
+    "code": "EST",
+    "name": "Estônia",
+    "kind": "country",
+    "lat": 58.5953,
+    "lng": 25.0136,
+    "population": 1326539,
+    "sourceName": "Estonia"
+  },
+  {
+    "code": "ETH",
+    "name": "Etiópia",
+    "kind": "country",
+    "lat": 9.145,
+    "lng": 40.4897,
+    "population": 114963583,
+    "sourceName": "Ethiopia"
+  },
+  {
+    "code": "FIN",
+    "name": "Finlândia",
+    "kind": "country",
+    "lat": 61.92411,
+    "lng": 25.748151,
+    "population": 5540718,
+    "sourceName": "Finland"
+  },
+  {
+    "code": "FJI",
+    "name": "Fiji",
+    "kind": "country",
+    "lat": -17.7134,
+    "lng": 178.065,
+    "population": 896444,
+    "sourceName": "Fiji"
+  },
+  {
+    "code": "FRA",
+    "name": "França",
+    "kind": "country",
+    "lat": 46.2276,
+    "lng": 2.2137,
+    "population": 65249843,
+    "sourceName": "France"
+  },
+  {
+    "code": "FSM",
+    "name": "Micronésia",
+    "kind": "country",
+    "lat": 7.4256,
+    "lng": 150.5508,
+    "population": 113815,
+    "sourceName": "Micronesia"
+  },
+  {
+    "code": "GAB",
+    "name": "Gabão",
+    "kind": "country",
+    "lat": -0.8037,
+    "lng": 11.6094,
+    "population": 2225728,
+    "sourceName": "Gabon"
+  },
+  {
+    "code": "GBR",
+    "name": "Reino Unido",
+    "kind": "country",
+    "lat": 55.3781,
+    "lng": -3.436,
+    "population": 67886004,
+    "sourceName": "United Kingdom"
+  },
+  {
+    "code": "GEO",
+    "name": "Geórgia",
+    "kind": "country",
+    "lat": 42.3154,
+    "lng": 43.3569,
+    "population": 3989175,
+    "sourceName": "Georgia"
+  },
+  {
+    "code": "GHA",
+    "name": "Gana",
+    "kind": "country",
+    "lat": 7.9465,
+    "lng": -1.0232,
+    "population": 31072945,
+    "sourceName": "Ghana"
+  },
+  {
+    "code": "GIN",
+    "name": "Guiné",
+    "kind": "country",
+    "lat": 9.9456,
+    "lng": -9.6966,
+    "population": 13132792,
+    "sourceName": "Guinea"
+  },
+  {
+    "code": "GMB",
+    "name": "Gâmbia",
+    "kind": "country",
+    "lat": 13.4432,
+    "lng": -15.3101,
+    "population": 2416664,
+    "sourceName": "Gambia"
+  },
+  {
+    "code": "GNB",
+    "name": "Guiné-Bissau",
+    "kind": "country",
+    "lat": 11.8037,
+    "lng": -15.1804,
+    "population": 1967998,
+    "sourceName": "Guinea-Bissau"
+  },
+  {
+    "code": "GNQ",
+    "name": "Guiné Equatorial",
+    "kind": "country",
+    "lat": 1.6508,
+    "lng": 10.2679,
+    "population": 1402985,
+    "sourceName": "Equatorial Guinea"
+  },
+  {
+    "code": "GRC",
+    "name": "Grécia",
+    "kind": "country",
+    "lat": 39.0742,
+    "lng": 21.8243,
+    "population": 10423056,
+    "sourceName": "Greece"
+  },
+  {
+    "code": "GRD",
+    "name": "Granada",
+    "kind": "country",
+    "lat": 12.1165,
+    "lng": -61.679,
+    "population": 112519,
+    "sourceName": "Grenada"
+  },
+  {
+    "code": "GTM",
+    "name": "Guatemala",
+    "kind": "country",
+    "lat": 15.7835,
+    "lng": -90.2308,
+    "population": 17915567,
+    "sourceName": "Guatemala"
+  },
+  {
+    "code": "GUY",
+    "name": "Guiana",
+    "kind": "country",
+    "lat": 4.860416,
+    "lng": -58.93018,
+    "population": 786559,
+    "sourceName": "Guyana"
+  },
+  {
+    "code": "HND",
+    "name": "Honduras",
+    "kind": "country",
+    "lat": 15.2,
+    "lng": -86.2419,
+    "population": 9904608,
+    "sourceName": "Honduras"
+  },
+  {
+    "code": "HRV",
+    "name": "Croácia",
+    "kind": "country",
+    "lat": 45.1,
+    "lng": 15.2,
+    "population": 4105268,
+    "sourceName": "Croatia"
+  },
+  {
+    "code": "HTI",
+    "name": "Haiti",
+    "kind": "country",
+    "lat": 18.9712,
+    "lng": -72.2852,
+    "population": 11402533,
+    "sourceName": "Haiti"
+  },
+  {
+    "code": "HUN",
+    "name": "Hungria",
+    "kind": "country",
+    "lat": 47.1625,
+    "lng": 19.5033,
+    "population": 9660350,
+    "sourceName": "Hungary"
+  },
+  {
+    "code": "IDN",
+    "name": "Indonésia",
+    "kind": "country",
+    "lat": -0.7893,
+    "lng": 113.9213,
+    "population": 273523621,
+    "sourceName": "Indonesia"
+  },
+  {
+    "code": "IND",
+    "name": "Índia",
+    "kind": "country",
+    "lat": 20.593684,
+    "lng": 78.96288,
+    "population": 1380004385,
+    "sourceName": "India"
+  },
+  {
+    "code": "IRL",
+    "name": "Irlanda",
+    "kind": "country",
+    "lat": 53.1424,
+    "lng": -7.6921,
+    "population": 4937796,
+    "sourceName": "Ireland"
+  },
+  {
+    "code": "IRN",
+    "name": "Irã",
+    "kind": "country",
+    "lat": 32.427908,
+    "lng": 53.688046,
+    "population": 83992953,
+    "sourceName": "Iran"
+  },
+  {
+    "code": "IRQ",
+    "name": "Iraque",
+    "kind": "country",
+    "lat": 33.223191,
+    "lng": 43.679291,
+    "population": 40222503,
+    "sourceName": "Iraq"
+  },
+  {
+    "code": "ISL",
+    "name": "Islândia",
+    "kind": "country",
+    "lat": 64.9631,
+    "lng": -19.0208,
+    "population": 341250,
+    "sourceName": "Iceland"
+  },
+  {
+    "code": "ISR",
+    "name": "Israel",
+    "kind": "country",
+    "lat": 31.046051,
+    "lng": 34.851612,
+    "population": 8655541,
+    "sourceName": "Israel"
+  },
+  {
+    "code": "ITA",
+    "name": "Itália",
+    "kind": "country",
+    "lat": 41.87194,
+    "lng": 12.56738,
+    "population": 60461828,
+    "sourceName": "Italy"
+  },
+  {
+    "code": "JAM",
+    "name": "Jamaica",
+    "kind": "country",
+    "lat": 18.1096,
+    "lng": -77.2975,
+    "population": 2961161,
+    "sourceName": "Jamaica"
+  },
+  {
+    "code": "JOR",
+    "name": "Jordânia",
+    "kind": "country",
+    "lat": 31.24,
+    "lng": 36.51,
+    "population": 10203140,
+    "sourceName": "Jordan"
+  },
+  {
+    "code": "JPN",
+    "name": "Japão",
+    "kind": "country",
+    "lat": 36.204824,
+    "lng": 138.252924,
+    "population": 126476458,
+    "sourceName": "Japan"
+  },
+  {
+    "code": "KAZ",
+    "name": "Cazaquistão",
+    "kind": "country",
+    "lat": 48.0196,
+    "lng": 66.9237,
+    "population": 18776707,
+    "sourceName": "Kazakhstan"
+  },
+  {
+    "code": "KEN",
+    "name": "Quênia",
+    "kind": "country",
+    "lat": -0.0236,
+    "lng": 37.9062,
+    "population": 53771300,
+    "sourceName": "Kenya"
+  },
+  {
+    "code": "KGZ",
+    "name": "Quirguistão",
+    "kind": "country",
+    "lat": 41.20438,
+    "lng": 74.766098,
+    "population": 6524191,
+    "sourceName": "Kyrgyzstan"
+  },
+  {
+    "code": "KHM",
+    "name": "Camboja",
+    "kind": "country",
+    "lat": 11.55,
+    "lng": 104.9167,
+    "population": 16718971,
+    "sourceName": "Cambodia"
+  },
+  {
+    "code": "KIR",
+    "name": "Quiribati",
+    "kind": "country",
+    "lat": -3.3704,
+    "lng": -168.734,
+    "population": 117606,
+    "sourceName": "Kiribati"
+  },
+  {
+    "code": "KNA",
+    "name": "São Cristóvão e Névis",
+    "kind": "country",
+    "lat": 17.357822,
+    "lng": -62.782998,
+    "population": 53192,
+    "sourceName": "Saint Kitts and Nevis"
+  },
+  {
+    "code": "KOR",
+    "name": "Coreia do Sul",
+    "kind": "country",
+    "lat": 35.907757,
+    "lng": 127.766922,
+    "population": 51269183,
+    "sourceName": "Korea, South"
+  },
+  {
+    "code": "KWT",
+    "name": "Kuwait",
+    "kind": "country",
+    "lat": 29.31166,
+    "lng": 47.481766,
+    "population": 4270563,
+    "sourceName": "Kuwait"
+  },
+  {
+    "code": "LAO",
+    "name": "Laos",
+    "kind": "country",
+    "lat": 19.85627,
+    "lng": 102.495496,
+    "population": 7275556,
+    "sourceName": "Laos"
+  },
+  {
+    "code": "LBN",
+    "name": "Líbano",
+    "kind": "country",
+    "lat": 33.8547,
+    "lng": 35.8623,
+    "population": 6825442,
+    "sourceName": "Lebanon"
+  },
+  {
+    "code": "LBR",
+    "name": "Libéria",
+    "kind": "country",
+    "lat": 6.428055,
+    "lng": -9.429499,
+    "population": 5057677,
+    "sourceName": "Liberia"
+  },
+  {
+    "code": "LBY",
+    "name": "Líbia",
+    "kind": "country",
+    "lat": 26.3351,
+    "lng": 17.228331,
+    "population": 6871287,
+    "sourceName": "Libya"
+  },
+  {
+    "code": "LCA",
+    "name": "Santa Lúcia",
+    "kind": "country",
+    "lat": 13.9094,
+    "lng": -60.9789,
+    "population": 183629,
+    "sourceName": "Saint Lucia"
+  },
+  {
+    "code": "LIE",
+    "name": "Liechtenstein",
+    "kind": "country",
+    "lat": 47.14,
+    "lng": 9.55,
+    "population": 38137,
+    "sourceName": "Liechtenstein"
+  },
+  {
+    "code": "LKA",
+    "name": "Sri Lanka",
+    "kind": "country",
+    "lat": 7.873054,
+    "lng": 80.771797,
+    "population": 21413250,
+    "sourceName": "Sri Lanka"
+  },
+  {
+    "code": "LSO",
+    "name": "Lesoto",
+    "kind": "country",
+    "lat": -29.61,
+    "lng": 28.2336,
+    "population": 2142252,
+    "sourceName": "Lesotho"
+  },
+  {
+    "code": "LTU",
+    "name": "Lituânia",
+    "kind": "country",
+    "lat": 55.1694,
+    "lng": 23.8813,
+    "population": 2722291,
+    "sourceName": "Lithuania"
+  },
+  {
+    "code": "LUX",
+    "name": "Luxemburgo",
+    "kind": "country",
+    "lat": 49.8153,
+    "lng": 6.1296,
+    "population": 625976,
+    "sourceName": "Luxembourg"
+  },
+  {
+    "code": "LVA",
+    "name": "Letônia",
+    "kind": "country",
+    "lat": 56.8796,
+    "lng": 24.6032,
+    "population": 1886202,
+    "sourceName": "Latvia"
+  },
+  {
+    "code": "MAR",
+    "name": "Marrocos",
+    "kind": "country",
+    "lat": 31.7917,
+    "lng": -7.0926,
+    "population": 36910558,
+    "sourceName": "Morocco"
+  },
+  {
+    "code": "MCO",
+    "name": "Mônaco",
+    "kind": "country",
+    "lat": 43.7333,
+    "lng": 7.4167,
+    "population": 39244,
+    "sourceName": "Monaco"
+  },
+  {
+    "code": "MDA",
+    "name": "Moldávia",
+    "kind": "country",
+    "lat": 47.4116,
+    "lng": 28.3699,
+    "population": 4027690,
+    "sourceName": "Moldova"
+  },
+  {
+    "code": "MDG",
+    "name": "Madagascar",
+    "kind": "country",
+    "lat": -18.766947,
+    "lng": 46.869107,
+    "population": 27691019,
+    "sourceName": "Madagascar"
+  },
+  {
+    "code": "MDV",
+    "name": "Maldivas",
+    "kind": "country",
+    "lat": 3.2028,
+    "lng": 73.2207,
+    "population": 540542,
+    "sourceName": "Maldives"
+  },
+  {
+    "code": "MEX",
+    "name": "México",
+    "kind": "country",
+    "lat": 23.6345,
+    "lng": -102.5528,
+    "population": 127792286,
+    "sourceName": "Mexico"
+  },
+  {
+    "code": "MHL",
+    "name": "Ilhas Marshall",
+    "kind": "country",
+    "lat": 7.1315,
+    "lng": 171.1845,
+    "population": 58413,
+    "sourceName": "Marshall Islands"
+  },
+  {
+    "code": "MKD",
+    "name": "Macedônia do Norte",
+    "kind": "country",
+    "lat": 41.6086,
+    "lng": 21.7453,
+    "population": 2083380,
+    "sourceName": "North Macedonia"
+  },
+  {
+    "code": "MLI",
+    "name": "Mali",
+    "kind": "country",
+    "lat": 17.570692,
+    "lng": -3.996166,
+    "population": 20250834,
+    "sourceName": "Mali"
+  },
+  {
+    "code": "MLT",
+    "name": "Malta",
+    "kind": "country",
+    "lat": 35.9375,
+    "lng": 14.3754,
+    "population": 441539,
+    "sourceName": "Malta"
+  },
+  {
+    "code": "MMR",
+    "name": "Mianmar",
+    "kind": "country",
+    "lat": 21.9162,
+    "lng": 95.956,
+    "population": 54409794,
+    "sourceName": "Burma"
+  },
+  {
+    "code": "MNE",
+    "name": "Montenegro",
+    "kind": "country",
+    "lat": 42.708678,
+    "lng": 19.37439,
+    "population": 628062,
+    "sourceName": "Montenegro"
+  },
+  {
+    "code": "MNG",
+    "name": "Mongólia",
+    "kind": "country",
+    "lat": 46.8625,
+    "lng": 103.8467,
+    "population": 3278292,
+    "sourceName": "Mongolia"
+  },
+  {
+    "code": "MOZ",
+    "name": "Moçambique",
+    "kind": "country",
+    "lat": -18.665695,
+    "lng": 35.529562,
+    "population": 31255435,
+    "sourceName": "Mozambique"
+  },
+  {
+    "code": "MRT",
+    "name": "Mauritânia",
+    "kind": "country",
+    "lat": 21.0079,
+    "lng": -10.9408,
+    "population": 4649660,
+    "sourceName": "Mauritania"
+  },
+  {
+    "code": "MUS",
+    "name": "Maurício",
+    "kind": "country",
+    "lat": -20.348404,
+    "lng": 57.552152,
+    "population": 1271767,
+    "sourceName": "Mauritius"
+  },
+  {
+    "code": "MWI",
+    "name": "Malaui",
+    "kind": "country",
+    "lat": -13.2543,
+    "lng": 34.3015,
+    "population": 19129955,
+    "sourceName": "Malawi"
+  },
+  {
+    "code": "MYS",
+    "name": "Malásia",
+    "kind": "country",
+    "lat": 4.210484,
+    "lng": 101.975766,
+    "population": 32365998,
+    "sourceName": "Malaysia"
+  },
+  {
+    "code": "NAM",
+    "name": "Namíbia",
+    "kind": "country",
+    "lat": -22.9576,
+    "lng": 18.4904,
+    "population": 2540916,
+    "sourceName": "Namibia"
+  },
+  {
+    "code": "NER",
+    "name": "Níger",
+    "kind": "country",
+    "lat": 17.607789,
+    "lng": 8.081666,
+    "population": 24206636,
+    "sourceName": "Niger"
+  },
+  {
+    "code": "NGA",
+    "name": "Nigéria",
+    "kind": "country",
+    "lat": 9.082,
+    "lng": 8.6753,
+    "population": 206139587,
+    "sourceName": "Nigeria"
+  },
+  {
+    "code": "NIC",
+    "name": "Nicarágua",
+    "kind": "country",
+    "lat": 12.865416,
+    "lng": -85.207229,
+    "population": 6624554,
+    "sourceName": "Nicaragua"
+  },
+  {
+    "code": "NLD",
+    "name": "Países Baixos",
+    "kind": "country",
+    "lat": 52.1326,
+    "lng": 5.2913,
+    "population": 17134873,
+    "sourceName": "Netherlands"
+  },
+  {
+    "code": "NOR",
+    "name": "Noruega",
+    "kind": "country",
+    "lat": 60.472,
+    "lng": 8.4689,
+    "population": 5421242,
+    "sourceName": "Norway"
+  },
+  {
+    "code": "NPL",
+    "name": "Nepal",
+    "kind": "country",
+    "lat": 28.1667,
+    "lng": 84.25,
+    "population": 29136808,
+    "sourceName": "Nepal"
+  },
+  {
+    "code": "NRU",
+    "name": "Nauru",
+    "kind": "country",
+    "lat": -0.5228,
+    "lng": 166.9315,
+    "population": 10834,
+    "sourceName": "Nauru"
+  },
+  {
+    "code": "NZL",
+    "name": "Nova Zelândia",
+    "kind": "country",
+    "lat": -40.9006,
+    "lng": 174.886,
+    "population": 4822233,
+    "sourceName": "New Zealand"
+  },
+  {
+    "code": "OMN",
+    "name": "Omã",
+    "kind": "country",
+    "lat": 21.512583,
+    "lng": 55.923255,
+    "population": 5106622,
+    "sourceName": "Oman"
+  },
+  {
+    "code": "PAK",
+    "name": "Paquistão",
+    "kind": "country",
+    "lat": 30.3753,
+    "lng": 69.3451,
+    "population": 220892331,
+    "sourceName": "Pakistan"
+  },
+  {
+    "code": "PAN",
+    "name": "Panamá",
+    "kind": "country",
+    "lat": 8.538,
+    "lng": -80.7821,
+    "population": 4314768,
+    "sourceName": "Panama"
+  },
+  {
+    "code": "PER",
+    "name": "Peru",
+    "kind": "country",
+    "lat": -9.19,
+    "lng": -75.0152,
+    "population": 32971846,
+    "sourceName": "Peru"
+  },
+  {
+    "code": "PHL",
+    "name": "Filipinas",
+    "kind": "country",
+    "lat": 12.879721,
+    "lng": 121.774017,
+    "population": 109581085,
+    "sourceName": "Philippines"
+  },
+  {
+    "code": "PLW",
+    "name": "Palau",
+    "kind": "country",
+    "lat": 7.515,
+    "lng": 134.5825,
+    "population": 18008,
+    "sourceName": "Palau"
+  },
+  {
+    "code": "PNG",
+    "name": "Papua-Nova Guiné",
+    "kind": "country",
+    "lat": -6.314993,
+    "lng": 143.95555,
+    "population": 8947027,
+    "sourceName": "Papua New Guinea"
+  },
+  {
+    "code": "POL",
+    "name": "Polônia",
+    "kind": "country",
+    "lat": 51.9194,
+    "lng": 19.1451,
+    "population": 37846605,
+    "sourceName": "Poland"
+  },
+  {
+    "code": "PRK",
+    "name": "Coreia do Norte",
+    "kind": "country",
+    "lat": 40.3399,
+    "lng": 127.5101,
+    "population": 25778815,
+    "sourceName": "Korea, North"
+  },
+  {
+    "code": "PRT",
+    "name": "Portugal",
+    "kind": "country",
+    "lat": 39.3999,
+    "lng": -8.2245,
+    "population": 10196707,
+    "sourceName": "Portugal"
+  },
+  {
+    "code": "PRY",
+    "name": "Paraguai",
+    "kind": "country",
+    "lat": -23.4425,
+    "lng": -58.4438,
+    "population": 7132530,
+    "sourceName": "Paraguay"
+  },
+  {
+    "code": "PSE",
+    "name": "Territórios palestinos",
+    "kind": "country",
+    "lat": 31.9522,
+    "lng": 35.2332,
+    "population": 5101416,
+    "sourceName": "West Bank and Gaza"
+  },
+  {
+    "code": "QAT",
+    "name": "Catar",
+    "kind": "country",
+    "lat": 25.3548,
+    "lng": 51.1839,
+    "population": 2881060,
+    "sourceName": "Qatar"
+  },
+  {
+    "code": "ROU",
+    "name": "Romênia",
+    "kind": "country",
+    "lat": 45.9432,
+    "lng": 24.9668,
+    "population": 19237682,
+    "sourceName": "Romania"
+  },
+  {
+    "code": "RUS",
+    "name": "Rússia",
+    "kind": "country",
+    "lat": 61.52401,
+    "lng": 105.318756,
+    "population": 145934460,
+    "sourceName": "Russia"
+  },
+  {
+    "code": "RWA",
+    "name": "Ruanda",
+    "kind": "country",
+    "lat": -1.9403,
+    "lng": 29.8739,
+    "population": 12952209,
+    "sourceName": "Rwanda"
+  },
+  {
+    "code": "SAU",
+    "name": "Arábia Saudita",
+    "kind": "country",
+    "lat": 23.885942,
+    "lng": 45.079162,
+    "population": 34813867,
+    "sourceName": "Saudi Arabia"
+  },
+  {
+    "code": "SDN",
+    "name": "Sudão",
+    "kind": "country",
+    "lat": 12.8628,
+    "lng": 30.2176,
+    "population": 43849269,
+    "sourceName": "Sudan"
+  },
+  {
+    "code": "SEN",
+    "name": "Senegal",
+    "kind": "country",
+    "lat": 14.4974,
+    "lng": -14.4524,
+    "population": 16743930,
+    "sourceName": "Senegal"
+  },
+  {
+    "code": "SGP",
+    "name": "Singapura",
+    "kind": "country",
+    "lat": 1.2833,
+    "lng": 103.8333,
+    "population": 5850343,
+    "sourceName": "Singapore"
+  },
+  {
+    "code": "SLB",
+    "name": "Ilhas Salomão",
+    "kind": "country",
+    "lat": -9.6457,
+    "lng": 160.1562,
+    "population": 652858,
+    "sourceName": "Solomon Islands"
+  },
+  {
+    "code": "SLE",
+    "name": "Serra Leoa",
+    "kind": "country",
+    "lat": 8.460555,
+    "lng": -11.779889,
+    "population": 7976985,
+    "sourceName": "Sierra Leone"
+  },
+  {
+    "code": "SLV",
+    "name": "El Salvador",
+    "kind": "country",
+    "lat": 13.7942,
+    "lng": -88.8965,
+    "population": 6486201,
+    "sourceName": "El Salvador"
+  },
+  {
+    "code": "SMR",
+    "name": "San Marino",
+    "kind": "country",
+    "lat": 43.9424,
+    "lng": 12.4578,
+    "population": 33938,
+    "sourceName": "San Marino"
+  },
+  {
+    "code": "SOM",
+    "name": "Somália",
+    "kind": "country",
+    "lat": 5.152149,
+    "lng": 46.199616,
+    "population": 15893219,
+    "sourceName": "Somalia"
+  },
+  {
+    "code": "SRB",
+    "name": "Sérvia",
+    "kind": "country",
+    "lat": 44.0165,
+    "lng": 21.0059,
+    "population": 8737370,
+    "sourceName": "Serbia"
+  },
+  {
+    "code": "SSD",
+    "name": "Sudão do Sul",
+    "kind": "country",
+    "lat": 6.877,
+    "lng": 31.307,
+    "population": 11193729,
+    "sourceName": "South Sudan"
+  },
+  {
+    "code": "STP",
+    "name": "São Tomé e Príncipe",
+    "kind": "country",
+    "lat": 0.1864,
+    "lng": 6.6131,
+    "population": 219161,
+    "sourceName": "Sao Tome and Principe"
+  },
+  {
+    "code": "SUR",
+    "name": "Suriname",
+    "kind": "country",
+    "lat": 3.9193,
+    "lng": -56.0278,
+    "population": 586634,
+    "sourceName": "Suriname"
+  },
+  {
+    "code": "SVK",
+    "name": "Eslováquia",
+    "kind": "country",
+    "lat": 48.669,
+    "lng": 19.699,
+    "population": 5434712,
+    "sourceName": "Slovakia"
+  },
+  {
+    "code": "SVN",
+    "name": "Eslovênia",
+    "kind": "country",
+    "lat": 46.1512,
+    "lng": 14.9955,
+    "population": 2078932,
+    "sourceName": "Slovenia"
+  },
+  {
+    "code": "SWE",
+    "name": "Suécia",
+    "kind": "country",
+    "lat": 60.128161,
+    "lng": 18.643501,
+    "population": 10099270,
+    "sourceName": "Sweden"
+  },
+  {
+    "code": "SWZ",
+    "name": "Essuatíni",
+    "kind": "country",
+    "lat": -26.5225,
+    "lng": 31.4659,
+    "population": 1160164,
+    "sourceName": "Eswatini"
+  },
+  {
+    "code": "SYC",
+    "name": "Seicheles",
+    "kind": "country",
+    "lat": -4.6796,
+    "lng": 55.492,
+    "population": 98340,
+    "sourceName": "Seychelles"
+  },
+  {
+    "code": "SYR",
+    "name": "Síria",
+    "kind": "country",
+    "lat": 34.802075,
+    "lng": 38.996815,
+    "population": 17500657,
+    "sourceName": "Syria"
+  },
+  {
+    "code": "TCD",
+    "name": "Chade",
+    "kind": "country",
+    "lat": 15.4542,
+    "lng": 18.7322,
+    "population": 16425859,
+    "sourceName": "Chad"
+  },
+  {
+    "code": "TGO",
+    "name": "Togo",
+    "kind": "country",
+    "lat": 8.6195,
+    "lng": 0.8248,
+    "population": 8278737,
+    "sourceName": "Togo"
+  },
+  {
+    "code": "THA",
+    "name": "Tailândia",
+    "kind": "country",
+    "lat": 15.870032,
+    "lng": 100.992541,
+    "population": 69799978,
+    "sourceName": "Thailand"
+  },
+  {
+    "code": "TJK",
+    "name": "Tadjiquistão",
+    "kind": "country",
+    "lat": 38.861,
+    "lng": 71.2761,
+    "population": 9537642,
+    "sourceName": "Tajikistan"
+  },
+  {
+    "code": "TLS",
+    "name": "Timor-Leste",
+    "kind": "country",
+    "lat": -8.874217,
+    "lng": 125.727539,
+    "population": 1318442,
+    "sourceName": "Timor-Leste"
+  },
+  {
+    "code": "TON",
+    "name": "Tonga",
+    "kind": "country",
+    "lat": -21.179,
+    "lng": -175.1982,
+    "population": 105697,
+    "sourceName": "Tonga"
+  },
+  {
+    "code": "TTO",
+    "name": "Trinidad e Tobago",
+    "kind": "country",
+    "lat": 10.6918,
+    "lng": -61.2225,
+    "population": 1399491,
+    "sourceName": "Trinidad and Tobago"
+  },
+  {
+    "code": "TUN",
+    "name": "Tunísia",
+    "kind": "country",
+    "lat": 33.886917,
+    "lng": 9.537499,
+    "population": 11818618,
+    "sourceName": "Tunisia"
+  },
+  {
+    "code": "TUR",
+    "name": "Turquia",
+    "kind": "country",
+    "lat": 38.9637,
+    "lng": 35.2433,
+    "population": 84339067,
+    "sourceName": "Turkey"
+  },
+  {
+    "code": "TUV",
+    "name": "Tuvalu",
+    "kind": "country",
+    "lat": -7.1095,
+    "lng": 177.6493,
+    "population": 11792,
+    "sourceName": "Tuvalu"
+  },
+  {
+    "code": "TWN",
+    "name": "Taiwan",
+    "kind": "country",
+    "lat": 23.7,
+    "lng": 121,
+    "population": 23816775,
+    "sourceName": "Taiwan*"
+  },
+  {
+    "code": "TZA",
+    "name": "Tanzânia",
+    "kind": "country",
+    "lat": -6.369028,
+    "lng": 34.888822,
+    "population": 59734213,
+    "sourceName": "Tanzania"
+  },
+  {
+    "code": "UGA",
+    "name": "Uganda",
+    "kind": "country",
+    "lat": 1.373333,
+    "lng": 32.290275,
+    "population": 45741000,
+    "sourceName": "Uganda"
+  },
+  {
+    "code": "UKR",
+    "name": "Ucrânia",
+    "kind": "country",
+    "lat": 48.3794,
+    "lng": 31.1656,
+    "population": 43733759,
+    "sourceName": "Ukraine"
+  },
+  {
+    "code": "URY",
+    "name": "Uruguai",
+    "kind": "country",
+    "lat": -32.5228,
+    "lng": -55.7658,
+    "population": 3473727,
+    "sourceName": "Uruguay"
+  },
+  {
+    "code": "USA",
+    "name": "Estados Unidos",
+    "kind": "country",
+    "lat": 40,
+    "lng": -100,
+    "population": 329466283,
+    "sourceName": "US"
+  },
+  {
+    "code": "UZB",
+    "name": "Uzbequistão",
+    "kind": "country",
+    "lat": 41.377491,
+    "lng": 64.585262,
+    "population": 33469199,
+    "sourceName": "Uzbekistan"
+  },
+  {
+    "code": "VAT",
+    "name": "Cidade do Vaticano",
+    "kind": "country",
+    "lat": 41.9029,
+    "lng": 12.4534,
+    "population": 809,
+    "sourceName": "Holy See"
+  },
+  {
+    "code": "VCT",
+    "name": "São Vicente e Granadinas",
+    "kind": "country",
+    "lat": 12.9843,
+    "lng": -61.2872,
+    "population": 110947,
+    "sourceName": "Saint Vincent and the Grenadines"
+  },
+  {
+    "code": "VEN",
+    "name": "Venezuela",
+    "kind": "country",
+    "lat": 6.4238,
+    "lng": -66.5897,
+    "population": 28435943,
+    "sourceName": "Venezuela"
+  },
+  {
+    "code": "VNM",
+    "name": "Vietnã",
+    "kind": "country",
+    "lat": 14.058324,
+    "lng": 108.277199,
+    "population": 97338583,
+    "sourceName": "Vietnam"
+  },
+  {
+    "code": "VUT",
+    "name": "Vanuatu",
+    "kind": "country",
+    "lat": -15.3767,
+    "lng": 166.9592,
+    "population": 292680,
+    "sourceName": "Vanuatu"
+  },
+  {
+    "code": "WSM",
+    "name": "Samoa",
+    "kind": "country",
+    "lat": -13.759,
+    "lng": -172.1046,
+    "population": 196130,
+    "sourceName": "Samoa"
+  },
+  {
+    "code": "XDP",
+    "name": "Navio Diamond Princess",
+    "kind": "non_geographic",
+    "lat": null,
+    "lng": null,
+    "population": null,
+    "sourceName": "Diamond Princess"
+  },
+  {
+    "code": "XKS",
+    "name": "Kosovo",
+    "kind": "country",
+    "lat": 42.602636,
+    "lng": 20.902977,
+    "population": 1810366,
+    "sourceName": "Kosovo"
+  },
+  {
+    "code": "XMZ",
+    "name": "Navio MS Zaandam",
+    "kind": "non_geographic",
+    "lat": null,
+    "lng": null,
+    "population": null,
+    "sourceName": "MS Zaandam"
+  },
+  {
+    "code": "XSO",
+    "name": "Jogos Olímpicos de Verão 2020",
+    "kind": "non_geographic",
+    "lat": null,
+    "lng": null,
+    "population": null,
+    "sourceName": "Summer Olympics 2020"
+  },
+  {
+    "code": "XWO",
+    "name": "Jogos Olímpicos de Inverno 2022",
+    "kind": "non_geographic",
+    "lat": null,
+    "lng": null,
+    "population": null,
+    "sourceName": "Winter Olympics 2022"
+  },
+  {
+    "code": "YEM",
+    "name": "Iêmen",
+    "kind": "country",
+    "lat": 15.552727,
+    "lng": 48.516388,
+    "population": 29825968,
+    "sourceName": "Yemen"
+  },
+  {
+    "code": "ZAF",
+    "name": "África do Sul",
+    "kind": "country",
+    "lat": -30.5595,
+    "lng": 22.9375,
+    "population": 59308690,
+    "sourceName": "South Africa"
+  },
+  {
+    "code": "ZMB",
+    "name": "Zâmbia",
+    "kind": "country",
+    "lat": -13.133897,
+    "lng": 27.849332,
+    "population": 18383956,
+    "sourceName": "Zambia"
+  },
+  {
+    "code": "ZWE",
+    "name": "Zimbábue",
+    "kind": "country",
+    "lat": -19.015438,
+    "lng": 29.154857,
+    "population": 14862927,
+    "sourceName": "Zimbabwe"
+  }
+]

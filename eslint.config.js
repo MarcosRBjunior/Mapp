@@ -14,6 +14,7 @@ export default defineConfig([
     'web/test-results',
     'web/blob-report',
     '.superpowers',
+    'api/src/generated',
   ]),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
@@ -43,7 +44,7 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ['web/*.config.ts', 'web/tests/**/*.ts'],
+    files: ['web/*.config.ts', 'web/tests/**/*.ts', 'web/scripts/**/*.ts'],
     languageOptions: { globals: globals.node },
   },
   prettier,

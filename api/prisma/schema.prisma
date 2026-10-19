@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CountryKind {
+  country
+  non_geographic
+
+  @@map("country_kind")
+}
+
+enum AliasStatus {
+  mapped
+  pending
+  ignored
+
+  @@map("alias_status")
+}
+
+enum Metric {
+  cases
+  deaths
+
+  @@map("metric")
+}
+
+enum SyncMode {
+  snapshot
+  full
+
+  @@map("sync_mode")
+}
+
+enum SyncStatus {
+  running
+  success
+  partial
+  failed
+
+  @@map("sync_status")
+}
+
+enum CheckpointStatus {
+  pending
+  done
+  error
+
+  @@map("checkpoint_status")
+}
+
+enum CallOutcome {
+  ok
+  http_error
+  timeout
+  network_error
+  invalid_payload
+
+  @@map("call_outcome")
+}
+
+model DataSource {
+  id          Int    @id @default(autoincrement())
+  code        String @unique
+  name        String
+  url         String
+  license     String
+  attribution String
+
+  aliases       CountryAlias[]
+  dailyStats    DailyStat[]
+  syncRuns      SyncRun[]
+  providerCalls ProviderCall[]
+
+  @@map("data_source")
+}
+
+model Country {
+  code       String      @id @db.Char(3)
+  name       String
+  kind       CountryKind
+  lat        Float?
+  lng        Float?
+  population BigInt?
+
+  aliases    CountryAlias[]
+  dailyStats DailyStat[]
+
+  @@map("country")
+}
+
+model CountryAlias {
+  sourceId    Int         @map("source_id")
+  sourceName  String      @map("source_name")
+  countryCode String?     @map("country_code") @db.Char(3)
+  status      AliasStatus
+
+  source  DataSource @relation(fields: [sourceId], references: [id])
+  country Country?   @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+
+  @@id([sourceId, sourceName])
+  @@map("country_alias")
+}
+
+model DailyStat {
+  countryCode String   @map("country_code") @db.Char(3)
+  metric      Metric
+  statDate    DateTime @map("stat_date") @db.Date
+  sourceId    Int      @map("source_id")
+  total       Int
+  newValue    Int      @map("new_value")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  country Country    @relation(fields: [countryCode], references: [code])
+  source  DataSource @relation(fields: [sourceId], references: [id])
+
+  @@id([countryCode, metric, statDate, sourceId])
+  @@index([sourceId, metric, statDate])
+  @@map("daily_stat")
+}
+
+model SyncRun {
+  id            Int        @id @default(autoincrement())
+  sourceId      Int        @map("source_id")
+  mode          SyncMode
+  status        SyncStatus
+  startedAt     DateTime   @default(now()) @map("started_at") @db.Timestamptz(6)
+  finishedAt    DateTime?  @map("finished_at") @db.Timestamptz(6)
+  referenceDate DateTime?  @map("reference_date") @db.Date
+  callsUsed     Int        @default(0) @map("calls_used")
+  error         String?
+
+  source        DataSource       @relation(fields: [sourceId], references: [id])
+  checkpoints   SyncCheckpoint[]
+  providerCalls ProviderCall[]
+
+  // At most one 'running' row: partial unique index sync_run_single_running, raw SQL in migration 20261019215854_init.
+  @@map("sync_run")
+}
+
+model SyncCheckpoint {
+  id           Int              @id @default(autoincrement())
+  syncRunId    Int              @map("sync_run_id")
+  unit         String
+  status       CheckpointStatus
+  attempts     Int              @default(0)
+  errorMessage String?          @map("error_message")
+  updatedAt    DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  syncRun SyncRun @relation(fields: [syncRunId], references: [id])
+
+  @@unique([syncRunId, unit])
+  @@map("sync_checkpoint")
+}
+
+model ProviderCall {
+  id         BigInt      @id @default(autoincrement())
+  sourceId   Int         @map("source_id")
+  syncRunId  Int?        @map("sync_run_id")
+  calledAt   DateTime    @default(now()) @map("called_at") @db.Timestamptz(6)
+  endpoint   String
+  statusCode Int?        @map("status_code")
+  durationMs Int?        @map("duration_ms")
+  outcome    CallOutcome
+
+  source  DataSource @relation(fields: [sourceId], references: [id])
+  syncRun SyncRun?   @relation(fields: [syncRunId], references: [id])
+
+  @@index([sourceId, calledAt])
+  @@map("provider_call")
+}
