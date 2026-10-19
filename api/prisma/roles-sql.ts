@@ -50,3 +50,17 @@ export function assertSeparateRoles(reader: ConnectionParts, owner: ConnectionPa
     throw new Error('DATABASE_URL and DATABASE_URL_SYNC must point to the same database');
   }
 }
+
+export interface RoleAttributes {
+  rolsuper: boolean;
+  rolcreaterole: boolean;
+  rolcreatedb: boolean;
+  rolreplication: boolean;
+  rolbypassrls: boolean;
+}
+
+export function assertUnprivilegedReader(user: string, attributes: RoleAttributes): void {
+  if (Object.values(attributes).some(Boolean)) {
+    throw new Error(`DATABASE_URL user "${user}" is privileged; use a dedicated read-only role`);
+  }
+}

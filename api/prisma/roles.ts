@@ -1,7 +1,13 @@
 import pg from 'pg';
 import { loadDbEnv } from '../src/config/db-env.js';
 import { createLogger } from '../src/lib/logger.js';
-import { assertSeparateRoles, buildReaderRoleSql, parseConnectionUrl } from './roles-sql.js';
+import {
+  assertSeparateRoles,
+  assertUnprivilegedReader,
+  buildReaderRoleSql,
+  parseConnectionUrl,
+  type RoleAttributes,
+} from './roles-sql.js';
 
 const env = loadDbEnv();
 const logger = createLogger('info');
@@ -12,13 +18,20 @@ assertSeparateRoles(reader, owner);
 const client = new pg.Client({ connectionString: env.DATABASE_URL_SYNC });
 await client.connect();
 try {
-  const existing = await client.query('SELECT 1 FROM pg_roles WHERE rolname = $1', [reader.user]);
+  const existing = await client.query<RoleAttributes>(
+    'SELECT rolsuper, rolcreaterole, rolcreatedb, rolreplication, rolbypassrls FROM pg_roles WHERE rolname = $1',
+    [reader.user],
+  );
+  const attributes = existing.rows[0];
+  if (attributes) {
+    assertUnprivilegedReader(reader.user, attributes);
+  }
   const statements = buildReaderRoleSql({
     owner: owner.user,
     reader: reader.user,
     password: reader.password,
     database: reader.database,
-    readerExists: existing.rowCount === 1,
+    readerExists: attributes !== undefined,
   });
   await client.query('BEGIN');
   for (const statement of statements) {

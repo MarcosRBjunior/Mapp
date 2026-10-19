@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertSeparateRoles,
+  assertUnprivilegedReader,
   buildReaderRoleSql,
   parseConnectionUrl,
 } from '../../../prisma/roles-sql.js';
@@ -70,5 +71,31 @@ describe('assertSeparateRoles', () => {
     expect(() =>
       assertSeparateRoles({ user: 'mapp_api', password: 'y', database: 'other' }, owner),
     ).toThrow(/same database/);
+  });
+});
+
+describe('assertUnprivilegedReader', () => {
+  const plain = {
+    rolsuper: false,
+    rolcreaterole: false,
+    rolcreatedb: false,
+    rolreplication: false,
+    rolbypassrls: false,
+  };
+
+  it('accepts a role without elevated attributes', () => {
+    expect(() => assertUnprivilegedReader('mapp_api', plain)).not.toThrow();
+  });
+
+  it('rejects a superuser', () => {
+    expect(() => assertUnprivilegedReader('postgres', { ...plain, rolsuper: true })).toThrow(
+      /"postgres" is privileged/,
+    );
+  });
+
+  it('rejects a role that can create roles', () => {
+    expect(() => assertUnprivilegedReader('admin', { ...plain, rolcreaterole: true })).toThrow(
+      /"admin" is privileged/,
+    );
   });
 });
