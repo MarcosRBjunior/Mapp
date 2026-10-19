@@ -18,6 +18,6 @@ O Mapp tem um front (`web`) e um back (`api`) em TypeScript, mantidos por uma pe
 ## Consequências
 
 - Uma regra de lint muda num lugar só e vale para os dois apps.
-- Os scripts da raiz (`lint`, `typecheck`, `test`, `build`) repassam para os workspaces.
+- `typecheck`, `test` e `build` repassam para os workspaces; `lint` roda uma vez na raiz.
 - Atualizar para o TypeScript 7 exige um novo ADR quando o typescript-eslint aceitar a versão.
 - Se surgir um terceiro app ou build lento, reavaliar uma ferramenta de orquestração.
