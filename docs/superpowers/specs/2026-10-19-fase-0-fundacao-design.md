@@ -2,7 +2,7 @@
 
 - Data: 2026-10-19
 - Fase: F0 do roteiro do `CLAUDE.md`
-- Status: aprovado em conversa; aguardando revisão do arquivo
+- Status: aprovado e implementado na branch `chore/foundation` (PR #1)
 
 ## Objetivo
 
@@ -92,7 +92,7 @@ web/
 
 `docker-compose.yml` com um serviço `db`:
 
-- imagem `postgres:18-alpine`, porta do host `${POSTGRES_PORT:-5435}` → 5432 do container (a 5432 do host já é usada por outro projeto nesta máquina);
+- imagem `postgres:18-alpine`, porta publicada só em `127.0.0.1` (host `${POSTGRES_PORT:-5435}` → 5432 do container), para não expor o superusuário a rede local; a 5432 do host já é usada por outro projeto nesta máquina;
 - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` com padrão `mapp`, sobrescrevíveis pelo `.env` da raiz (documentado em `.env.example`; valores só locais);
 - volume nomeado montado em `/var/lib/postgresql` (caminho novo do Postgres 18);
 - healthcheck com `pg_isready`.
