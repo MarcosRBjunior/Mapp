@@ -8,11 +8,11 @@ Mapa dashboard de COVID-19: mapa-múndi clicável, 3 cards de estatística e 2 g
 ## Estado atual
 
 - F0 Fundação concluída em 2026-10-19 (PR #1): monorepo `api` + `web`, ESLint/Prettier, Vitest, Playwright, Postgres 18 no Docker (porta do host 5435), CI.
-- F1 Banco concluída em 2026-10-19 (PR `feat/database`): schema Prisma 7.10 + SQL bruto (CHECKs, view `global_daily_stat`), índice parcial nativo, usuários `mapp` (dono/sync) e `mapp_api` (leitura), seed de 202 entidades (198 países + 4 não geográficas) com aliases provisórios da `api_ninjas`, GeoJSON 1:110m, testes de integração no CI.
-- Pendências para a F2: confirmar os nomes da API Ninjas e a data final (D-02) com uma chamada real autorizada e gravar fixtures; adaptador `CovidProvider`; `DATA_PROVIDER` e `API_NINJAS_KEY` no env.
+- F1 Banco concluída em 2026-10-19 (PR #2): schema Prisma 7.10 + SQL bruto (CHECKs, view `global_daily_stat`), índice parcial nativo, usuários `mapp` (dono/sync) e `mapp_api` (leitura), seed de 202 entidades (198 países + 4 não geográficas) com aliases provisórios da `api_ninjas`, GeoJSON 1:110m, testes de integração no CI.
+- Pendências para a F2: confirmar os nomes da API Ninjas e a data final (D-02) com uma chamada real autorizada e gravar fixtures; adaptador `CovidProvider`; `DATA_PROVIDER` e `API_NINJAS_KEY` no env. Perguntas abertas (regra de negócio, perguntar): onde fica a curadoria de aliases (o `db:seed` regrava tudo como `mapped`); como recuperar um `sync_run` que ficou em `running` após crash; se o "mês" do orçamento é o calendário UTC ou 30 dias corridos.
 - Pendência para a F4: mostrar no `/sobre` as atribuições da API Ninjas, da JHU CSSE (CC BY 4.0) e do Natural Earth (domínio público).
 - TypeScript fixado em `~6.0.3` até o typescript-eslint suportar o TS 7 (ADR 0001).
-- Adiado com fase-alvo: graceful shutdown no SIGTERM (F3); handler final de erro sem stack trace e `NODE_ENV=production` garantido no deploy (F3/F9); reporter/trace do Playwright e E2E no CI, actions fixadas por SHA + Dependabot (F8).
+- Adiado com fase-alvo: converter `bigint` (`population`, somas da view) para número na API e graceful shutdown no SIGTERM (F3); handler final de erro sem stack trace e `NODE_ENV=production` garantido no deploy (F3/F9); reporter/trace do Playwright e E2E no CI, actions fixadas por SHA + Dependabot (F8); `postinstall` depende do `prisma` (devDependency), seed em lote e `ALTER ROLE ... PASSWORD` sem expor a senha em log de servidor gerenciado (F9).
 - Ao terminar cada fase, atualize esta seção com a fase concluída e o que ficou pendente.
 
 ## Como trabalhar
@@ -74,6 +74,8 @@ npm run lint && npm run typecheck && npm test
 npm run test:e2e -w web
 npm run db:migrate -w api
 npm run db:seed -w api
+npm run db:roles -w api                   # cria/atualiza o usuário leitor (já roda no db:migrate)
+npm run test:integration -w api           # recria o banco mapp_test e roda os testes com Postgres
 npm run sync -w api -- --mode=snapshot    # 2 chamadas: só a data de referência
 npm run sync -w api -- --mode=full        # série histórica, retomável
 ```

@@ -18,3 +18,4 @@ O `CLAUDE.md` exige que a api HTTP só leia (`DATABASE_URL`) e que o job escreva
 - Só duas variáveis de banco, como no `CLAUDE.md`.
 - O job tem poder de DDL. Aceito para um projeto de portfólio; se precisar de menor privilégio, separar um dono (`DATABASE_URL_MIGRATE`) e dar ao sync só DML + `MAINTAIN` na view.
 - Em hospedagem (F9), o usuário do `DATABASE_URL_SYNC` precisa de `CREATEROLE` para o `db:roles`, ou o leitor é criado pelo painel do provedor.
+- O `db:roles` envia a senha do leitor em `ALTER ROLE ... PASSWORD` a cada `db:migrate`; em Postgres gerenciado com `log_statement=ddl`, ela pode ir para o log do servidor. Rever na F9 (por exemplo, só alterar a senha quando o login do leitor falhar).
