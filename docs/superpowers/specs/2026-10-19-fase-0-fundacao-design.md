@@ -21,6 +21,7 @@ Critério de saída:
 | --- | --- |
 | Ferramental | Compartilhado na raiz (ESLint, Prettier, `tsconfig.base.json`); cada workspace estende a base. Sem Turborepo/Nx. |
 | Node | `.nvmrc` = `24` (LTS ativo); `engines.node >=24`. |
+| TypeScript | `~6.0.3` em todo o repo: o `typescript-eslint` 8.72 exige `typescript <6.1.0` (o TS 7 nativo ainda não é suportado). |
 | Módulos | ESM em todo o repositório (`"type": "module"`). |
 | Scripts | Só os que já funcionam: `dev`, `lint`, `typecheck`, `test`, `build`, `format` e `test:e2e -w web`. `db:migrate`/`db:seed` entram na F1 e `sync` na F2, com os nomes do `CLAUDE.md`. |
 | Git | Commit inicial na `main` (este spec, `CLAUDE.md`, `.gitignore`); trabalho na branch `chore/foundation`, um commit por tarefa; PR para a `main`; merge só com autorização. |
@@ -41,8 +42,8 @@ Fora do escopo da F0 (YAGNI): README (F9), helmet/CORS/pino-http/formato de erro
   - bloco `api/**` e arquivos de config: globals de Node;
   - ignora `**/dist`, `**/coverage`, `web/playwright-report`, `web/test-results`.
 - `tsconfig.base.json`: `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `isolatedModules`, `verbatimModuleSyntax`, `skipLibCheck`, `target ES2023`.
-- `.editorconfig` (UTF-8, LF, 2 espaços), `.prettierrc.json`.
-- `.prettierignore`: `CLAUDE.md` (mantido à mão pelo dono do projeto), `package-lock.json`, `**/dist`, `**/coverage` e artefatos do Playwright.
+- `.editorconfig` (UTF-8, LF, 2 espaços), `.prettierrc.json` (`singleQuote`, `printWidth` 100).
+- `.prettierignore`: `CLAUDE.md` (mantido à mão pelo dono do projeto), `docs/superpowers` (artefatos de processo), `package-lock.json`, `**/dist`, `**/coverage` e artefatos do Playwright.
 - `.gitignore`: `node_modules`, `dist`, `coverage`, `.env`, `.env.*` com exceção `!.env.example`, artefatos do Playwright, logs.
 
 ## api
@@ -75,8 +76,8 @@ React 19 + Vite + TypeScript, scaffold enxuto.
 web/
   index.html
   src/main.tsx
-  src/app/App.tsx             # placeholder: título "Mapp" + subtítulo
-  src/app/App.test.tsx
+  src/app/app.tsx             # componente App: título "Mapp" + subtítulo
+  src/app/app.test.tsx
   src/test/setup.ts           # jest-dom
   tests/e2e/smoke.spec.ts
   vite.config.ts  playwright.config.ts  tsconfig*.json  package.json
@@ -91,8 +92,8 @@ web/
 
 `docker-compose.yml` com um serviço `db`:
 
-- imagem `postgres:18-alpine`, porta `5432:5432`;
-- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` com padrão `mapp`, sobrescrevíveis por variável de ambiente (valores só locais);
+- imagem `postgres:18-alpine`, porta do host `${POSTGRES_PORT:-5435}` → 5432 do container (a 5432 do host já é usada por outro projeto nesta máquina);
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` com padrão `mapp`, sobrescrevíveis pelo `.env` da raiz (documentado em `.env.example`; valores só locais);
 - volume nomeado montado em `/var/lib/postgresql` (caminho novo do Postgres 18);
 - healthcheck com `pg_isready`.
 
