@@ -166,7 +166,7 @@ Integração (`npm run test:integration -w api`, Postgres real): banco `mapp_tes
 - 202 países (198 `country` com coordenadas, 4 `non_geographic`), 1 `data_source`, 202 aliases `mapped`;
 - rodar o seed de novo não muda as contagens;
 - `total < 0` e alias `mapped` sem país são recusados pelos CHECKs;
-- um segundo `sync_run` `running` é recusado (P2002);
+- um segundo `sync_run` `running` é recusado (violação do índice `sync_run_single_running`);
 - dados de `daily_stat` para dois países e uma não geográfica, `REFRESH MATERIALIZED VIEW CONCURRENTLY` → `global_daily_stat` com a soma dos três e `country_count = 3`;
 - `mapp_api` consegue `SELECT` em `country` e recebe erro de permissão em `INSERT`.
 
