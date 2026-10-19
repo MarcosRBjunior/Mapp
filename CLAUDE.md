@@ -7,10 +7,12 @@ Mapa dashboard de COVID-19: mapa-múndi clicável, 3 cards de estatística e 2 g
 
 ## Estado atual
 
-- F0 Fundação concluída em 2026-10-19 (PR `chore/foundation`): monorepo `api` + `web`, ESLint/Prettier, Vitest, Playwright, Postgres 18 no Docker (porta do host 5435), CI.
-- Pendências para a F1: `db:migrate`/`db:seed` (Prisma), usuários de banco de leitura e de sync, `DATABASE_URL`/`DATABASE_URL_SYNC` no env da api.
+- F0 Fundação concluída em 2026-10-19 (PR #1): monorepo `api` + `web`, ESLint/Prettier, Vitest, Playwright, Postgres 18 no Docker (porta do host 5435), CI.
+- F1 Banco concluída em 2026-10-19 (PR `feat/database`): schema Prisma 7.10 + SQL bruto (CHECKs, view `global_daily_stat`), índice parcial nativo, usuários `mapp` (dono/sync) e `mapp_api` (leitura), seed de 202 entidades (198 países + 4 não geográficas) com aliases provisórios da `api_ninjas`, GeoJSON 1:110m, testes de integração no CI.
+- Pendências para a F2: confirmar os nomes da API Ninjas e a data final (D-02) com uma chamada real autorizada e gravar fixtures; adaptador `CovidProvider`; `DATA_PROVIDER` e `API_NINJAS_KEY` no env.
+- Pendência para a F4: mostrar no `/sobre` as atribuições da API Ninjas, da JHU CSSE (CC BY 4.0) e do Natural Earth (domínio público).
 - TypeScript fixado em `~6.0.3` até o typescript-eslint suportar o TS 7 (ADR 0001).
-- Adiado com fase-alvo: cobrir `api/prisma`, `prisma.config.ts` e `scripts/` em tsconfig para o ESLint (F1); Postgres no CI para testes de integração (F1); graceful shutdown no SIGTERM (F3); handler final de erro sem stack trace e `NODE_ENV=production` garantido no deploy (F3/F9); reporter/trace do Playwright e E2E no CI, actions fixadas por SHA + Dependabot (F8).
+- Adiado com fase-alvo: graceful shutdown no SIGTERM (F3); handler final de erro sem stack trace e `NODE_ENV=production` garantido no deploy (F3/F9); reporter/trace do Playwright e E2E no CI, actions fixadas por SHA + Dependabot (F8).
 - Ao terminar cada fase, atualize esta seção com a fase concluída e o que ficou pendente.
 
 ## Como trabalhar
@@ -79,7 +81,7 @@ npm run sync -w api -- --mode=full        # série histórica, retomável
 ## Dados e fonte externa
 
 - Métricas: `cases` e `deaths`, cada uma com `total` (acumulado) e `new` (do dia). Granularidade: país.
-- A fonte ainda não foi decidida (D-01). Implemente pela interface `CovidProvider` e selecione por `DATA_PROVIDER` (`api_ninjas` | `jhu_csv` | `apify`).
+- Fonte decidida: API Ninjas (D-01, ADR 0002). Implemente pela interface `CovidProvider` e selecione por `DATA_PROVIDER` (`api_ninjas` | `jhu_csv` | `apify`).
 - API Ninjas: `GET https://api.api-ninjas.com/v1/covid19`, header `X-Api-Key`. `country=` devolve a série; `date=YYYY-MM-DD` devolve um dia de todos os países; `type=cases|deaths`. Plano gratuito: 3.000 chamadas/mês, 100/hora, exige atribuição e **não permite cache nem armazenamento**.
 - Apify (agregador COVID): só 45 países, parado em 21/11/2022, mistura `null`, `"NA"` e `0`. Só como fonte secundária.
 - JHU CSSE (CSV no GitHub): licença CC BY 4.0, coleta encerrada em 10/03/2023. Alternativa que permite armazenar.
@@ -174,10 +176,10 @@ Adotadas (mudo se pedir):
 
 - Express + Vite separados, não Next.js · PostgreSQL · React Leaflet com tiles OSM ou CARTO configuráveis · Recharts · TypeScript
 - Marcadores (coroplético fica para depois) · só pt-BR · só nível país · sync por CLI + workflow, sem endpoints admin
+- D-01 fonte de dados: API Ninjas (ADR 0002) · dois usuários de banco, o do sync é dono do schema (ADR 0003)
 
 Em aberto — pergunte antes de implementar o que depende delas:
 
-- D-01 Fonte de dados (bloqueia a Fase 2): API Ninjas, CSV da JHU ou Apify. Até decidir, trabalhe com fixtures.
 - D-02 Data final da série: confirmar com uma chamada real na Fase 2, só com minha autorização.
 - D-03 Card "Por tempo" (sugestão: novos no período escolhido).
 - D-04 Segundo gráfico (sugestão: novos por dia com média de 7 dias).
