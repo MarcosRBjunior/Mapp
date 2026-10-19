@@ -12,7 +12,8 @@
     "test": "vitest run",
     "db:generate": "prisma generate",
     "db:roles": "tsx --env-file-if-exists=.env prisma/roles.ts",
-    "db:migrate": "prisma migrate deploy && npm run db:roles"
+    "db:migrate": "prisma migrate deploy && npm run db:roles",
+    "seed:build": "tsx prisma/seed/build-countries.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
