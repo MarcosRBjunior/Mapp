@@ -1,0 +1,9 @@
+CLAUDE.md
+docs/superpowers
+.superpowers
+package-lock.json
+**/dist
+**/coverage
+web/playwright-report
+web/test-results
+web/blob-report
