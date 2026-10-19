@@ -13,6 +13,7 @@ export default defineConfig([
     'web/playwright-report',
     'web/test-results',
     'web/blob-report',
+    '.superpowers',
   ]),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
