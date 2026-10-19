@@ -46,6 +46,12 @@ describe('migrate + seed from an empty database', () => {
 });
 
 describe('constraints', () => {
+  it('refuses to delete a country that still has aliases', async () => {
+    await expect(owner.query("DELETE FROM country WHERE code = 'ATA'")).rejects.toThrow(
+      /country_alias_country_code_fkey/,
+    );
+  });
+
   it('rejects a negative total', async () => {
     await expect(
       owner.query(

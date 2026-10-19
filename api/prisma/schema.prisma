@@ -101,7 +101,7 @@ model CountryAlias {
   status      AliasStatus
 
   source  DataSource @relation(fields: [sourceId], references: [id])
-  country Country?   @relation(fields: [countryCode], references: [code])
+  country Country?   @relation(fields: [countryCode], references: [code], onDelete: Restrict)
 
   @@id([sourceId, sourceName])
   @@map("country_alias")
