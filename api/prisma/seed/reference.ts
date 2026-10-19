@@ -10,17 +10,17 @@ export interface CountrySeed {
   sourceName: string;
 }
 
-const NON_GEOGRAPHIC: Readonly<Record<string, { code: string; name: string }>> = {
-  'Diamond Princess': { code: 'XDP', name: 'Navio Diamond Princess' },
-  'MS Zaandam': { code: 'XMZ', name: 'Navio MS Zaandam' },
-  'Summer Olympics 2020': { code: 'XSO', name: 'Jogos Olímpicos de Verão 2020' },
-  'Winter Olympics 2022': { code: 'XWO', name: 'Jogos Olímpicos de Inverno 2022' },
-};
+const NON_GEOGRAPHIC: ReadonlyMap<string, { code: string; name: string }> = new Map([
+  ['Diamond Princess', { code: 'XDP', name: 'Navio Diamond Princess' }],
+  ['MS Zaandam', { code: 'XMZ', name: 'Navio MS Zaandam' }],
+  ['Summer Olympics 2020', { code: 'XSO', name: 'Jogos Olímpicos de Verão 2020' }],
+  ['Winter Olympics 2022', { code: 'XWO', name: 'Jogos Olímpicos de Inverno 2022' }],
+]);
 
-const NAME_OVERRIDES: Readonly<Record<string, string>> = {
-  CD: 'República Democrática do Congo',
-  MM: 'Mianmar',
-};
+const NAME_OVERRIDES: ReadonlyMap<string, string> = new Map([
+  ['CD', 'República Democrática do Congo'],
+  ['MM', 'Mianmar'],
+]);
 
 const regionNames = new Intl.DisplayNames(['pt-BR'], { type: 'region', fallback: 'none' });
 
@@ -83,8 +83,9 @@ function cell(row: string[], index: number): string {
 }
 
 function coordinate(value: string, limit: number, sourceName: string): number {
-  const parsed = Number(value);
-  if (value === '' || !Number.isFinite(parsed) || Math.abs(parsed) > limit) {
+  const trimmed = value.trim();
+  const parsed = Number(trimmed);
+  if (trimmed === '' || !Number.isFinite(parsed) || Math.abs(parsed) > limit) {
     throw new Error(`Invalid coordinate "${value}" for ${sourceName}`);
   }
   return parsed;
@@ -106,7 +107,7 @@ function toSeed(row: string[], columns: Columns): CountrySeed {
   const iso3 = cell(row, columns.iso3);
 
   if (iso3 === '') {
-    const entity = NON_GEOGRAPHIC[sourceName];
+    const entity = NON_GEOGRAPHIC.get(sourceName);
     if (!entity) {
       throw new Error(`Row without iso3 and no non-geographic mapping: ${sourceName}`);
     }
@@ -121,7 +122,7 @@ function toSeed(row: string[], columns: Columns): CountrySeed {
   }
 
   const iso2 = cell(row, columns.iso2);
-  const name = NAME_OVERRIDES[iso2] ?? regionNames.of(iso2);
+  const name = NAME_OVERRIDES.get(iso2) ?? regionNames.of(iso2);
   if (!name) {
     throw new Error(`No pt-BR name for ${iso2} (${sourceName})`);
   }

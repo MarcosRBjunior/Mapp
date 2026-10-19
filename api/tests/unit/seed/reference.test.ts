@@ -34,6 +34,18 @@ describe('parseCsv', () => {
 });
 
 describe('buildCountrySeeds', () => {
+  it('does not treat inherited object keys as non-geographic entities', () => {
+    expect(() => buildCountrySeeds(csv('1,,,,,,,constructor,,,constructor,'))).toThrow(
+      /constructor/,
+    );
+  });
+
+  it('rejects a blank coordinate', () => {
+    expect(() =>
+      buildCountrySeeds(csv('76,BR,BRA,76,,,,Brazil, ,-51.9253,Brazil,212559409')),
+    ).toThrow(/Invalid coordinate/);
+  });
+
   it('maps a country-level row', () => {
     expect(buildCountrySeeds(csv(BRAZIL))).toEqual([
       {
