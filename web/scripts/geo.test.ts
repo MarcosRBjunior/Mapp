@@ -26,15 +26,21 @@ describe('toCountryGeo', () => {
           ISO_A3_EH: 'BRA',
           ADM0_A3: 'BRA',
           NAME: 'Brazil',
+          NAME_PT: 'Brasil',
           POP_EST: 1,
         } as SourceProperties),
       ),
     ).toEqual({
       type: 'FeatureCollection',
       features: [
-        { type: 'Feature', properties: { iso3: 'BRA', name: 'Brazil' }, geometry: polygon },
+        { type: 'Feature', properties: { iso3: 'BRA', name: 'Brasil' }, geometry: polygon },
       ],
     });
+  });
+
+  it('falls back to NAME when NAME_PT is missing', () => {
+    const [feature] = toCountryGeo(source({ ISO_A3_EH: 'FJI', NAME: 'Fiji' })).features;
+    expect(feature?.properties.name).toBe('Fiji');
   });
 
   it('falls back to ADM0_A3 when ISO_A3_EH is -99', () => {
