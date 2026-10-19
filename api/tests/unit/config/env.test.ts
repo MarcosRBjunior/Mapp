@@ -6,11 +6,27 @@ describe('loadEnv', () => {
     expect(loadEnv({})).toEqual({ NODE_ENV: 'development', PORT: 3333, LOG_LEVEL: 'info' });
   });
 
+  it('treats empty values as missing', () => {
+    expect(loadEnv({ NODE_ENV: '', PORT: '', LOG_LEVEL: '' })).toEqual({
+      NODE_ENV: 'development',
+      PORT: 3333,
+      LOG_LEVEL: 'info',
+    });
+  });
+
+  it('accepts explicit non-default values', () => {
+    expect(loadEnv({ NODE_ENV: 'production', PORT: '8080', LOG_LEVEL: 'debug' })).toEqual({
+      NODE_ENV: 'production',
+      PORT: 8080,
+      LOG_LEVEL: 'debug',
+    });
+  });
+
   it('coerces PORT to a number', () => {
     expect(loadEnv({ PORT: '4000' }).PORT).toBe(4000);
   });
 
-  it.each(['abc', '0', '70000', '3.5'])('rejects PORT=%s', (port) => {
+  it.each(['abc', '0', '70000', '3.5', '0x1F', '1e3', ' 80'])('rejects PORT=%s', (port) => {
     expect(() => loadEnv({ PORT: port })).toThrow(/PORT/);
   });
 
