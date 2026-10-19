@@ -10,7 +10,9 @@
     "start": "node --enable-source-maps dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:roles": "tsx --env-file-if-exists=.env prisma/roles.ts",
+    "db:migrate": "prisma migrate deploy && npm run db:roles"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
