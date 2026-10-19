@@ -114,7 +114,7 @@ model DailyStat {
   sourceId    Int      @map("source_id")
   total       Int
   newValue    Int      @map("new_value")
-  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   country Country    @relation(fields: [countryCode], references: [code])
   source  DataSource @relation(fields: [sourceId], references: [id])
@@ -139,6 +139,7 @@ model SyncRun {
   checkpoints   SyncCheckpoint[]
   providerCalls ProviderCall[]
 
+  // Unique only while status = 'running' (partial index). For other statuses use findFirst/updateMany, never findUnique/update by status.
   @@unique([status], map: "sync_run_single_running", where: raw("status = 'running'"))
   @@map("sync_run")
 }
@@ -150,7 +151,7 @@ model SyncCheckpoint {
   status       CheckpointStatus
   attempts     Int              @default(0)
   errorMessage String?          @map("error_message")
-  updatedAt    DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
+  updatedAt    DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   syncRun SyncRun @relation(fields: [syncRunId], references: [id])
 
