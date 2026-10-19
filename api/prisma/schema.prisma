@@ -1,7 +1,6 @@
 generator client {
-  provider        = "prisma-client"
-  output          = "../src/generated/prisma"
-  previewFeatures = ["partialIndexes"]
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -139,8 +138,7 @@ model SyncRun {
   checkpoints   SyncCheckpoint[]
   providerCalls ProviderCall[]
 
-  // Unique only while status = 'running' (partial index). For other statuses use findFirst/updateMany, never findUnique/update by status.
-  @@unique([status], map: "sync_run_single_running", where: raw("status = 'running'"))
+  // At most one 'running' row: partial unique index sync_run_single_running, raw SQL in migration 20261019215854_init.
   @@map("sync_run")
 }
 
