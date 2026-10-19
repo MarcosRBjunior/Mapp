@@ -10,6 +10,7 @@
     "start": "node --enable-source-maps dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "db:generate": "prisma generate",
     "db:roles": "tsx --env-file-if-exists=.env prisma/roles.ts",
     "db:migrate": "prisma migrate deploy && npm run db:roles",
