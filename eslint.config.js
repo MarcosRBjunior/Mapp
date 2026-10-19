@@ -14,6 +14,7 @@ export default defineConfig([
     'web/test-results',
     'web/blob-report',
     '.superpowers',
+    'api/src/generated',
   ]),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,

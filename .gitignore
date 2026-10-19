@@ -5,6 +5,7 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+api/src/generated/
 
 # Playwright
 web/playwright-report/
