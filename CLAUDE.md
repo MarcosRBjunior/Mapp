@@ -7,7 +7,9 @@ Mapa dashboard de COVID-19: mapa-múndi clicável, 3 cards de estatística e 2 g
 
 ## Estado atual
 
-- Repositório vazio. Comece pela Fase 0 do roteiro (fim deste arquivo).
+- F0 Fundação concluída em 2026-10-19 (PR `chore/foundation`): monorepo `api` + `web`, ESLint/Prettier, Vitest, Playwright, Postgres 18 no Docker (porta do host 5435), CI.
+- Pendências para a F1: `db:migrate`/`db:seed` (Prisma), usuários de banco de leitura e de sync, `DATABASE_URL`/`DATABASE_URL_SYNC` no env da api.
+- TypeScript fixado em `~6.0.3` até o typescript-eslint suportar o TS 7 (ADR 0001).
 - Ao terminar cada fase, atualize esta seção com a fase concluída e o que ficou pendente.
 
 ## Como trabalhar
