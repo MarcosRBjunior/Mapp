@@ -6,12 +6,14 @@ function main(): void {
   const env = loadEnv();
   const logger = createLogger(env.LOG_LEVEL);
 
-  createApp().listen(env.PORT, (error) => {
-    if (error) {
-      logger.fatal({ err: error }, 'failed to start api');
-      process.exit(1);
-    }
+  const server = createApp().listen(env.PORT);
+
+  server.on('listening', () => {
     logger.info({ port: env.PORT }, 'api listening');
+  });
+  server.on('error', (error) => {
+    logger.fatal({ err: error }, 'api server error');
+    process.exit(1);
   });
 }
 
