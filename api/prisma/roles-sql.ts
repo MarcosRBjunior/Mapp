@@ -41,3 +41,12 @@ export function parseConnectionUrl(url: string): ConnectionParts {
   }
   return { user, password, database };
 }
+
+export function assertSeparateRoles(reader: ConnectionParts, owner: ConnectionParts): void {
+  if (reader.user === owner.user) {
+    throw new Error('DATABASE_URL must use a different user than DATABASE_URL_SYNC');
+  }
+  if (reader.database !== owner.database) {
+    throw new Error('DATABASE_URL and DATABASE_URL_SYNC must point to the same database');
+  }
+}

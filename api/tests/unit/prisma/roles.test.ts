@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildReaderRoleSql, parseConnectionUrl } from '../../../prisma/roles-sql.js';
+import {
+  assertSeparateRoles,
+  buildReaderRoleSql,
+  parseConnectionUrl,
+} from '../../../prisma/roles-sql.js';
 
 const base = { owner: 'mapp', reader: 'mapp_api', password: 'secret', database: 'mapp' };
 
@@ -44,5 +48,27 @@ describe('parseConnectionUrl', () => {
     expect(() => parseConnectionUrl('postgresql://mapp_api@127.0.0.1:5435/mapp')).toThrow(
       /user, password and database/,
     );
+  });
+});
+
+describe('assertSeparateRoles', () => {
+  const owner = { user: 'mapp', password: 'x', database: 'mapp' };
+
+  it('accepts a distinct reader on the same database', () => {
+    expect(() =>
+      assertSeparateRoles({ user: 'mapp_api', password: 'y', database: 'mapp' }, owner),
+    ).not.toThrow();
+  });
+
+  it('rejects a reader that uses the owner user', () => {
+    expect(() =>
+      assertSeparateRoles({ user: 'mapp', password: 'x', database: 'mapp' }, owner),
+    ).toThrow(/different user/);
+  });
+
+  it('rejects URLs that point to different databases', () => {
+    expect(() =>
+      assertSeparateRoles({ user: 'mapp_api', password: 'y', database: 'other' }, owner),
+    ).toThrow(/same database/);
   });
 });

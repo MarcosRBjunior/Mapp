@@ -1,12 +1,13 @@
 import pg from 'pg';
 import { loadDbEnv } from '../src/config/db-env.js';
 import { createLogger } from '../src/lib/logger.js';
-import { buildReaderRoleSql, parseConnectionUrl } from './roles-sql.js';
+import { assertSeparateRoles, buildReaderRoleSql, parseConnectionUrl } from './roles-sql.js';
 
 const env = loadDbEnv();
 const logger = createLogger('info');
 const reader = parseConnectionUrl(env.DATABASE_URL);
 const owner = parseConnectionUrl(env.DATABASE_URL_SYNC);
+assertSeparateRoles(reader, owner);
 
 const client = new pg.Client({ connectionString: env.DATABASE_URL_SYNC });
 await client.connect();
