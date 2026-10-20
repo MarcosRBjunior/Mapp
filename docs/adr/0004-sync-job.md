@@ -23,3 +23,4 @@ Uma chamada real autorizada (2026-10-19) confirmou que a série termina em `2023
 - Curar um alias exige um PR no `aliases.json` e um `db:seed`; o histórico fica no git.
 - Se a API Ninjas contar o mês por outro ciclo (por exemplo, a partir da data de cadastro), o limite mensal pode ser ultrapassado perto da virada. O risco é baixo: o modo full deve gastar cerca de 400 chamadas.
 - Os testes nunca chamam a fonte: o `fetch` global é bloqueado no Vitest e o job recebe um `fetch` injetado.
+- O lock é de sessão: `DATABASE_URL_SYNC` precisa ser uma conexão direta ou de sessão, não um pooler em modo transação.
