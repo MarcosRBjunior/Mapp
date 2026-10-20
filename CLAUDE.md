@@ -10,8 +10,6 @@ Mapa dashboard de COVID-19: mapa-múndi clicável, 3 cards de estatística e 2 g
 - F0 Fundação concluída em 2026-10-19 (PR #1): monorepo `api` + `web`, ESLint/Prettier, Vitest, Playwright, Postgres 18 no Docker (porta do host 5435), CI.
 - F1 Banco concluída em 2026-10-19 (PR #2): schema Prisma 7.10 + SQL bruto (CHECKs, view `global_daily_stat`), índice parcial nativo, usuários `mapp` (dono/sync) e `mapp_api` (leitura), seed de 202 entidades (198 países + 4 não geográficas) com aliases provisórios da `api_ninjas`, GeoJSON 1:110m, testes de integração no CI.
 - F2 Snapshot concluída em 2026-10-19 (PR #3): provider `CovidProvider` da API Ninjas, `CallGate` (orçamento 90/h e mês calendário UTC, timeout de 10 s, 3 tentativas), soma de regiões (RN-02), modo snapshot com lock advisory e recuperação de run órfão, curadoria de aliases em `api/prisma/seed/aliases.json` (ADR 0004). Fixtures recortadas da chamada real em `api/tests/fixtures/api-ninjas` (o repositório é público e os termos proíbem armazenar os dados).
-- Pergunta aberta para a F3 (regra de negócio, perguntar): a RN-06 define a data de referência como a "última data com dados para todos os países", mas a fonte nunca traz o Saara Ocidental (ESH). Considerar só os países presentes na fonte?
-- Pergunta aberta para a F3/F6 (regra de negócio, perguntar): um run `partial` grava dados e atualiza a view, mas o `dataVersion` é o id do último run com `success`. O `dataVersion` (e o ETag) deve considerar runs `partial`?
 - Pendência para a F4: mostrar no `/sobre` as atribuições da API Ninjas, da JHU CSSE (CC BY 4.0) e do Natural Earth (domínio público). Pergunta aberta: os polígonos do GeoJSON sem país na base (GRL, PRI, FLK, NCL, ATF, SOL, CYN, TKM) herdam o país soberano ou ficam sem link?
 - TypeScript fixado em `~6.0.3` até o typescript-eslint suportar o TS 7 (ADR 0001).
 - Adiado com fase-alvo: validar `DATABASE_URL` no env da api HTTP, converter `bigint` (`population`, somas da view) para número na API e graceful shutdown no SIGTERM (F3); handler final de erro sem stack trace e `NODE_ENV=production` garantido no deploy (F3/F9); reporter/trace do Playwright e E2E no CI, actions fixadas por SHA + Dependabot (F8); `postinstall` depende do `prisma` (devDependency), seed em lote, `db:migrate` sem depender do `db:roles` em banco gerenciado e `ALTER ROLE ... PASSWORD` sem expor a senha em log (F9); mais da revisão da F2: política de 429 (hoje repete após 1 s e 2 s; avaliar respeitar `Retry-After` e tratar o 429 final como orçamento esgotado, o que muda regra, então perguntar), listener de `'error'` na conexão do lock que aborte o run (sem o lock o job não pode seguir gravando), `finishRun`/`failCheckpoint` no catch sem mascarar a causa original, `lock.release()` best-effort com aviso no log, mover a transação da unidade (`prisma.$transaction` em `run-snapshot.ts`) para um repositório, contar o orçamento numa query só com o `now()` do banco (hoje usa o relógio do processo), carregar os aliases uma vez por run, montar o `CallGate` antes do provider para remover o `gateRef` e retomada que considere checkpoints `pending` de runs órfãos (F5); `DATABASE_URL_SYNC` precisa ser conexão direta ou de sessão, pois o advisory lock de sessão não funciona atrás de pooler em modo transação (PgBouncer/Supavisor/Neon pooled) (F9).
@@ -102,7 +100,7 @@ npm run sync -w api -- --mode=full        # série histórica, retomável
 - RN-02 País dividido em regiões na fonte → somar as regiões por data.
 - RN-04 Participação % = país ÷ global na mesma data × 100, 1 casa decimal; global 0 ou ausente → `null` (UI mostra "—").
 - RN-05 Ranking por valor absoluto na data de referência; empate → ordem alfabética.
-- RN-06 Data de referência = última data com dados para todos os países; sempre exibida junto dos números.
+- RN-06 Data de referência = última data com dados para todos os países presentes na fonte (países da base que a fonte nunca traz, como o Saara Ocidental, não contam); sempre exibida junto dos números.
 - RN-07 `new` negativo (correção da fonte) é gravado como veio; o gráfico de novos usa média móvel de 7 dias e nunca desenha valor negativo.
 - RN-08 Entidades não geográficas (navios etc.) não viram marcador, mas entram no global e são listadas em `/sobre`.
 - RN-09 Upsert idempotente pela chave (país, métrica, data, fonte). Rodar duas vezes não duplica.
@@ -112,7 +110,7 @@ npm run sync -w api -- --mode=full        # série histórica, retomável
 ## Banco (PostgreSQL)
 
 - Tabelas: `data_source`; `country` (PK ISO3, `kind` = `country` | `non_geographic`, `lat`/`lng`); `country_alias` (nome da fonte → ISO3, status `mapped` | `pending` | `ignored`); `daily_stat` (PK `country_code + metric + stat_date + source_id`, `total` ≥ 0, `new_value` pode ser negativo); `sync_run` (no máximo 1 `running`, via índice único parcial); `sync_checkpoint`; `provider_call`.
-- View materializada `global_daily_stat`, atualizada com `REFRESH MATERIALIZED VIEW CONCURRENTLY` ao fim de cada sync. O `id` do último `sync_run` com sucesso é o `dataVersion`.
+- View materializada `global_daily_stat`, atualizada com `REFRESH MATERIALIZED VIEW CONCURRENTLY` ao fim de cada sync. O `id` do último `sync_run` com status `success` ou `partial` é o `dataVersion` (todo run que grava dados muda o ETag).
 - View e índice parcial entram como SQL bruto na migração do Prisma.
 - Dois usuários de banco: a api HTTP só lê (`DATABASE_URL`); o job escreve (`DATABASE_URL_SYNC`).
 - Nome da fonte sem mapeamento → grava `pending`, pula o país e fecha o sync como `partial`.
@@ -181,7 +179,7 @@ Adotadas (mudo se pedir):
 
 - Express + Vite separados, não Next.js · PostgreSQL · React Leaflet com tiles OSM ou CARTO configuráveis · Recharts · TypeScript
 - Marcadores (coroplético fica para depois) · só pt-BR · só nível país · sync por CLI + workflow, sem endpoints admin
-- D-01 fonte de dados: API Ninjas (ADR 0002) · dois usuários de banco, o do sync é dono do schema (ADR 0003) · D-02 a série termina em 2023-03-09 · job de sync: lock advisory, status, orçamento no mês UTC e aliases versionados (ADR 0004)
+- D-01 fonte de dados: API Ninjas (ADR 0002) · dois usuários de banco, o do sync é dono do schema (ADR 0003) · D-02 a série termina em 2023-03-09 · job de sync: lock advisory, status, orçamento no mês UTC e aliases versionados (ADR 0004) · `dataVersion` conta runs `success` e `partial`
 
 Em aberto — pergunte antes de implementar o que depende delas:
 
