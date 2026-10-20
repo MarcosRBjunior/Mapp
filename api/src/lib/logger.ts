@@ -8,6 +8,8 @@ const REDACT_PATHS = [
   '*.API_NINJAS_KEY',
   'headers["x-api-key"]',
   '*.headers["x-api-key"]',
+  'headers["X-Api-Key"]',
+  '*.headers["X-Api-Key"]',
 ];
 
 export function createLogger(level: LogLevel, destination?: DestinationStream): Logger {

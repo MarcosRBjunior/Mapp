@@ -22,4 +22,21 @@ describe('createLogger', () => {
     expect(output).not.toMatch(/secret-/);
     expect(output).toContain('[Redacted]');
   });
+
+  it('redacts the header casing the provider sends', () => {
+    const lines: string[] = [];
+    const logger = createLogger('info', {
+      write: (line: string) => {
+        lines.push(line);
+      },
+    });
+    logger.info(
+      {
+        headers: { 'X-Api-Key': 'secret-5' },
+        init: { headers: { 'X-Api-Key': 'secret-6' } },
+      },
+      'call',
+    );
+    expect(lines.join('')).not.toMatch(/secret-/);
+  });
 });
