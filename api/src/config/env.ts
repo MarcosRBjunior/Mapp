@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import { postgresUrl } from './db-env.js';
 
 export const logLevels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'] as const;
+export const dataProviders = ['api_ninjas', 'jhu_csv', 'apify'] as const;
 
 export const emptyAsUndefined = (value: unknown): unknown => (value === '' ? undefined : value);
 
@@ -19,9 +21,15 @@ const envSchema = z.object({
       .default(3333),
   ),
   LOG_LEVEL: z.preprocess(emptyAsUndefined, z.enum(logLevels).default('info')),
+  DATABASE_URL: postgresUrl,
+  DATA_PROVIDER: z.preprocess(emptyAsUndefined, z.enum(dataProviders).default('api_ninjas')),
+  WEB_ORIGIN: z
+    .string()
+    .regex(/^https?:\/\/[^/\s]+$/, 'must be an http(s) origin without a path or trailing slash'),
 });
 
 export type LogLevel = (typeof logLevels)[number];
+export type DataProvider = (typeof dataProviders)[number];
 export type Env = z.infer<typeof envSchema>;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {

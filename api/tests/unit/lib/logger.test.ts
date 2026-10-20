@@ -39,4 +39,23 @@ describe('createLogger', () => {
     );
     expect(lines.join('')).not.toMatch(/secret-/);
   });
+
+  it('redacts authorization and cookie headers of requests and responses', () => {
+    const lines: string[] = [];
+    const logger = createLogger('info', {
+      write: (line: string) => {
+        lines.push(line);
+      },
+    });
+    logger.info(
+      {
+        req: { headers: { authorization: 'Bearer secret', cookie: 'sid=secret' } },
+        res: { headers: { 'set-cookie': 'sid=secret' } },
+      },
+      'request',
+    );
+    const output = lines.join('');
+    expect(output).not.toContain('secret');
+    expect(output).toContain('[Redacted]');
+  });
 });
