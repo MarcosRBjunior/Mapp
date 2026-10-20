@@ -2,7 +2,7 @@
 
 - Data: 2026-10-20
 - Fase: F3 do roteiro do `CLAUDE.md`
-- Status: aprovado em conversa; aguardando revisão do arquivo
+- Status: aprovado
 - Branch: `feat/api-n1`
 
 ## Objetivo
