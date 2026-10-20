@@ -158,6 +158,40 @@ describe('runSync in snapshot mode', () => {
     ]);
   });
 
+  it('fails when no source name maps to a country', async () => {
+    const source = fakeSource((metric) => ({
+      status: 200,
+      body: JSON.stringify([{ country: 'Atlantis', region: '', [metric]: { total: 5, new: 1 } }]),
+    }));
+
+    const result = await runSync(deps(source.fetch));
+
+    expect(result).toMatchObject({ status: 'failed', pendingNames: ['Atlantis'] });
+    expect(await rows('SELECT 1 FROM daily_stat')).toEqual([]);
+    expect(await rows("SELECT status FROM country_alias WHERE source_name = 'Atlantis'")).toEqual([
+      { status: 'pending' },
+    ]);
+  });
+
+  it('closes the run as failed and frees the lock when the snapshot crashes', async () => {
+    const crashing: RunSyncDeps = {
+      ...deps(fakeSource().fetch),
+      createProvider: () => ({
+        sourceCode: 'api_ninjas',
+        finalDate: '2023-03-09',
+        fetchDay: () => Promise.reject(new Error('boom')),
+      }),
+    };
+
+    await expect(runSync(crashing)).rejects.toThrow('boom');
+    expect(await rows('SELECT status, error FROM sync_run')).toEqual([
+      { status: 'failed', error: 'boom' },
+    ]);
+
+    const next = await runSync(deps(fakeSource().fetch));
+    expect(next.status).toBe('success');
+  });
+
   it('keeps the cases when the deaths payload is invalid', async () => {
     const source = fakeSource((metric) => ({
       status: 200,
