@@ -104,7 +104,9 @@ export async function runSnapshot(deps: SnapshotDeps): Promise<SyncResult> {
         for (const name of day.pendingNames) {
           pending.add(name);
         }
-        unitsWritten += 1;
+        if (day.stats.length > 0) {
+          unitsWritten += 1;
+        }
         logger.info(
           {
             unit,
