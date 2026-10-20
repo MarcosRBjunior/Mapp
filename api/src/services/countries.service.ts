@@ -64,11 +64,11 @@ export function createCountriesService(
     },
 
     async getCountry(code, date) {
-      const resolved = await dataState.resolveDate(date);
       const country = await repo.findCountry(code);
       if (!country || country.kind !== 'country') {
         throw new AppError('COUNTRY_NOT_FOUND', 404, `country ${code} not found`, { code });
       }
+      const resolved = await dataState.resolveDate(date);
 
       const { sourceId } = resolved.state;
       const [dayStats, globalRows] = await Promise.all([

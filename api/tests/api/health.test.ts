@@ -47,7 +47,7 @@ describe('GET /ready', () => {
     expect(response.status).toBe(503);
     expect((response.body as ErrorBody).error).toMatchObject({
       code: 'DATA_NOT_READY',
-      message: 'database is not reachable',
+      message: 'data is not available',
     });
   });
 });

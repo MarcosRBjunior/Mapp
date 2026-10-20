@@ -13,6 +13,8 @@ export function createHttpLogger(logger: Logger): RequestHandler {
       return id;
     },
     customLogLevel: (_req, res, error) => {
+      // 503 is the expected "no data yet" state, not an incident.
+      if (res.statusCode === 503) return 'warn';
       if (error || res.statusCode >= 500) return 'error';
       return res.statusCode >= 400 ? 'warn' : 'info';
     },

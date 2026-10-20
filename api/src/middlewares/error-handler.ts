@@ -24,12 +24,18 @@ export function toAppError(error: unknown): AppError {
 }
 
 // The single final handler: same JSON shape for every error, never a stack trace.
-// Express only treats a 4-parameter function as an error handler, so `_next` stays.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const errorHandler: ErrorRequestHandler = (error: unknown, req, res, _next) => {
+// `next` is needed twice: Express only treats a 4-parameter function as an error
+// handler, and once headers are sent only Express can close the connection.
+export const errorHandler: ErrorRequestHandler = (error: unknown, req, res, next) => {
   const appError = toAppError(error);
-  if (appError.httpStatus >= 500) {
+  if (appError.code === 'INTERNAL_ERROR') {
     req.log.error({ err: error }, 'request failed');
+  } else if (appError.code === 'DATA_NOT_READY') {
+    req.log.warn({ err: error }, 'data not ready');
+  }
+  if (res.headersSent) {
+    next(error);
+    return;
   }
   res.status(appError.httpStatus).json({
     error: {

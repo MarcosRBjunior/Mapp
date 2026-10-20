@@ -14,7 +14,7 @@ export function createHealthRouter(dataState: DataStateService): Router {
     try {
       state = await dataState.current();
     } catch (error) {
-      throw new AppError('DATA_NOT_READY', 503, 'database is not reachable', null, {
+      throw new AppError('DATA_NOT_READY', 503, 'data is not available', null, {
         cause: error,
       });
     }

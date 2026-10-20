@@ -1,6 +1,7 @@
 import express from 'express';
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import type { Logger } from 'pino';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { AppError } from '../../../src/lib/app-error.js';
 import { createLogger } from '../../../src/lib/logger.js';
@@ -63,5 +64,68 @@ describe('errorHandler', () => {
     });
     expect(response.text).not.toContain('secret detail');
     expect(response.text).not.toContain('at ');
+  });
+});
+
+function capturingLogger(): { logger: Logger; lines: string[] } {
+  const lines: string[] = [];
+  const logger = createLogger('info', {
+    write: (line: string) => {
+      lines.push(line);
+    },
+  });
+  return { logger, lines };
+}
+
+describe('errorHandler logging', () => {
+  it('logs DATA_NOT_READY as a warning, not an error', async () => {
+    const { logger, lines } = capturingLogger();
+    const app = express();
+    app.use(createHttpLogger(logger));
+    app.get('/ready', () => {
+      throw new AppError('DATA_NOT_READY', 503, 'no data has been loaded yet');
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get('/ready');
+
+    expect(response.status).toBe(503);
+    const output = lines.join('');
+    expect(output).not.toContain('"level":50');
+    expect(output).toContain('"level":40');
+  });
+
+  it('logs an unexpected error at error level with the stack', async () => {
+    const { logger, lines } = capturingLogger();
+    const app = express();
+    app.use(createHttpLogger(logger));
+    app.get('/boom', () => {
+      throw new Error('boom');
+    });
+    app.use(errorHandler);
+
+    await request(app).get('/boom');
+
+    const output = lines.join('');
+    expect(output).toContain('"level":50');
+    expect(output).toContain('"stack"');
+  });
+});
+
+describe('errorHandler after headers were sent', () => {
+  it('delegates to next and writes nothing', () => {
+    const error = new Error('late');
+    const next = vi.fn();
+    const status = vi.fn();
+    const json = vi.fn();
+    const log = { error: vi.fn(), warn: vi.fn() };
+    const req = { id: 'r1', log };
+    const res = { headersSent: true, status, json };
+
+    errorHandler(error, req as never, res as never, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(status).not.toHaveBeenCalled();
+    expect(json).not.toHaveBeenCalled();
   });
 });

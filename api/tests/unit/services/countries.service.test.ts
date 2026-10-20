@@ -24,6 +24,22 @@ describe('countries service: list', () => {
 });
 
 describe('countries service: detail', () => {
+  it('rejects an unknown country before checking the date', async () => {
+    await expect(services().countries.getCountry('XYZ', '1900-01-01')).rejects.toMatchObject({
+      code: 'COUNTRY_NOT_FOUND',
+    });
+  });
+
+  it('rejects an unknown country before checking readiness', async () => {
+    const notReady = createServices(createFakeRepositories({ ready: false }), 'api_ninjas');
+    await expect(notReady.countries.getCountry('XYZ', undefined)).rejects.toMatchObject({
+      code: 'COUNTRY_NOT_FOUND',
+    });
+    await expect(notReady.countries.getCountry('BRA', undefined)).rejects.toMatchObject({
+      code: 'DATA_NOT_READY',
+    });
+  });
+
   it('returns values, share and rank (tie broken by name)', async () => {
     expect(await services().countries.getCountry('BRA', undefined)).toEqual({
       date: '2023-03-09',

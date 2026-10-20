@@ -83,6 +83,13 @@ describe('GET /api/v1/countries/:code', () => {
     });
   });
 
+  it('responds 404 for an unknown country even with a date', async () => {
+    const response = await request(createTestApp()).get('/api/v1/countries/XYZ?date=2020-01-01');
+
+    expect(response.status).toBe(404);
+    expect(errorResponseSchema.parse(response.body).error.code).toBe('COUNTRY_NOT_FOUND');
+  });
+
   it.each(['BR', 'BRAZ', 'B1A'])('responds 400 for code %s', async (code) => {
     const response = await request(createTestApp()).get(`/api/v1/countries/${code}`);
 
