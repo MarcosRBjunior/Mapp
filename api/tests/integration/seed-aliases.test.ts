@@ -38,13 +38,19 @@ describe('db:seed with aliases.json', () => {
   });
 
   it('restores a curated alias changed directly in the database', async () => {
-    await owner.query(
-      "UPDATE country_alias SET status = 'ignored', country_code = NULL WHERE source_name = 'Brazil'",
-    );
-    seed();
-    const brazil = await owner.query(
-      "SELECT status, country_code FROM country_alias WHERE source_name = 'Brazil'",
-    );
-    expect(brazil.rows).toEqual([{ status: 'mapped', country_code: 'BRA' }]);
+    try {
+      await owner.query(
+        "UPDATE country_alias SET status = 'ignored', country_code = NULL WHERE source_name = 'Brazil'",
+      );
+      seed();
+      const brazil = await owner.query(
+        "SELECT status, country_code FROM country_alias WHERE source_name = 'Brazil'",
+      );
+      expect(brazil.rows).toEqual([{ status: 'mapped', country_code: 'BRA' }]);
+    } finally {
+      await owner.query(
+        "UPDATE country_alias SET status = 'mapped', country_code = 'BRA' WHERE source_name = 'Brazil'",
+      );
+    }
   });
 });

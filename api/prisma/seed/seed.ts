@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { loadDbEnv } from '../../src/config/db-env.js';
-import { PrismaClient } from '../../src/generated/prisma/client.js';
 import { createLogger } from '../../src/lib/logger.js';
+import { createPrisma } from '../../src/lib/prisma.js';
 import { loadAliasSeeds } from './aliases.js';
 import type { CountrySeed } from './reference.js';
 
@@ -22,9 +21,7 @@ const countries = JSON.parse(
 ) as CountrySeed[];
 const aliases = loadAliasSeeds();
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: env.DATABASE_URL_SYNC }),
-});
+const prisma = createPrisma(env.DATABASE_URL_SYNC);
 
 try {
   await prisma.$transaction(

@@ -29,10 +29,13 @@ export async function failOrphanRuns(db: Db): Promise<number[]> {
   if (orphans.length === 0) {
     return [];
   }
-  await db.syncRun.updateMany({
-    where: { id: { in: orphans.map((orphan) => orphan.id) } },
-    data: { status: 'failed', finishedAt: new Date(), error: INTERRUPTED_ERROR },
-  });
+  for (const orphan of orphans) {
+    const callsUsed = await db.providerCall.count({ where: { syncRunId: orphan.id } });
+    await db.syncRun.update({
+      where: { id: orphan.id },
+      data: { status: 'failed', finishedAt: new Date(), error: INTERRUPTED_ERROR, callsUsed },
+    });
+  }
   return orphans.map((orphan) => orphan.id);
 }
 

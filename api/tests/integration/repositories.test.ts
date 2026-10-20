@@ -159,6 +159,22 @@ describe('sync runs and checkpoints', () => {
     expect(await failOrphanRuns(prisma)).toEqual([]);
   });
 
+  it('records the calls an orphan run made when failing it', async () => {
+    const runId = await openRun();
+    const store = createProviderCallStore(prisma, { sourceId, syncRunId: runId });
+    for (const outcome of ['ok', 'timeout'] as const) {
+      await store.record({
+        endpoint: '/v1/covid19?date=2023-03-09&type=cases',
+        statusCode: null,
+        durationMs: 5,
+        outcome,
+      });
+    }
+    await failOrphanRuns(prisma);
+    const run = await owner.query('SELECT calls_used FROM sync_run WHERE id = $1', [runId]);
+    expect(run.rows).toEqual([{ calls_used: 2 }]);
+  });
+
   it('tracks checkpoint attempts and outcomes', async () => {
     const runId = await openRun();
     await startCheckpoint(prisma, runId, UNIT);
@@ -227,14 +243,17 @@ describe('sync lock', () => {
 
   it('lets only one holder acquire the advisory lock', async () => {
     const first = await tryAcquireSyncLock(urls.syncUrl);
-    expect(first).not.toBeNull();
     try {
+      expect(first).not.toBeNull();
       expect(await tryAcquireSyncLock(urls.syncUrl)).toBeNull();
     } finally {
       await first?.release();
     }
     const again = await tryAcquireSyncLock(urls.syncUrl);
-    expect(again).not.toBeNull();
-    await again?.release();
+    try {
+      expect(again).not.toBeNull();
+    } finally {
+      await again?.release();
+    }
   });
 });
