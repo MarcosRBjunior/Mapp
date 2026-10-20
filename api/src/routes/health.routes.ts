@@ -1,7 +1,30 @@
-import express from 'express';
+import express, { type Router } from 'express';
+import { AppError } from '../lib/app-error.js';
+import type { DataState, DataStateService } from '../services/data-state.service.js';
 
-export const healthRouter = express.Router();
+export function createHealthRouter(dataState: DataStateService): Router {
+  const router = express.Router();
 
-healthRouter.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
+  router.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
+  router.get('/ready', async (_req, res) => {
+    let state: DataState | null;
+    try {
+      state = await dataState.current();
+    } catch (error) {
+      throw new AppError('DATA_NOT_READY', 503, 'database is not reachable', null, {
+        cause: error,
+      });
+    }
+    if (!state) throw new AppError('DATA_NOT_READY', 503, 'no data has been loaded yet');
+    res.json({
+      status: 'ready',
+      dataVersion: state.dataVersion,
+      referenceDate: state.referenceDate,
+    });
+  });
+
+  return router;
+}
