@@ -1,5 +1,5 @@
 import type { FetchLike } from '../../providers/covid-provider.js';
-import { ProviderNetworkError } from '../../providers/provider-errors.js';
+import { ProviderNetworkError, isTimeoutError } from '../../providers/provider-errors.js';
 import {
   BudgetExhaustedError,
   hourAgo,
@@ -56,15 +56,6 @@ function isRetryableStatus(status: number): boolean {
   return status === 429 || status >= 500;
 }
 
-function isTimeout(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'name' in error &&
-    (error.name === 'TimeoutError' || error.name === 'AbortError')
-  );
-}
-
 function endpointOf(url: string): string {
   const parsed = new URL(url);
   return `${parsed.pathname}${parsed.search}`;
@@ -95,9 +86,18 @@ export function createCallGate(options: CallGateOptions): CallGate {
         headers,
         signal: AbortSignal.timeout(timeoutMs),
       });
-      attempt = { kind: 'response', response };
+      // Buffer inside the try so a stalled or reset body is recorded and retried like any attempt.
+      const body = await response.arrayBuffer();
+      attempt = {
+        kind: 'response',
+        response: new Response(body.byteLength === 0 ? null : body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+        }),
+      };
     } catch (error) {
-      const kind = isTimeout(error) ? 'timeout' : 'network_error';
+      const kind = isTimeoutError(error) ? 'timeout' : 'network_error';
       attempt = { kind: 'failure', error: new ProviderNetworkError(kind, { cause: error }) };
     }
     lastCallId = await options.store.record({

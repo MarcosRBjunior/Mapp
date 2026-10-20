@@ -5,6 +5,7 @@ import {
   ProviderHttpError,
   ProviderNetworkError,
   ProviderPayloadError,
+  isTimeoutError,
 } from '../provider-errors.js';
 import { daySchemas } from './api-ninjas.schemas.js';
 
@@ -37,13 +38,12 @@ export function createApiNinjasProvider(options: {
       try {
         body = await response.json();
       } catch (error) {
-        if (
-          error instanceof Error &&
-          (error.name === 'TimeoutError' || error.name === 'AbortError')
-        ) {
-          throw new ProviderNetworkError('timeout', { cause: error });
+        if (error instanceof SyntaxError) {
+          throw new ProviderPayloadError('response is not valid JSON');
         }
-        throw new ProviderPayloadError('response is not valid JSON');
+        throw new ProviderNetworkError(isTimeoutError(error) ? 'timeout' : 'network_error', {
+          cause: error,
+        });
       }
       const result = daySchemas[metric].safeParse(body);
       if (!result.success) {

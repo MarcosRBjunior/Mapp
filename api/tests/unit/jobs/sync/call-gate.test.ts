@@ -36,7 +36,7 @@ function memoryStore(alreadyUsed = 0) {
   return { calls, store };
 }
 
-function scriptedFetch(...steps: (number | Error)[]) {
+function scriptedFetch(...steps: (number | Error | Response)[]) {
   const requests: { url: string; headers: Record<string, string>; signal: AbortSignal }[] = [];
   const fetch: RawFetch = (url, init) => {
     requests.push({ url, ...init });
@@ -46,6 +46,9 @@ function scriptedFetch(...steps: (number | Error)[]) {
     }
     if (step instanceof Error) {
       return Promise.reject(step);
+    }
+    if (step instanceof Response) {
+      return Promise.resolve(step);
     }
     return Promise.resolve(new Response('[]', { status: step }));
   };
@@ -64,7 +67,41 @@ function recordingSleep() {
 const timeoutError = (): Error =>
   new DOMException('The operation was aborted due to timeout', 'TimeoutError');
 
+const erroringBody = (error: Error): Response =>
+  new Response(
+    new ReadableStream({
+      start(controller) {
+        controller.error(error);
+      },
+    }),
+    { status: 200 },
+  );
+
 describe('createCallGate', () => {
+  it('retries when the body read times out after the headers', async () => {
+    const { calls, store } = memoryStore();
+    const { fetch } = scriptedFetch(erroringBody(timeoutError()), 200);
+    const { delays, sleep } = recordingSleep();
+    const gate = createCallGate({ store, limits: LIMITS, fetch, sleep });
+
+    const response = await gate.fetch(URL_CASES, { headers: HEADERS });
+
+    expect(response.status).toBe(200);
+    expect(calls.map((call) => call.outcome)).toEqual(['timeout', 'ok']);
+    expect(delays).toEqual([1000]);
+  });
+
+  it('retries when the connection drops while reading the body', async () => {
+    const { calls, store } = memoryStore();
+    const { fetch } = scriptedFetch(erroringBody(new TypeError('terminated')), 200);
+    const gate = createCallGate({ store, limits: LIMITS, fetch, sleep: recordingSleep().sleep });
+
+    const response = await gate.fetch(URL_CASES, { headers: HEADERS });
+
+    expect(response.status).toBe(200);
+    expect(calls.map((call) => call.outcome)).toEqual(['network_error', 'ok']);
+  });
+
   it('returns a successful response and records one call without the key', async () => {
     const { calls, store } = memoryStore();
     const { requests, fetch } = scriptedFetch(200);

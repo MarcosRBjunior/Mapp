@@ -121,4 +121,23 @@ describe('createApiNinjasProvider', () => {
       kind: 'timeout',
     });
   });
+
+  it('reports a dropped connection while reading the body as a network error', async () => {
+    const fetch: FetchLike = () =>
+      Promise.resolve(
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.error(new TypeError('terminated'));
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+    const source = createApiNinjasProvider({ apiKey: 'test-key', fetch });
+    await expect(source.fetchDay('2023-03-09', 'cases')).rejects.toMatchObject({
+      name: 'ProviderNetworkError',
+      kind: 'network_error',
+    });
+  });
 });
