@@ -6,6 +6,8 @@ import { errorHandler } from './middlewares/error-handler.js';
 import { createHttpLogger } from './middlewares/http-logger.js';
 import { notFound } from './middlewares/not-found.js';
 import { createRateLimit } from './middlewares/rate-limit.js';
+import { createOpenApiDocument } from './openapi/document.js';
+import { createDocsRouter } from './routes/docs.routes.js';
 import { createHealthRouter } from './routes/health.routes.js';
 import { createV1Router } from './routes/v1.routes.js';
 import type { Services } from './services/create-services.js';
@@ -33,6 +35,7 @@ export function createApp(deps: AppDeps): Express {
 
   const apiRouter = express.Router();
   apiRouter.use(createRateLimit());
+  apiRouter.use('/docs', createDocsRouter(createOpenApiDocument()));
   apiRouter.use('/v1', createV1Router(deps.services));
   app.use('/api', apiRouter);
 

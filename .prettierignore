@@ -9,3 +9,4 @@ web/test-results
 web/blob-report
 api/src/generated
 web/public/geo
+docs/openapi.yaml

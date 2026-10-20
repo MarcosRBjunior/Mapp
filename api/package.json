@@ -16,7 +16,8 @@
     "db:migrate": "prisma migrate deploy && npm run db:roles",
     "seed:build": "tsx prisma/seed/build-countries.ts",
     "db:seed": "tsx --env-file-if-exists=.env prisma/seed/seed.ts",
-    "sync": "tsx --env-file-if-exists=.env src/jobs/sync/cli.ts"
+    "sync": "tsx --env-file-if-exists=.env src/jobs/sync/cli.ts",
+    "openapi": "tsx src/openapi/write.ts"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
