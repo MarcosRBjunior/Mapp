@@ -17,12 +17,13 @@ async function main(): Promise<number> {
     throw error;
   }
 
-  const env = loadSyncEnv();
-  const logger = createLogger(env.LOG_LEVEL);
   if (mode === 'full') {
-    logger.error('mode=full is not available yet (phase F5)');
+    console.error('mode=full is not available yet (phase F5)');
     return 2;
   }
+
+  const env = loadSyncEnv();
+  const logger = createLogger(env.LOG_LEVEL);
 
   const prisma = createPrisma(env.DATABASE_URL_SYNC);
   try {

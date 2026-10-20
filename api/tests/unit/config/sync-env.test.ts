@@ -53,6 +53,16 @@ describe('loadSyncEnv', () => {
     );
   });
 
+  it('rejects limits above the documented caps', () => {
+    const base = { DATABASE_URL_SYNC, API_NINJAS_KEY: 'test-key' };
+    expect(() => loadSyncEnv({ ...base, SYNC_CALLS_PER_HOUR: '91' })).toThrow(
+      /SYNC_CALLS_PER_HOUR/,
+    );
+    expect(() => loadSyncEnv({ ...base, SYNC_CALLS_PER_MONTH: '3001' })).toThrow(
+      /SYNC_CALLS_PER_MONTH/,
+    );
+  });
+
   it('requires a postgres DATABASE_URL_SYNC', () => {
     expect(() => loadSyncEnv({ API_NINJAS_KEY: 'test-key' })).toThrow(/DATABASE_URL_SYNC/);
   });

@@ -2,10 +2,15 @@ import { z } from 'zod';
 import { postgresUrl } from './db-env.js';
 import { emptyAsUndefined, logLevels } from './env.js';
 
-const callLimit = (fallback: number) =>
+const callLimit = (fallback: number, max: number) =>
   z.preprocess(
     emptyAsUndefined,
-    z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().min(1)).default(fallback),
+    z
+      .string()
+      .regex(/^\d+$/)
+      .transform(Number)
+      .pipe(z.number().int().min(1).max(max))
+      .default(fallback),
   );
 
 const syncEnvSchema = z
@@ -16,8 +21,8 @@ const syncEnvSchema = z
       z.enum(['api_ninjas', 'jhu_csv', 'apify']).default('api_ninjas'),
     ),
     API_NINJAS_KEY: z.preprocess(emptyAsUndefined, z.string().optional()),
-    SYNC_CALLS_PER_HOUR: callLimit(90),
-    SYNC_CALLS_PER_MONTH: callLimit(3000),
+    SYNC_CALLS_PER_HOUR: callLimit(90, 90),
+    SYNC_CALLS_PER_MONTH: callLimit(3000, 3000),
     LOG_LEVEL: z.preprocess(emptyAsUndefined, z.enum(logLevels).default('info')),
   })
   .refine((env) => env.DATA_PROVIDER !== 'api_ninjas' || env.API_NINJAS_KEY !== undefined, {
