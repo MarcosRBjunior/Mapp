@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import type { CovidProvider, FetchLike } from '../covid-provider.js';
-import { ProviderAuthError, ProviderHttpError, ProviderPayloadError } from '../provider-errors.js';
+import {
+  ProviderAuthError,
+  ProviderHttpError,
+  ProviderNetworkError,
+  ProviderPayloadError,
+} from '../provider-errors.js';
 import { daySchemas } from './api-ninjas.schemas.js';
 
 const BASE_URL = 'https://api.api-ninjas.com/v1/covid19';
@@ -31,7 +36,13 @@ export function createApiNinjasProvider(options: {
       let body: unknown;
       try {
         body = await response.json();
-      } catch {
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.name === 'TimeoutError' || error.name === 'AbortError')
+        ) {
+          throw new ProviderNetworkError('timeout', { cause: error });
+        }
         throw new ProviderPayloadError('response is not valid JSON');
       }
       const result = daySchemas[metric].safeParse(body);
