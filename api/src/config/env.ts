@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-const logLevels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'] as const;
+export const logLevels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'] as const;
 
-const emptyAsUndefined = (value: unknown): unknown => (value === '' ? undefined : value);
+export const emptyAsUndefined = (value: unknown): unknown => (value === '' ? undefined : value);
 
 const envSchema = z.object({
   NODE_ENV: z.preprocess(

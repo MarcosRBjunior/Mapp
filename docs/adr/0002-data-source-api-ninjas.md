@@ -19,3 +19,7 @@ O Mapp precisa de casos e mortes de COVID-19 por país e por data. As opções e
 - O orçamento de chamadas (90/hora, limite mensal) e a tabela `provider_call` passam a ser obrigatórios na F2 e na F5.
 - Atribuições visíveis exigidas (RN-10): API Ninjas (dados), JHU CSSE (tabela de referência, CC BY 4.0) e Natural Earth (GeoJSON). A página `/sobre` da F4 deve mostrá-las.
 - Nomes da fonte sem alias continuam caindo em `pending`, e o sync fecha como `partial`.
+
+## Atualizações
+
+- Atualização (F2): os nomes foram confirmados com a chamada real de 2026-10-19 e a curadoria passou para `api/prisma/seed/aliases.json` (ADR 0004).

@@ -19,6 +19,7 @@ export function withDatabase(url: string, database: string): string {
 export function loadTestDbUrls(): TestDbUrls {
   if (existsSync('.env')) {
     process.loadEnvFile('.env');
+    delete process.env.API_NINJAS_KEY;
   }
   const env = loadDbEnv();
   const host = new URL(env.DATABASE_URL_SYNC).hostname;

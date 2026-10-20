@@ -1,0 +1,106 @@
+[
+  {
+    "country": "Australia",
+    "region": "Australian Capital Territory",
+    "cases": {
+      "total": 232974,
+      "new": 355
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "New South Wales",
+    "cases": {
+      "total": 3915992,
+      "new": 7863
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Northern Territory",
+    "cases": {
+      "total": 105111,
+      "new": 90
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Queensland",
+    "cases": {
+      "total": 1800236,
+      "new": 0
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "South Australia",
+    "cases": {
+      "total": 883620,
+      "new": 1709
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Tasmania",
+    "cases": {
+      "total": 287507,
+      "new": 610
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Victoria",
+    "cases": {
+      "total": 2880559,
+      "new": 3299
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Western Australia",
+    "cases": {
+      "total": 1293461,
+      "new": 0
+    }
+  },
+  {
+    "country": "Brazil",
+    "region": "",
+    "cases": {
+      "total": 37076053,
+      "new": 0
+    }
+  },
+  {
+    "country": "Denmark",
+    "region": "Faroe Islands",
+    "cases": {
+      "total": 34658,
+      "new": 0
+    }
+  },
+  {
+    "country": "Denmark",
+    "region": "Greenland",
+    "cases": {
+      "total": 11971,
+      "new": 0
+    }
+  },
+  {
+    "country": "Denmark",
+    "region": "",
+    "cases": {
+      "total": 3404407,
+      "new": 139
+    }
+  },
+  {
+    "country": "Diamond Princess",
+    "region": "",
+    "cases": {
+      "total": 712,
+      "new": 0
+    }
+  }
+]

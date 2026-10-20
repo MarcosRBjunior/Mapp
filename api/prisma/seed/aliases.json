@@ -1,0 +1,1012 @@
+[
+  {
+    "sourceName": "Afghanistan",
+    "countryCode": "AFG",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Albania",
+    "countryCode": "ALB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Algeria",
+    "countryCode": "DZA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Andorra",
+    "countryCode": "AND",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Angola",
+    "countryCode": "AGO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Antarctica",
+    "countryCode": "ATA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Antigua and Barbuda",
+    "countryCode": "ATG",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Argentina",
+    "countryCode": "ARG",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Armenia",
+    "countryCode": "ARM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Australia",
+    "countryCode": "AUS",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Austria",
+    "countryCode": "AUT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Azerbaijan",
+    "countryCode": "AZE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Bahamas",
+    "countryCode": "BHS",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Bahrain",
+    "countryCode": "BHR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Bangladesh",
+    "countryCode": "BGD",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Barbados",
+    "countryCode": "BRB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Belarus",
+    "countryCode": "BLR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Belgium",
+    "countryCode": "BEL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Belize",
+    "countryCode": "BLZ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Benin",
+    "countryCode": "BEN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Bhutan",
+    "countryCode": "BTN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Bolivia",
+    "countryCode": "BOL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Bosnia and Herzegovina",
+    "countryCode": "BIH",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Botswana",
+    "countryCode": "BWA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Brazil",
+    "countryCode": "BRA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Brunei",
+    "countryCode": "BRN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Bulgaria",
+    "countryCode": "BGR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Burkina Faso",
+    "countryCode": "BFA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Burma",
+    "countryCode": "MMR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Burundi",
+    "countryCode": "BDI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Cabo Verde",
+    "countryCode": "CPV",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Cambodia",
+    "countryCode": "KHM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Cameroon",
+    "countryCode": "CMR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Canada",
+    "countryCode": "CAN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Central African Republic",
+    "countryCode": "CAF",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Chad",
+    "countryCode": "TCD",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Chile",
+    "countryCode": "CHL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "China",
+    "countryCode": "CHN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Colombia",
+    "countryCode": "COL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Comoros",
+    "countryCode": "COM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Congo (Brazzaville)",
+    "countryCode": "COG",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Congo (Kinshasa)",
+    "countryCode": "COD",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Costa Rica",
+    "countryCode": "CRI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Cote d'Ivoire",
+    "countryCode": "CIV",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Croatia",
+    "countryCode": "HRV",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Cuba",
+    "countryCode": "CUB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Cyprus",
+    "countryCode": "CYP",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Czechia",
+    "countryCode": "CZE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Denmark",
+    "countryCode": "DNK",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Diamond Princess",
+    "countryCode": "XDP",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Djibouti",
+    "countryCode": "DJI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Dominica",
+    "countryCode": "DMA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Dominican Republic",
+    "countryCode": "DOM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Ecuador",
+    "countryCode": "ECU",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Egypt",
+    "countryCode": "EGY",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "El Salvador",
+    "countryCode": "SLV",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Equatorial Guinea",
+    "countryCode": "GNQ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Eritrea",
+    "countryCode": "ERI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Estonia",
+    "countryCode": "EST",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Eswatini",
+    "countryCode": "SWZ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Ethiopia",
+    "countryCode": "ETH",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Fiji",
+    "countryCode": "FJI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Finland",
+    "countryCode": "FIN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "France",
+    "countryCode": "FRA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Gabon",
+    "countryCode": "GAB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Gambia",
+    "countryCode": "GMB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Georgia",
+    "countryCode": "GEO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Germany",
+    "countryCode": "DEU",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Ghana",
+    "countryCode": "GHA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Greece",
+    "countryCode": "GRC",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Grenada",
+    "countryCode": "GRD",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Guatemala",
+    "countryCode": "GTM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Guinea",
+    "countryCode": "GIN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Guinea-Bissau",
+    "countryCode": "GNB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Guyana",
+    "countryCode": "GUY",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Haiti",
+    "countryCode": "HTI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Holy See",
+    "countryCode": "VAT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Honduras",
+    "countryCode": "HND",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Hungary",
+    "countryCode": "HUN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Iceland",
+    "countryCode": "ISL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "India",
+    "countryCode": "IND",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Indonesia",
+    "countryCode": "IDN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Iran",
+    "countryCode": "IRN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Iraq",
+    "countryCode": "IRQ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Ireland",
+    "countryCode": "IRL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Israel",
+    "countryCode": "ISR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Italy",
+    "countryCode": "ITA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Jamaica",
+    "countryCode": "JAM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Japan",
+    "countryCode": "JPN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Jordan",
+    "countryCode": "JOR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Kazakhstan",
+    "countryCode": "KAZ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Kenya",
+    "countryCode": "KEN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Kiribati",
+    "countryCode": "KIR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Korea, North",
+    "countryCode": "PRK",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Korea, South",
+    "countryCode": "KOR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Kosovo",
+    "countryCode": "XKS",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Kuwait",
+    "countryCode": "KWT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Kyrgyzstan",
+    "countryCode": "KGZ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Laos",
+    "countryCode": "LAO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Latvia",
+    "countryCode": "LVA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Lebanon",
+    "countryCode": "LBN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Lesotho",
+    "countryCode": "LSO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Liberia",
+    "countryCode": "LBR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Libya",
+    "countryCode": "LBY",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Liechtenstein",
+    "countryCode": "LIE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Lithuania",
+    "countryCode": "LTU",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Luxembourg",
+    "countryCode": "LUX",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "MS Zaandam",
+    "countryCode": "XMZ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Madagascar",
+    "countryCode": "MDG",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Malawi",
+    "countryCode": "MWI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Malaysia",
+    "countryCode": "MYS",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Maldives",
+    "countryCode": "MDV",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Mali",
+    "countryCode": "MLI",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Malta",
+    "countryCode": "MLT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Marshall Islands",
+    "countryCode": "MHL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Mauritania",
+    "countryCode": "MRT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Mauritius",
+    "countryCode": "MUS",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Mexico",
+    "countryCode": "MEX",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Micronesia",
+    "countryCode": "FSM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Moldova",
+    "countryCode": "MDA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Monaco",
+    "countryCode": "MCO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Mongolia",
+    "countryCode": "MNG",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Montenegro",
+    "countryCode": "MNE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Morocco",
+    "countryCode": "MAR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Mozambique",
+    "countryCode": "MOZ",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Namibia",
+    "countryCode": "NAM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Nauru",
+    "countryCode": "NRU",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Nepal",
+    "countryCode": "NPL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Netherlands",
+    "countryCode": "NLD",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "New Zealand",
+    "countryCode": "NZL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Nicaragua",
+    "countryCode": "NIC",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Niger",
+    "countryCode": "NER",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Nigeria",
+    "countryCode": "NGA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "North Macedonia",
+    "countryCode": "MKD",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Norway",
+    "countryCode": "NOR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Oman",
+    "countryCode": "OMN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Pakistan",
+    "countryCode": "PAK",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Palau",
+    "countryCode": "PLW",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Panama",
+    "countryCode": "PAN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Papua New Guinea",
+    "countryCode": "PNG",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Paraguay",
+    "countryCode": "PRY",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Peru",
+    "countryCode": "PER",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Philippines",
+    "countryCode": "PHL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Poland",
+    "countryCode": "POL",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Portugal",
+    "countryCode": "PRT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Qatar",
+    "countryCode": "QAT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Romania",
+    "countryCode": "ROU",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Russia",
+    "countryCode": "RUS",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Rwanda",
+    "countryCode": "RWA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Saint Kitts and Nevis",
+    "countryCode": "KNA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Saint Lucia",
+    "countryCode": "LCA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Saint Vincent and the Grenadines",
+    "countryCode": "VCT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Samoa",
+    "countryCode": "WSM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "San Marino",
+    "countryCode": "SMR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Sao Tome and Principe",
+    "countryCode": "STP",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Saudi Arabia",
+    "countryCode": "SAU",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Senegal",
+    "countryCode": "SEN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Serbia",
+    "countryCode": "SRB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Seychelles",
+    "countryCode": "SYC",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Sierra Leone",
+    "countryCode": "SLE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Singapore",
+    "countryCode": "SGP",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Slovakia",
+    "countryCode": "SVK",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Slovenia",
+    "countryCode": "SVN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Solomon Islands",
+    "countryCode": "SLB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Somalia",
+    "countryCode": "SOM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "South Africa",
+    "countryCode": "ZAF",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "South Sudan",
+    "countryCode": "SSD",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Spain",
+    "countryCode": "ESP",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Sri Lanka",
+    "countryCode": "LKA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Sudan",
+    "countryCode": "SDN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Summer Olympics 2020",
+    "countryCode": "XSO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Suriname",
+    "countryCode": "SUR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Sweden",
+    "countryCode": "SWE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Switzerland",
+    "countryCode": "CHE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Syria",
+    "countryCode": "SYR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Taiwan*",
+    "countryCode": "TWN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Tajikistan",
+    "countryCode": "TJK",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Tanzania",
+    "countryCode": "TZA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Thailand",
+    "countryCode": "THA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Timor-Leste",
+    "countryCode": "TLS",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Togo",
+    "countryCode": "TGO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Tonga",
+    "countryCode": "TON",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Trinidad and Tobago",
+    "countryCode": "TTO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Tunisia",
+    "countryCode": "TUN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Turkey",
+    "countryCode": "TUR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Tuvalu",
+    "countryCode": "TUV",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "US",
+    "countryCode": "USA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Uganda",
+    "countryCode": "UGA",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Ukraine",
+    "countryCode": "UKR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "United Arab Emirates",
+    "countryCode": "ARE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "United Kingdom",
+    "countryCode": "GBR",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Uruguay",
+    "countryCode": "URY",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Uzbekistan",
+    "countryCode": "UZB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Vanuatu",
+    "countryCode": "VUT",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Venezuela",
+    "countryCode": "VEN",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Vietnam",
+    "countryCode": "VNM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "West Bank and Gaza",
+    "countryCode": "PSE",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Western Sahara",
+    "countryCode": "ESH",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Winter Olympics 2022",
+    "countryCode": "XWO",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Yemen",
+    "countryCode": "YEM",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Zambia",
+    "countryCode": "ZMB",
+    "status": "mapped"
+  },
+  {
+    "sourceName": "Zimbabwe",
+    "countryCode": "ZWE",
+    "status": "mapped"
+  }
+]

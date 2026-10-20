@@ -55,14 +55,13 @@ describe('buildCountrySeeds', () => {
         lat: -14.235,
         lng: -51.9253,
         population: 212559409,
-        sourceName: 'Brazil',
       },
     ]);
   });
 
-  it('keeps quoted source names', () => {
+  it('parses quoted source names', () => {
     const [korea] = buildCountrySeeds(csv(KOREA_SOUTH));
-    expect(korea?.sourceName).toBe('Korea, South');
+    expect(korea?.code).toBe('KOR');
     expect(korea?.name).toBe('Coreia do Sul');
   });
 
@@ -101,7 +100,6 @@ describe('buildCountrySeeds', () => {
         lat: null,
         lng: null,
         population: null,
-        sourceName: 'Diamond Princess',
       },
       {
         code: 'XMZ',
@@ -110,7 +108,6 @@ describe('buildCountrySeeds', () => {
         lat: null,
         lng: null,
         population: null,
-        sourceName: 'MS Zaandam',
       },
       {
         code: 'XSO',
@@ -119,7 +116,6 @@ describe('buildCountrySeeds', () => {
         lat: null,
         lng: null,
         population: null,
-        sourceName: 'Summer Olympics 2020',
       },
       {
         code: 'XWO',
@@ -128,7 +124,6 @@ describe('buildCountrySeeds', () => {
         lat: null,
         lng: null,
         population: null,
-        sourceName: 'Winter Olympics 2022',
       },
     ]);
   });

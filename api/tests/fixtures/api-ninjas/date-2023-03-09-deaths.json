@@ -1,0 +1,106 @@
+[
+  {
+    "country": "Australia",
+    "region": "Australian Capital Territory",
+    "deaths": {
+      "total": 228,
+      "new": 0
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "New South Wales",
+    "deaths": {
+      "total": 6529,
+      "new": 36
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Northern Territory",
+    "deaths": {
+      "total": 91,
+      "new": 1
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Queensland",
+    "deaths": {
+      "total": 2783,
+      "new": 0
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "South Australia",
+    "deaths": {
+      "total": 1365,
+      "new": 43
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Tasmania",
+    "deaths": {
+      "total": 256,
+      "new": 3
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Victoria",
+    "deaths": {
+      "total": 7370,
+      "new": 32
+    }
+  },
+  {
+    "country": "Australia",
+    "region": "Western Australia",
+    "deaths": {
+      "total": 952,
+      "new": 0
+    }
+  },
+  {
+    "country": "Brazil",
+    "region": "",
+    "deaths": {
+      "total": 699276,
+      "new": 0
+    }
+  },
+  {
+    "country": "Denmark",
+    "region": "Faroe Islands",
+    "deaths": {
+      "total": 28,
+      "new": 0
+    }
+  },
+  {
+    "country": "Denmark",
+    "region": "Greenland",
+    "deaths": {
+      "total": 21,
+      "new": 0
+    }
+  },
+  {
+    "country": "Denmark",
+    "region": "",
+    "deaths": {
+      "total": 8296,
+      "new": 4
+    }
+  },
+  {
+    "country": "Diamond Princess",
+    "region": "",
+    "deaths": {
+      "total": 13,
+      "new": 0
+    }
+  }
+]

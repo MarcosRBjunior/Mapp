@@ -12,4 +12,4 @@ O CSV não é versionado. Para regenerar:
 2. Rode `npm run seed:build -w api -- <caminho/do/csv>`.
 3. Revise o diff do `countries.json`.
 
-Regras do gerador (`reference.ts`): só linhas de nível país; nome pt-BR pelo `Intl.DisplayNames` com exceções para `CD` e `MM`; as quatro entidades sem ISO3 viram `non_geographic` com os códigos `XDP`, `XMZ`, `XSO` e `XWO`. Os nomes `sourceName` são os da JHU e servem de aliases provisórios da `api_ninjas` até a F2 confirmar com fixtures.
+Regras do gerador (`reference.ts`): só linhas de nível país; nome pt-BR pelo `Intl.DisplayNames` com exceções para `CD` e `MM`; as quatro entidades sem ISO3 viram `non_geographic` com os códigos `XDP`, `XMZ`, `XSO` e `XWO`. Os aliases da `api_ninjas` (nome da fonte → ISO3) ficam em `aliases.json`, curado à mão (ADR 0004). Os 202 nomes vieram da JHU e foram confirmados com a chamada real de 2026-10-19. O `db:seed` aplica só o arquivo e não altera os aliases que não estão nele, como os `pending` criados pelo sync. Para curar um alias, edite o arquivo e rode `npm run db:seed -w api`.

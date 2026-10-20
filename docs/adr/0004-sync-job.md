@@ -1,0 +1,26 @@
+# ADR 0004 — Job de sincronização: lock, status, orçamento e aliases
+
+- Status: aceito
+- Data: 2026-10-19
+
+## Contexto
+
+A F2 criou o modo snapshot do job (`npm run sync -w api -- --mode=snapshot`). Ele chama a API Ninjas, que tem cota limitada (3.000 chamadas/mês, 100/hora). Precisávamos decidir como evitar dois syncs ao mesmo tempo, como recuperar um run que ficou em `running` depois de um crash, como contar o orçamento, como fechar o status do run e onde fica a curadoria dos nomes da fonte.
+
+Uma chamada real autorizada (2026-10-19) confirmou que a série termina em `2023-03-09` (D-02) e que os 201 nomes de país da fonte batem com os aliases tirados da tabela da JHU.
+
+## Decisão
+
+- **Lock:** o job segura `pg_try_advisory_lock(1835102320)` numa conexão `pg` própria durante todo o run. Sem o lock, outro sync está rodando e o novo sai com código 1. Com o lock, qualquer `sync_run` em `running` é de um processo morto e vira `failed` com o erro "interrompido: o processo anterior terminou sem fechar o run". O lock de sessão morre com a conexão, então um crash não deixa trava.
+- **Status do run:** `failed` quando a fonte rejeita a chave (401/403) ou quando nenhuma unidade gravou; `partial` quando alguma unidade teve erro (payload inválido, 5xx/timeout depois de 3 tentativas, orçamento esgotado) ou algum nome ficou `pending`; `success` no resto. O CLI sai com 0 em `success`/`partial` e com 1 em `failed`.
+- **Orçamento:** antes de cada tentativa, o `CallGate` conta as linhas de `provider_call` da fonte na última hora (limite `SYNC_CALLS_PER_HOUR=90`) e desde o dia 1 do mês calendário UTC (limite `SYNC_CALLS_PER_MONTH=3000`). Cada tentativa, inclusive retentativa, conta e vira uma linha.
+- **Retentativas:** timeout de 10 s; até 3 tentativas em 429, 5xx, timeout e erro de rede, com espera de 1 s e 2 s. 401/403 não repetem.
+- **Aliases:** a curadoria fica em `api/prisma/seed/aliases.json`, versionado e revisado por PR. O `db:seed` aplica só o arquivo e não altera aliases fora dele. Nomes novos que o sync encontra entram como `pending` no banco e fecham o run como `partial` até alguém curar o arquivo.
+
+## Consequências
+
+- Um sync morto não bloqueia o próximo nem exige intervenção manual.
+- Curar um alias exige um PR no `aliases.json` e um `db:seed`; o histórico fica no git.
+- Se a API Ninjas contar o mês por outro ciclo (por exemplo, a partir da data de cadastro), o limite mensal pode ser ultrapassado perto da virada. O risco é baixo: o modo full deve gastar cerca de 400 chamadas.
+- Os testes nunca chamam a fonte: o `fetch` global é bloqueado no Vitest e o job recebe um `fetch` injetado.
+- O lock é de sessão: `DATABASE_URL_SYNC` precisa ser uma conexão direta ou de sessão, não um pooler em modo transação.

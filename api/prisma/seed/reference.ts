@@ -7,7 +7,6 @@ export interface CountrySeed {
   lat: number | null;
   lng: number | null;
   population: number | null;
-  sourceName: string;
 }
 
 const NON_GEOGRAPHIC: ReadonlyMap<string, { code: string; name: string }> = new Map([
@@ -117,7 +116,6 @@ function toSeed(row: string[], columns: Columns): CountrySeed {
       lat: null,
       lng: null,
       population: null,
-      sourceName,
     };
   }
 
@@ -133,7 +131,6 @@ function toSeed(row: string[], columns: Columns): CountrySeed {
     lat: coordinate(cell(row, columns.lat), 90, sourceName),
     lng: coordinate(cell(row, columns.lng), 180, sourceName),
     population: population(cell(row, columns.population), sourceName),
-    sourceName,
   };
 }
 
