@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const postgresUrl = z
+export const postgresUrl = z
   .string()
   .regex(/^postgres(ql)?:\/\//, 'must be a postgres:// or postgresql:// URL');
 
