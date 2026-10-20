@@ -9,10 +9,11 @@ Mapa dashboard de COVID-19: mapa-múndi clicável, 3 cards de estatística e 2 g
 
 - F0 Fundação concluída em 2026-10-19 (PR #1): monorepo `api` + `web`, ESLint/Prettier, Vitest, Playwright, Postgres 18 no Docker (porta do host 5435), CI.
 - F1 Banco concluída em 2026-10-19 (PR #2): schema Prisma 7.10 + SQL bruto (CHECKs, view `global_daily_stat`), índice parcial nativo, usuários `mapp` (dono/sync) e `mapp_api` (leitura), seed de 202 entidades (198 países + 4 não geográficas) com aliases provisórios da `api_ninjas`, GeoJSON 1:110m, testes de integração no CI.
-- Pendências para a F2: confirmar os nomes da API Ninjas e a data final (D-02) com uma chamada real autorizada e gravar fixtures; adaptador `CovidProvider`; `DATA_PROVIDER` e `API_NINJAS_KEY` no env. Perguntas abertas (regra de negócio, perguntar): onde fica a curadoria de aliases (o `db:seed` regrava tudo como `mapped`); como recuperar um `sync_run` que ficou em `running` após crash; se o "mês" do orçamento é o calendário UTC ou 30 dias corridos.
+- F2 Snapshot concluída em 2026-10-19 (PR #3): provider `CovidProvider` da API Ninjas, `CallGate` (orçamento 90/h e mês calendário UTC, timeout de 10 s, 3 tentativas), soma de regiões (RN-02), modo snapshot com lock advisory e recuperação de run órfão, curadoria de aliases em `api/prisma/seed/aliases.json` (ADR 0004). Fixtures recortadas da chamada real em `api/tests/fixtures/api-ninjas` (o repositório é público e os termos proíbem armazenar os dados).
+- Pergunta aberta para a F3 (regra de negócio, perguntar): a RN-06 define a data de referência como a "última data com dados para todos os países", mas a fonte nunca traz o Saara Ocidental (ESH). Considerar só os países presentes na fonte?
 - Pendência para a F4: mostrar no `/sobre` as atribuições da API Ninjas, da JHU CSSE (CC BY 4.0) e do Natural Earth (domínio público). Pergunta aberta: os polígonos do GeoJSON sem país na base (GRL, PRI, FLK, NCL, ATF, SOL, CYN, TKM) herdam o país soberano ou ficam sem link?
 - TypeScript fixado em `~6.0.3` até o typescript-eslint suportar o TS 7 (ADR 0001).
-- Adiado com fase-alvo: validar `DATABASE_URL` no env da api HTTP, converter `bigint` (`population`, somas da view) para número na API e graceful shutdown no SIGTERM (F3); handler final de erro sem stack trace e `NODE_ENV=production` garantido no deploy (F3/F9); upsert em lote de `daily_stat` com `updated_at = now()` (o `@updatedAt` só vale pelo client) (F5); reporter/trace do Playwright e E2E no CI, actions fixadas por SHA + Dependabot (F8); `postinstall` depende do `prisma` (devDependency), seed em lote, `db:migrate` sem depender do `db:roles` em banco gerenciado e `ALTER ROLE ... PASSWORD` sem expor a senha em log (F9).
+- Adiado com fase-alvo: validar `DATABASE_URL` no env da api HTTP, converter `bigint` (`population`, somas da view) para número na API e graceful shutdown no SIGTERM (F3); handler final de erro sem stack trace e `NODE_ENV=production` garantido no deploy (F3/F9); reporter/trace do Playwright e E2E no CI, actions fixadas por SHA + Dependabot (F8); `postinstall` depende do `prisma` (devDependency), seed em lote, `db:migrate` sem depender do `db:roles` em banco gerenciado e `ALTER ROLE ... PASSWORD` sem expor a senha em log (F9).
 - Ao terminar cada fase, atualize esta seção com a fase concluída e o que ficou pendente.
 
 ## Como trabalhar
@@ -85,6 +86,7 @@ npm run sync -w api -- --mode=full        # série histórica, retomável
 - Métricas: `cases` e `deaths`, cada uma com `total` (acumulado) e `new` (do dia). Granularidade: país.
 - Fonte decidida: API Ninjas (D-01, ADR 0002). Implemente pela interface `CovidProvider` e selecione por `DATA_PROVIDER` (`api_ninjas` | `jhu_csv` | `apify`).
 - API Ninjas: `GET https://api.api-ninjas.com/v1/covid19`, header `X-Api-Key`. `country=` devolve a série; `date=YYYY-MM-DD` devolve um dia de todos os países; `type=cases|deaths`. Plano gratuito: 3.000 chamadas/mês, 100/hora, exige atribuição e **não permite cache nem armazenamento**.
+- Série da API Ninjas: de 2020-01-22 a 2023-03-09 (D-02, confirmada com chamada real em 2026-10-19). Oito países vêm divididos em regiões (Austrália, Canadá, China, Dinamarca, França, Países Baixos, Nova Zelândia e Reino Unido).
 - Apify (agregador COVID): só 45 países, parado em 21/11/2022, mistura `null`, `"NA"` e `0`. Só como fonte secundária.
 - JHU CSSE (CSV no GitHub): licença CC BY 4.0, coleta encerrada em 10/03/2023. Alternativa que permite armazenar.
 - Orçamento do job: no máximo 90 chamadas/hora e o limite mensal, contados na tabela `provider_call`.
@@ -178,11 +180,10 @@ Adotadas (mudo se pedir):
 
 - Express + Vite separados, não Next.js · PostgreSQL · React Leaflet com tiles OSM ou CARTO configuráveis · Recharts · TypeScript
 - Marcadores (coroplético fica para depois) · só pt-BR · só nível país · sync por CLI + workflow, sem endpoints admin
-- D-01 fonte de dados: API Ninjas (ADR 0002) · dois usuários de banco, o do sync é dono do schema (ADR 0003)
+- D-01 fonte de dados: API Ninjas (ADR 0002) · dois usuários de banco, o do sync é dono do schema (ADR 0003) · D-02 a série termina em 2023-03-09 · job de sync: lock advisory, status, orçamento no mês UTC e aliases versionados (ADR 0004)
 
 Em aberto — pergunte antes de implementar o que depende delas:
 
-- D-02 Data final da série: confirmar com uma chamada real na Fase 2, só com minha autorização.
 - D-03 Card "Por tempo" (sugestão: novos no período escolhido).
 - D-04 Segundo gráfico (sugestão: novos por dia com média de 7 dias).
 - D-06 "Gráficos ao mapa" (sugestão: minigráfico no popup).
