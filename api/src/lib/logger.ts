@@ -10,6 +10,9 @@ const REDACT_PATHS = [
   '*.headers["x-api-key"]',
   'headers["X-Api-Key"]',
   '*.headers["X-Api-Key"]',
+  '*.headers.authorization',
+  '*.headers.cookie',
+  '*.headers["set-cookie"]',
 ];
 
 export function createLogger(level: LogLevel, destination?: DestinationStream): Logger {
