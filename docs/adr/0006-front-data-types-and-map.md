@@ -20,6 +20,7 @@ A F4 cria o primeiro front do Mapp. Ele precisa falar com a API da F3 com tipos 
 - **Mapa:**
   - polígonos do Natural Earth numa camada neutra e clicável, num pane próprio do Leaflet abaixo dos marcadores (zIndex 350), para o empilhamento não depender da ordem de carga;
   - territórios sem país na base herdam o soberano (GRL→DNK, PRI→USA, FLK→GBR, NCL→FRA, ATF→FRA, SOL→SOM, CYN→CYP), e TKM fica sem link;
+  - centro inicial `[30, 10]` no zoom 2, para a Groenlândia caber inteira no mapa de 480 px;
   - `CircleMarker` com raio ∝ √total, entre 3 e 40 px;
   - o `path` SVG de cada marcador recebe `tabindex`, `role="button"` e `aria-label`, e abre com Enter/Espaço.
 - **Testes:**
