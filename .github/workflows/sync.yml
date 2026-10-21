@@ -21,6 +21,7 @@ jobs:
   sync:
     name: Sync (${{ inputs.mode }})
     runs-on: ubuntu-latest
+    # Worst case can exceed this (retries with Retry-After); a killed run becomes an orphan and the next run recovers it.
     timeout-minutes: 30
     environment: production
     env:

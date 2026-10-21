@@ -48,3 +48,4 @@ Uma chamada real autorizada (2026-10-19) confirmou que a série termina em `2023
   - a recuperação de run órfão também atualiza a view;
   - a cobertura (RN-06) é calculada só pela view, por métrica.
 - **Workflow:** `.github/workflows/sync.yml` é só manual (`workflow_dispatch`), com `concurrency` e `environment: production`.
+- **Refazer uma série:** unidades `done` nunca rodam de novo; para recarregar um país (por exemplo, depois de remapear um alias), apague os checkpoints `full:cases:<nome>` e `full:deaths:<nome>` e rode o full.
