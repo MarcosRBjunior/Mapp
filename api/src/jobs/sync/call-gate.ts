@@ -52,11 +52,17 @@ const MAX_RETRY_AFTER_SECONDS = 60;
 
 export const RATE_LIMIT_MESSAGE = 'Provider rate limit reached (HTTP 429)';
 
-// Only whole seconds from 1 to 60 are honoured; anything else falls back to the default delay.
+// Whole seconds from 1 to 60 are honoured (in ms); anything else returns null.
 export function parseRetryAfter(value: string | null): number | null {
   if (value === null || !/^\d+$/.test(value)) return null;
   const seconds = Number(value);
   return seconds >= 1 && seconds <= MAX_RETRY_AFTER_SECONDS ? seconds * 1_000 : null;
+}
+
+// Whole seconds above the cap: the source wants a wait too long for this run.
+function asksForTooLongAWait(response: Response): boolean {
+  const value = response.headers.get('Retry-After');
+  return value !== null && /^\d+$/.test(value) && Number(value) > MAX_RETRY_AFTER_SECONDS;
 }
 
 function retryDelay(attempt: Attempt, attemptNumber: number): number {
@@ -147,6 +153,11 @@ export function createCallGate(options: CallGateOptions): CallGate {
           throw new BudgetExhaustedError(RATE_LIMIT_MESSAGE);
         }
         return attempt.response;
+      }
+      if (attempt.kind === 'response' && attempt.response.status === 429) {
+        if (asksForTooLongAWait(attempt.response)) {
+          throw new BudgetExhaustedError(RATE_LIMIT_MESSAGE);
+        }
       }
       await sleep(retryDelay(attempt, attemptNumber));
     }

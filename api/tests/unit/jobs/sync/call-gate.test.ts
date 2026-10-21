@@ -104,9 +104,25 @@ describe('createCallGate', () => {
     expect(delays).toEqual([5_000]);
   });
 
-  it('falls back to the default delay for an invalid or long Retry-After', async () => {
-    const { fetch } = scriptedFetch(
+  it('stops at once when Retry-After asks for more than a minute', async () => {
+    const { requests, fetch } = scriptedFetch(
       new Response('[]', { status: 429, headers: { 'Retry-After': '120' } }),
+      200,
+    );
+    const { delays, sleep } = recordingSleep();
+    const { store } = memoryStore();
+
+    await expect(
+      createCallGate({ store, limits: LIMITS, fetch, sleep }).fetch(URL_CASES, {
+        headers: HEADERS,
+      }),
+    ).rejects.toBeInstanceOf(BudgetExhaustedError);
+    expect(requests).toHaveLength(1);
+    expect(delays).toEqual([]);
+  });
+
+  it('falls back to the default delay for an HTTP-date Retry-After', async () => {
+    const { fetch } = scriptedFetch(
       new Response('[]', {
         status: 429,
         headers: { 'Retry-After': 'Wed, 21 Oct 2026 07:28:00 GMT' },
@@ -120,7 +136,7 @@ describe('createCallGate', () => {
       headers: HEADERS,
     });
 
-    expect(delays).toEqual([1_000, 2_000]);
+    expect(delays).toEqual([1_000]);
   });
 
   it('throws LockLostError when the signal is aborted before an attempt', async () => {
