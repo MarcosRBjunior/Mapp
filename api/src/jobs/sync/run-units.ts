@@ -25,6 +25,9 @@ import { createCallGate, type RawFetch } from './call-gate.js';
 
 export type RunStatus = 'success' | 'partial' | 'failed';
 
+export const MAX_CONSECUTIVE_SOURCE_FAILURES = 3;
+export const SOURCE_UNSTABLE_NOTE = `fonte instável: ${MAX_CONSECUTIVE_SOURCE_FAILURES} unidades seguidas falharam por rede/5xx, o run parou`;
+
 export const LOCK_LOST_NOTE = 'lock perdido: a conexão do lock caiu, o run parou';
 
 export interface UnitContext {
@@ -123,6 +126,7 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
   const notes: string[] = [];
   let completed = 0;
   let wroteRows = false;
+  let consecutiveSourceFailures = 0;
   const result = (status: RunStatus, callsUsed: number): SyncResult => ({
     runId,
     status,
@@ -158,6 +162,7 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
           rows: output.rows,
         });
         completed += 1;
+        consecutiveSourceFailures = 0;
         wroteRows ||= written > 0;
         for (const name of output.pendingNames) {
           pending.add(name);
@@ -185,6 +190,16 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
         notes.push(`${unit.unit}: ${message}`);
         logger.error({ unit: unit.unit, error: message }, 'unit failed');
         if (error instanceof ProviderAuthError || error instanceof BudgetExhaustedError) {
+          break;
+        }
+        if (error instanceof ProviderNetworkError || error instanceof ProviderHttpError) {
+          consecutiveSourceFailures += 1;
+        } else {
+          consecutiveSourceFailures = 0;
+        }
+        if (consecutiveSourceFailures >= MAX_CONSECUTIVE_SOURCE_FAILURES) {
+          notes.push(SOURCE_UNSTABLE_NOTE);
+          logger.error('source unstable, stopping');
           break;
         }
       }

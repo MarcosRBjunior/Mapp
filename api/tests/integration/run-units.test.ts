@@ -2,6 +2,7 @@ import pg from 'pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   LOCK_LOST_NOTE,
+  SOURCE_UNSTABLE_NOTE,
   runUnits,
   type RunPlan,
   type RunUnitsDeps,
@@ -9,7 +10,7 @@ import {
 } from '../../src/jobs/sync/run-units.js';
 import { createLogger } from '../../src/lib/logger.js';
 import { createPrisma } from '../../src/lib/prisma.js';
-import { ProviderAuthError } from '../../src/providers/provider-errors.js';
+import { ProviderAuthError, ProviderHttpError } from '../../src/providers/provider-errors.js';
 import { resetSyncState } from './sync-state.js';
 import { loadTestDbUrls } from './test-db.js';
 
@@ -144,5 +145,24 @@ describe('runUnits', () => {
 
     expect(result).toMatchObject({ status: 'partial', unitsDone: 1, unitsRemaining: 0 });
     expect(await rows('SELECT error FROM sync_run')).toEqual([{ error: LOCK_LOST_NOTE }]);
+  });
+
+  it('stops after three consecutive source failures', async () => {
+    const failing = (n: number): UnitPlan => ({
+      unit: `test:cases:fail${n}`,
+      load: () => Promise.reject(new ProviderHttpError(503)),
+    });
+
+    const result = await runUnits(
+      deps(),
+      plan([writes('BRA'), failing(1), failing(2), failing(3), failing(4)]),
+    );
+
+    expect(result).toMatchObject({ status: 'partial', unitsDone: 1, unitsRemaining: 4 });
+    const notes = await rows<{ error: string }>('SELECT error FROM sync_run');
+    expect(notes[0]?.error).toContain(SOURCE_UNSTABLE_NOTE);
+    expect(await rows("SELECT unit FROM sync_checkpoint WHERE unit = 'test:cases:fail4'")).toEqual(
+      [],
+    );
   });
 });
