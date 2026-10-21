@@ -29,7 +29,9 @@ export async function runSync(deps: RunSyncDeps): Promise<SyncResult> {
     if (interrupted.length > 0) {
       deps.logger.warn({ runIds: interrupted }, 'marked interrupted runs as failed');
       // A dead run may have written rows without refreshing the view.
-      await refreshGlobalDailyStat(deps.prisma);
+      await bestEffort(deps.logger, 'refresh global view after orphan recovery', () =>
+        refreshGlobalDailyStat(deps.prisma),
+      );
     }
     const plan = deps.mode === 'full' ? fullPlan(deps.source) : snapshotPlan(deps.source);
     return await runUnits({ ...deps, signal: lock.lost }, plan);
