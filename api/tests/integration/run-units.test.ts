@@ -128,4 +128,21 @@ describe('runUnits', () => {
     expect(await rows('SELECT error FROM sync_run')).toEqual([{ error: LOCK_LOST_NOTE }]);
     expect(await rows('SELECT unit FROM sync_checkpoint')).toEqual([{ unit: 'test:cases:BRA' }]);
   });
+
+  it('closes as partial when the lock is lost during the last unit', async () => {
+    const lost = new AbortController();
+    const last: UnitPlan = {
+      ...writes('BRA'),
+      async load(context) {
+        const output = await writes('BRA').load(context);
+        lost.abort();
+        return output;
+      },
+    };
+
+    const result = await runUnits(deps(lost.signal), plan([last]));
+
+    expect(result).toMatchObject({ status: 'partial', unitsDone: 1, unitsRemaining: 0 });
+    expect(await rows('SELECT error FROM sync_run')).toEqual([{ error: LOCK_LOST_NOTE }]);
+  });
 });

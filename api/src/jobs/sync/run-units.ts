@@ -117,13 +117,6 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
     mode: plan.mode,
     referenceDate: plan.referenceDate,
   });
-  const gate = createCallGate({
-    store: createProviderCallStore(prisma, { sourceId, syncRunId: runId }),
-    limits: deps.limits,
-    fetch: deps.fetch,
-    sleep: deps.sleep,
-  });
-  const provider = source.create(gate.fetch);
   const logger = deps.logger.child({ runId, mode: plan.mode });
 
   const pending = new Set<string>();
@@ -141,6 +134,13 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
   });
 
   try {
+    const gate = createCallGate({
+      store: createProviderCallStore(prisma, { sourceId, syncRunId: runId }),
+      limits: deps.limits,
+      fetch: deps.fetch,
+      sleep: deps.sleep,
+    });
+    const provider = source.create(gate.fetch);
     for (const unit of units) {
       if (deps.signal?.aborted) {
         notes.push(LOCK_LOST_NOTE);
@@ -190,6 +190,10 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
       }
     }
 
+    if (deps.signal?.aborted && !notes.includes(LOCK_LOST_NOTE)) {
+      notes.push(LOCK_LOST_NOTE);
+      logger.error('sync lock lost, stopping');
+    }
     if (wroteRows) {
       await refreshGlobalDailyStat(prisma);
     }
