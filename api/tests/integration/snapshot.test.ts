@@ -180,6 +180,7 @@ describe('runSync in snapshot mode', () => {
         sourceCode: 'api_ninjas',
         finalDate: '2023-03-09',
         fetchDay: () => Promise.reject(new Error('boom')),
+        fetchSeries: () => Promise.reject(new Error('boom')),
       }),
     };
 
