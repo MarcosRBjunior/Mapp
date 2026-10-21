@@ -9,7 +9,7 @@ export interface GeoProperties {
 export type CountryGeo = FeatureCollection<Geometry, GeoProperties>;
 
 async function fetchGeo(): Promise<CountryGeo> {
-  const response = await fetch('/geo/countries-110m.geojson');
+  const response = await fetch(`${import.meta.env.BASE_URL}geo/countries-110m.geojson`);
   if (!response.ok) throw new Error(`GeoJSON request failed with HTTP ${response.status}`);
   return (await response.json()) as CountryGeo;
 }

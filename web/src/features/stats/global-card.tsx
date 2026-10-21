@@ -1,13 +1,10 @@
 import type { ReactNode } from 'react';
 import { isApiError } from '../../shared/api/client';
 import { useGlobal } from '../../shared/api/queries';
-import type { Metric } from '../../shared/api/types';
-import { METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
+import { METRICS, METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
 import { Skeleton } from '../../shared/ui/skeleton';
-
-const METRICS: readonly Metric[] = ['cases', 'deaths'];
 
 export function GlobalCard() {
   const global = useGlobal();

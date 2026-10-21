@@ -1,10 +1,9 @@
-import { getEnv } from '../../config/env';
 import { useMeta } from '../api/queries';
-import { htmlToText } from '../format/html-to-text';
+import { tilesAttributionText } from '../format/tiles-attribution';
 
 export function SiteFooter() {
   const meta = useMeta();
-  const tiles = htmlToText(getEnv().tilesAttribution);
+  const tiles = tilesAttributionText();
 
   return (
     <footer className="site-footer">

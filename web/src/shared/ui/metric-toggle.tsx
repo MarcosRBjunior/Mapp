@@ -1,7 +1,5 @@
 import type { Metric } from '../api/types';
-import { METRIC_LABELS } from '../format/format';
-
-const METRICS: readonly Metric[] = ['cases', 'deaths'];
+import { METRICS, METRIC_LABELS } from '../format/format';
 
 interface MetricToggleProps {
   metric: Metric;

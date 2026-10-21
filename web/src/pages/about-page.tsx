@@ -1,9 +1,8 @@
 import { useEffect, type ReactNode } from 'react';
-import { getEnv } from '../config/env';
 import { useMeta } from '../shared/api/queries';
 import type { MetaResponse } from '../shared/api/types';
 import { formatDate, formatNumber } from '../shared/format/format';
-import { htmlToText } from '../shared/format/html-to-text';
+import { tilesAttributionText } from '../shared/format/tiles-attribution';
 import { ErrorState } from '../shared/ui/error-state';
 import { Skeleton } from '../shared/ui/skeleton';
 
@@ -19,7 +18,7 @@ const HTTP_URL = /^https?:\/\//;
 
 export function AboutPage() {
   const meta = useMeta();
-  const tiles = htmlToText(getEnv().tilesAttribution);
+  const tiles = tilesAttributionText();
 
   useEffect(() => {
     document.title = 'Sobre — Mapp';

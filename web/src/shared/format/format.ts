@@ -8,6 +8,8 @@ const percentFormat = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 1,
 });
 
+export const METRICS: readonly Metric[] = ['cases', 'deaths'];
+
 export const METRIC_LABELS: Record<Metric, { title: string; noun: string }> = {
   cases: { title: 'Casos', noun: 'casos' },
   deaths: { title: 'Mortes', noun: 'mortes' },
