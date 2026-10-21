@@ -24,3 +24,27 @@ Uma chamada real autorizada (2026-10-19) confirmou que a série termina em `2023
 - Se a API Ninjas contar o mês por outro ciclo (por exemplo, a partir da data de cadastro), o limite mensal pode ser ultrapassado perto da virada. O risco é baixo: o modo full deve gastar cerca de 400 chamadas.
 - Os testes nunca chamam a fonte: o `fetch` global é bloqueado no Vitest e o job recebe um `fetch` injetado.
 - O lock é de sessão: `DATABASE_URL_SYNC` precisa ser uma conexão direta ou de sessão, não um pooler em modo transação.
+
+## Atualização (F5, 2026-10-21)
+
+- **Modo full:**
+  - uma unidade por (métrica, alias `mapped`), `full:{metric}:{nome}`, hoje 404, nas mesmas chamadas `country=`;
+  - unidades `done` de runs `full` anteriores são puladas, porque a série é histórica, e as `error` ou `pending` são tentadas de novo;
+  - orçamento esgotado fecha o run como `partial`, e o próximo `--mode=full` continua de onde parou;
+  - o job recusa começar se dois aliases `mapped` apontarem para o mesmo país.
+- **Status:**
+  - `failed` só quando o run não gravou nada;
+  - a chave rejeitada (401/403) depois de gravar vira `partial` e o job para.
+  - Assim, todo run que grava dados muda o `dataVersion`.
+- **429:**
+  - `Retry-After` de 1 a 60 s é respeitado;
+  - um 429 na última tentativa vira orçamento esgotado e para o run.
+- **Orçamento:** é contado numa query só, com o relógio do banco (última hora e mês calendário UTC).
+- **Lock:**
+  - se a conexão do lock cair, o run para antes da próxima unidade e fecha com a nota "lock perdido";
+  - liberar o lock é best-effort.
+- **Consistência:**
+  - todo run que gravou atualiza a view, mesmo quando cai por erro inesperado;
+  - a recuperação de run órfão também atualiza a view;
+  - a cobertura (RN-06) é calculada só pela view, por métrica.
+- **Workflow:** `.github/workflows/sync.yml` é só manual (`workflow_dispatch`), com `concurrency` e `environment: production`.
