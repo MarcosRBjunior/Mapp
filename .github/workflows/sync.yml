@@ -24,11 +24,6 @@ jobs:
     # Worst case can exceed this (retries with Retry-After); a killed run becomes an orphan and the next run recovers it.
     timeout-minutes: 30
     environment: production
-    env:
-      DATABASE_URL_SYNC: ${{ secrets.DATABASE_URL_SYNC }}
-      API_NINJAS_KEY: ${{ secrets.API_NINJAS_KEY }}
-      DATA_PROVIDER: ${{ vars.DATA_PROVIDER || 'api_ninjas' }}
-      SYNC_MODE: ${{ inputs.mode }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,5 +33,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Secrets live only in this step, so install scripts never see them.
       # The mode reaches the shell only through an environment variable, never interpolated.
       - run: npm run sync -w api -- "--mode=$SYNC_MODE"
+        env:
+          DATABASE_URL_SYNC: ${{ secrets.DATABASE_URL_SYNC }}
+          API_NINJAS_KEY: ${{ secrets.API_NINJAS_KEY }}
+          DATA_PROVIDER: ${{ vars.DATA_PROVIDER || 'api_ninjas' }}
+          SYNC_MODE: ${{ inputs.mode }}
