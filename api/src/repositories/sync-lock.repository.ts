@@ -4,6 +4,8 @@ import pg from 'pg';
 export const SYNC_LOCK_KEY = 1_835_102_320;
 
 export interface SyncLock {
+  // Aborted when the lock connection dies: the run must stop writing.
+  readonly lost: AbortSignal;
   release(): Promise<void>;
 }
 
@@ -25,8 +27,18 @@ export async function tryAcquireSyncLock(connectionString: string): Promise<Sync
   if (!locked) {
     return null;
   }
+  const lost = new AbortController();
+  client.on('error', (error) => {
+    lost.abort(error);
+  });
   return {
+    lost: lost.signal,
     async release() {
+      if (lost.signal.aborted) {
+        // The session is gone and the lock died with it.
+        await client.end().catch(() => undefined);
+        return;
+      }
       try {
         await client.query('SELECT pg_advisory_unlock($1)', [SYNC_LOCK_KEY]);
       } finally {

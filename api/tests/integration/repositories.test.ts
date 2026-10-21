@@ -1,8 +1,8 @@
 import pg from 'pg';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPrisma } from '../../src/lib/prisma.js';
 import { insertPendingAliases, loadAliases } from '../../src/repositories/alias.repository.js';
-import { upsertDailyStats } from '../../src/repositories/daily-stat.repository.js';
+import { upsertDailyStats, upsertSeries } from '../../src/repositories/daily-stat.repository.js';
 import { findSourceId } from '../../src/repositories/data-source.repository.js';
 import { refreshGlobalDailyStat } from '../../src/repositories/global-stat.repository.js';
 import { createProviderCallStore } from '../../src/repositories/provider-call.repository.js';
@@ -14,8 +14,10 @@ import {
   failOrphanRuns,
   finishRun,
   startCheckpoint,
+  findDoneUnits,
   startRun,
 } from '../../src/repositories/sync-run.repository.js';
+import { writeUnit } from '../../src/repositories/sync-unit.repository.js';
 import { resetSyncState } from './sync-state.js';
 import { loadTestDbUrls } from './test-db.js';
 
@@ -270,5 +272,130 @@ describe('sync lock', () => {
     } finally {
       await again?.release();
     }
+  });
+
+  it('signals when the lock connection is lost', async () => {
+    const lock = await tryAcquireSyncLock(urls.syncUrl);
+    if (lock === null) throw new Error('lock not acquired');
+    expect(lock.lost.aborted).toBe(false);
+
+    await owner.query(
+      `SELECT pg_terminate_backend(pid) FROM pg_locks
+       WHERE locktype = 'advisory' AND objid = $1 AND granted`,
+      [SYNC_LOCK_KEY],
+    );
+
+    await vi.waitFor(() => {
+      expect(lock.lost.aborted).toBe(true);
+    });
+    await expect(lock.release()).resolves.toBeUndefined();
+  });
+});
+
+describe('series upsert', () => {
+  it('upserts a country series by key (RN-09)', async () => {
+    const points = [
+      { date: '2023-03-08', total: 100, new: 5 },
+      { date: '2023-03-09', total: 110, new: -2 },
+    ];
+    expect(
+      await upsertSeries(prisma, { sourceId, metric: 'cases', countryCode: 'BRA', points }),
+    ).toBe(2);
+    await upsertSeries(prisma, {
+      sourceId,
+      metric: 'cases',
+      countryCode: 'BRA',
+      points: [{ date: '2023-03-09', total: 111, new: -1 }],
+    });
+
+    const result = await owner.query(
+      `SELECT stat_date::text AS date, total, new_value FROM daily_stat
+       WHERE country_code = 'BRA' AND metric = 'cases' ORDER BY stat_date`,
+    );
+    expect(result.rows).toEqual([
+      { date: '2023-03-08', total: 100, new_value: 5 },
+      { date: '2023-03-09', total: 111, new_value: -1 },
+    ]);
+  });
+
+  it('ignores an empty series', async () => {
+    expect(
+      await upsertSeries(prisma, { sourceId, metric: 'deaths', countryCode: 'XDP', points: [] }),
+    ).toBe(0);
+  });
+});
+
+describe('unit write', () => {
+  it('writes pending aliases, the rows and the done checkpoint in one transaction', async () => {
+    const runId = await openRun();
+    await startCheckpoint(prisma, runId, 'full:cases:Brazil');
+
+    const written = await writeUnit(prisma, {
+      sourceId,
+      runId,
+      unit: 'full:cases:Brazil',
+      pendingNames: ['Atlantis'],
+      rows: {
+        kind: 'series',
+        metric: 'cases',
+        series: [{ countryCode: 'BRA', points: [{ date: '2023-03-09', total: 1, new: 1 }] }],
+      },
+    });
+
+    expect(written).toBe(1);
+    expect(
+      (
+        await owner.query('SELECT unit, status FROM sync_checkpoint WHERE sync_run_id = $1', [
+          runId,
+        ])
+      ).rows,
+    ).toEqual([{ unit: 'full:cases:Brazil', status: 'done' }]);
+    expect(
+      (await owner.query("SELECT status FROM country_alias WHERE source_name = 'Atlantis'")).rows,
+    ).toEqual([{ status: 'pending' }]);
+  });
+
+  it('rolls everything back when the checkpoint does not exist', async () => {
+    const runId = await openRun();
+
+    await expect(
+      writeUnit(prisma, {
+        sourceId,
+        runId,
+        unit: 'full:cases:Nowhere',
+        pendingNames: [],
+        rows: {
+          kind: 'day',
+          metric: 'cases',
+          statDate: '2023-03-09',
+          values: [{ countryCode: 'ARG', total: 7, new: 0 }],
+        },
+      }),
+    ).rejects.toThrow();
+    expect(
+      (await owner.query("SELECT count(*)::int AS n FROM daily_stat WHERE country_code = 'ARG'"))
+        .rows,
+    ).toEqual([{ n: 0 }]);
+  });
+});
+
+describe('done units', () => {
+  it('lists units done in runs of the same source and mode', async () => {
+    const fullRun = await owner.query<{ id: number }>(
+      `INSERT INTO sync_run (source_id, mode, status) VALUES ($1, 'full', 'partial') RETURNING id`,
+      [sourceId],
+    );
+    const snapshotRun = await owner.query<{ id: number }>(
+      `INSERT INTO sync_run (source_id, mode, status) VALUES ($1, 'snapshot', 'success') RETURNING id`,
+      [sourceId],
+    );
+    await owner.query(
+      `INSERT INTO sync_checkpoint (sync_run_id, unit, status) VALUES
+         ($1, 'full:cases:Brazil', 'done'), ($1, 'full:cases:Chile', 'error'),
+         ($1, 'full:deaths:Brazil', 'pending'), ($2, 'snapshot:cases:2023-03-09', 'done')`,
+      [fullRun.rows[0]?.id, snapshotRun.rows[0]?.id],
+    );
+
+    expect(await findDoneUnits(prisma, sourceId, 'full')).toEqual(new Set(['full:cases:Brazil']));
   });
 });
