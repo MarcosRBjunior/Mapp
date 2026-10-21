@@ -47,5 +47,8 @@ Uma chamada real autorizada (2026-10-19) confirmou que a série termina em `2023
   - todo run que gravou atualiza a view, mesmo quando cai por erro inesperado;
   - a recuperação de run órfão também atualiza a view;
   - a cobertura (RN-06) é calculada só pela view, por métrica.
-- **Workflow:** `.github/workflows/sync.yml` é só manual (`workflow_dispatch`), com `concurrency` e `environment: production`.
+- **Disjuntor:** três unidades seguidas com falha de rede/5xx (`ProviderNetworkError`/`ProviderHttpError`) param o run com a nota `fonte instável`; um sucesso ou outro tipo de erro zera a contagem.
+- **Perda do lock:** o sinal do lock chega ao `CallGate`, que não inicia tentativa e cancela a que está em voo (`LockLostError`); o run também não grava a unidade carregada depois da perda e fecha com a nota de lock perdido.
+- **`Retry-After`:** um 429 com mais de 60 s (segundos inteiros) encerra na hora como orçamento esgotado; data HTTP ou outro formato mantém o atraso padrão.
+- **Workflow:** `.github/workflows/sync.yml` é só manual (`workflow_dispatch`), com `concurrency` e `environment: production`; os segredos (`DATABASE_URL_SYNC`, `API_NINJAS_KEY`) ficam só no `env` do passo `npm run sync`, para que os scripts do `npm ci` não os vejam.
 - **Refazer uma série:** unidades `done` nunca rodam de novo; para recarregar um país (por exemplo, depois de remapear um alias), apague os checkpoints `full:cases:<nome>` e `full:deaths:<nome>` e rode o full.
