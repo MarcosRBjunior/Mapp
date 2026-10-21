@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BudgetExhaustedError } from '../../../../src/jobs/sync/budget.js';
+import { LockLostError } from '../../../../src/jobs/sync/lock-lost.js';
 import {
   RATE_LIMIT_MESSAGE,
   createCallGate,
@@ -120,6 +121,37 @@ describe('createCallGate', () => {
     });
 
     expect(delays).toEqual([1_000, 2_000]);
+  });
+
+  it('throws LockLostError when the signal is aborted before an attempt', async () => {
+    const { requests, fetch } = scriptedFetch(200);
+    const { store } = memoryStore();
+
+    await expect(
+      createCallGate({ store, limits: LIMITS, fetch, signal: AbortSignal.abort() }).fetch(
+        URL_CASES,
+        { headers: HEADERS },
+      ),
+    ).rejects.toBeInstanceOf(LockLostError);
+    expect(requests).toHaveLength(0);
+  });
+
+  it('surfaces an abort from the lock signal as LockLostError, not a timeout', async () => {
+    const lost = new AbortController();
+    const { store } = memoryStore();
+    const fetch: RawFetch = (_url, init) =>
+      new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => {
+          reject(new DOMException('aborted', 'AbortError'));
+        });
+        lost.abort();
+      });
+
+    await expect(
+      createCallGate({ store, limits: LIMITS, fetch, signal: lost.signal }).fetch(URL_CASES, {
+        headers: HEADERS,
+      }),
+    ).rejects.toBeInstanceOf(LockLostError);
   });
 
   it('treats a 429 on the last attempt as an exhausted budget', async () => {

@@ -1,5 +1,6 @@
 import type { FetchLike } from '../../providers/covid-provider.js';
 import { ProviderNetworkError, isTimeoutError } from '../../providers/provider-errors.js';
+import { LockLostError } from './lock-lost.js';
 import {
   BudgetExhaustedError,
   budgetExhausted,
@@ -32,6 +33,8 @@ export interface CallGateOptions {
   fetch: RawFetch;
   sleep?: (ms: number) => Promise<void>;
   timeoutMs?: number;
+  // Aborted when the sync lock is lost: no attempt may start and an in-flight one is cancelled.
+  signal?: AbortSignal;
 }
 
 export interface CallGate {
@@ -93,10 +96,11 @@ export function createCallGate(options: CallGateOptions): CallGate {
   async function attemptOnce(url: string, headers: Record<string, string>): Promise<Attempt> {
     const started = performance.now();
     let attempt: Attempt;
+    const timeout = AbortSignal.timeout(timeoutMs);
     try {
       const response = await options.fetch(url, {
         headers,
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: options.signal ? AbortSignal.any([timeout, options.signal]) : timeout,
       });
       // Buffer inside the try so a stalled or reset body is recorded and retried like any attempt.
       const body = await response.arrayBuffer();
@@ -119,11 +123,18 @@ export function createCallGate(options: CallGateOptions): CallGate {
       outcome:
         attempt.kind === 'failure' ? attempt.error.kind : attempt.response.ok ? 'ok' : 'http_error',
     });
+    // An abort caused by the lock signal is not a source timeout: surface it as such.
+    if (options.signal?.aborted && attempt.kind === 'failure') {
+      throw new LockLostError();
+    }
     return attempt;
   }
 
   const gatedFetch: FetchLike = async (url, init) => {
     for (let attemptNumber = 1; ; attemptNumber += 1) {
+      if (options.signal?.aborted) {
+        throw new LockLostError();
+      }
       await assertBudget();
       const attempt = await attemptOnce(url, init.headers);
       const retryable = attempt.kind === 'failure' || isRetryableStatus(attempt.response.status);

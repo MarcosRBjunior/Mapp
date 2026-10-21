@@ -21,6 +21,7 @@ import { writeUnit, type UnitRows } from '../../repositories/sync-unit.repositor
 import type { AliasEntry } from './aggregate.js';
 import { bestEffort } from './best-effort.js';
 import { BudgetExhaustedError, type BudgetLimits } from './budget.js';
+import { LockLostError } from './lock-lost.js';
 import { createCallGate, type RawFetch } from './call-gate.js';
 
 export type RunStatus = 'success' | 'partial' | 'failed';
@@ -142,6 +143,7 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
       store: createProviderCallStore(prisma, { sourceId, syncRunId: runId }),
       limits: deps.limits,
       fetch: deps.fetch,
+      signal: deps.signal,
       sleep: deps.sleep,
     });
     const provider = source.create(gate.fetch);
@@ -154,6 +156,9 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
       await startCheckpoint(prisma, runId, unit.unit);
       try {
         const output = await unit.load({ provider, aliases });
+        if (deps.signal?.aborted) {
+          throw new LockLostError();
+        }
         const written = await writeUnit(prisma, {
           sourceId,
           runId,
@@ -184,6 +189,13 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
         await bestEffort(logger, 'fail checkpoint', () =>
           failCheckpoint(prisma, runId, unit.unit, message),
         );
+        if (error instanceof LockLostError) {
+          if (!notes.includes(LOCK_LOST_NOTE)) {
+            notes.push(LOCK_LOST_NOTE);
+          }
+          logger.error('sync lock lost, stopping');
+          break;
+        }
         if (!isUnitError(error)) {
           throw error;
         }

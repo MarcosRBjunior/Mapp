@@ -1,4 +1,5 @@
 import pg from 'pg';
+import type { Logger } from 'pino';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   LOCK_LOST_NOTE,
@@ -34,6 +35,20 @@ function deps(signal?: AbortSignal): RunUnitsDeps {
     logger: createLogger('silent'),
     signal,
   };
+}
+
+// Simulates losing the lock right after a unit was written, when it logs 'unit done'.
+function abortAfterUnit(lost: AbortController): RunUnitsDeps {
+  const base = deps(lost.signal);
+  const logger = {
+    child: () => logger,
+    info: (_fields: unknown, message?: string) => {
+      if (message === 'unit done') lost.abort();
+    },
+    warn: () => undefined,
+    error: () => undefined,
+  } as unknown as Logger;
+  return { ...base, logger };
 }
 
 function writes(code: string): UnitPlan {
@@ -114,16 +129,7 @@ describe('runUnits', () => {
 
   it('stops before the next unit when the lock is lost', async () => {
     const lost = new AbortController();
-    const first: UnitPlan = {
-      ...writes('BRA'),
-      async load(context) {
-        const output = await writes('BRA').load(context);
-        lost.abort();
-        return output;
-      },
-    };
-
-    const result = await runUnits(deps(lost.signal), plan([first, writes('ARG')]));
+    const result = await runUnits(abortAfterUnit(lost), plan([writes('BRA'), writes('ARG')]));
 
     expect(result).toMatchObject({ status: 'partial', unitsDone: 1, unitsRemaining: 1 });
     expect(await rows('SELECT error FROM sync_run')).toEqual([{ error: LOCK_LOST_NOTE }]);
@@ -132,16 +138,7 @@ describe('runUnits', () => {
 
   it('closes as partial when the lock is lost during the last unit', async () => {
     const lost = new AbortController();
-    const last: UnitPlan = {
-      ...writes('BRA'),
-      async load(context) {
-        const output = await writes('BRA').load(context);
-        lost.abort();
-        return output;
-      },
-    };
-
-    const result = await runUnits(deps(lost.signal), plan([last]));
+    const result = await runUnits(abortAfterUnit(lost), plan([writes('BRA')]));
 
     expect(result).toMatchObject({ status: 'partial', unitsDone: 1, unitsRemaining: 0 });
     expect(await rows('SELECT error FROM sync_run')).toEqual([{ error: LOCK_LOST_NOTE }]);
@@ -164,5 +161,23 @@ describe('runUnits', () => {
     expect(await rows("SELECT unit FROM sync_checkpoint WHERE unit = 'test:cases:fail4'")).toEqual(
       [],
     );
+  });
+
+  it('does not write the rows of a unit whose lock was lost while loading', async () => {
+    const lost = new AbortController();
+    const unit: UnitPlan = {
+      ...writes('BRA'),
+      async load(context) {
+        const output = await writes('BRA').load(context);
+        lost.abort();
+        return output;
+      },
+    };
+
+    const result = await runUnits(deps(lost.signal), plan([unit, writes('ARG')]));
+
+    expect(result).toMatchObject({ status: 'failed', unitsDone: 0, unitsRemaining: 2 });
+    expect(await rows('SELECT error FROM sync_run')).toEqual([{ error: LOCK_LOST_NOTE }]);
+    expect(await rows('SELECT country_code FROM daily_stat')).toEqual([]);
   });
 });
