@@ -1,8 +1,13 @@
-import { METRICS, type Metric, type ProviderFactory } from '../../providers/covid-provider.js';
+import {
+  METRICS,
+  type CovidProvider,
+  type Metric,
+  type ProviderFactory,
+} from '../../providers/covid-provider.js';
 import { ProviderPayloadError } from '../../providers/provider-errors.js';
 import { findDoneUnits } from '../../repositories/sync-run.repository.js';
 import { aggregateSeries, type AliasEntry } from './aggregate.js';
-import type { RunPlan, UnitPlan } from './run-units.js';
+import type { RunPlan, UnitOutput, UnitPlan } from './run-units.js';
 
 export interface FullUnit {
   unit: string;
@@ -45,6 +50,33 @@ export function planFullUnits(
   return { units: all.filter((unit) => !done.has(unit.unit)), planned: all.length };
 }
 
+// The source may match ?country= by prefix (Niger/Nigeria): keep only the requested name.
+export async function loadFullUnit(
+  provider: CovidProvider,
+  aliases: ReadonlyMap<string, AliasEntry>,
+  unit: FullUnit,
+): Promise<UnitOutput> {
+  const rows = (await provider.fetchSeries(unit.sourceName, unit.metric)).filter(
+    (row) => row.country === unit.sourceName,
+  );
+  if (rows.length === 0) {
+    throw new ProviderPayloadError(`series for ${unit.sourceName} has no rows for that name`);
+  }
+  const result = aggregateSeries(rows, aliases);
+  if (result.series.length > 1) {
+    throw new ProviderPayloadError(
+      `series for ${unit.sourceName} maps to several countries: ${result.series
+        .map((entry) => entry.countryCode)
+        .join(', ')}`,
+    );
+  }
+  return {
+    rows: { kind: 'series', metric: unit.metric, series: result.series },
+    pendingNames: result.pendingNames,
+    ignoredNames: result.ignoredNames,
+  };
+}
+
 export function fullPlan(source: ProviderFactory): RunPlan {
   return {
     mode: 'full',
@@ -58,24 +90,7 @@ export function fullPlan(source: ProviderFactory): RunPlan {
         alreadyDone: planned - units.length,
         units: units.map((unit): UnitPlan => ({
           unit: unit.unit,
-          async load({ provider, aliases: known }) {
-            const result = aggregateSeries(
-              await provider.fetchSeries(unit.sourceName, unit.metric),
-              known,
-            );
-            if (result.series.length > 1) {
-              throw new ProviderPayloadError(
-                `series for ${unit.sourceName} maps to several countries: ${result.series
-                  .map((entry) => entry.countryCode)
-                  .join(', ')}`,
-              );
-            }
-            return {
-              rows: { kind: 'series', metric: unit.metric, series: result.series },
-              pendingNames: result.pendingNames,
-              ignoredNames: result.ignoredNames,
-            };
-          },
+          load: ({ provider, aliases: known }) => loadFullUnit(provider, known, unit),
         })),
       };
     },
