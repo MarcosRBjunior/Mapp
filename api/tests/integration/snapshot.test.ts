@@ -55,6 +55,7 @@ function deps(fetch: RawFetch): RunSyncDeps {
   return {
     prisma,
     lockUrl: urls.syncUrl,
+    mode: 'snapshot',
     fetch,
     limits: { perHour: 90, perMonth: 3000 },
     logger: createLogger('silent'),

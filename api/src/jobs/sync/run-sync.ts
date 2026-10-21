@@ -2,6 +2,8 @@ import { refreshGlobalDailyStat } from '../../repositories/global-stat.repositor
 import { tryAcquireSyncLock } from '../../repositories/sync-lock.repository.js';
 import { failOrphanRuns } from '../../repositories/sync-run.repository.js';
 import { bestEffort } from './best-effort.js';
+import type { SyncMode } from './cli-args.js';
+import { fullPlan } from './full-plan.js';
 import { runUnits, type RunUnitsDeps, type SyncResult } from './run-units.js';
 import { snapshotPlan } from './snapshot-plan.js';
 
@@ -14,6 +16,7 @@ export class SyncLockedError extends Error {
 
 export interface RunSyncDeps extends RunUnitsDeps {
   lockUrl: string;
+  mode: SyncMode;
 }
 
 export async function runSync(deps: RunSyncDeps): Promise<SyncResult> {
@@ -28,7 +31,8 @@ export async function runSync(deps: RunSyncDeps): Promise<SyncResult> {
       // A dead run may have written rows without refreshing the view.
       await refreshGlobalDailyStat(deps.prisma);
     }
-    return await runUnits({ ...deps, signal: lock.lost }, snapshotPlan(deps.source));
+    const plan = deps.mode === 'full' ? fullPlan(deps.source) : snapshotPlan(deps.source);
+    return await runUnits({ ...deps, signal: lock.lost }, plan);
   } finally {
     await bestEffort(deps.logger, 'release sync lock', () => lock.release());
   }

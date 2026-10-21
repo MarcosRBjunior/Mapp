@@ -17,11 +17,6 @@ async function main(): Promise<number> {
     throw error;
   }
 
-  if (mode === 'full') {
-    console.error('mode=full is not available yet (phase F5)');
-    return 2;
-  }
-
   const env = loadSyncEnv();
   const logger = createLogger(env.LOG_LEVEL);
 
@@ -30,6 +25,7 @@ async function main(): Promise<number> {
     const result = await runSync({
       prisma,
       lockUrl: env.DATABASE_URL_SYNC,
+      mode,
       source: createProviderFactory(env),
       fetch,
       limits: { perHour: env.SYNC_CALLS_PER_HOUR, perMonth: env.SYNC_CALLS_PER_MONTH },
