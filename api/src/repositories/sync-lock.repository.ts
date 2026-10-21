@@ -11,6 +11,16 @@ export interface SyncLock {
 
 export async function tryAcquireSyncLock(connectionString: string): Promise<SyncLock | null> {
   const client = new pg.Client({ connectionString });
+  const lost = new AbortController();
+  let releasing = false;
+  client.on('error', (error) => {
+    lost.abort(error);
+  });
+  client.on('end', () => {
+    if (!releasing) {
+      lost.abort(new Error('sync lock connection ended'));
+    }
+  });
   await client.connect();
   let locked = false;
   try {
@@ -21,19 +31,17 @@ export async function tryAcquireSyncLock(connectionString: string): Promise<Sync
     locked = result.rows[0]?.locked === true;
   } finally {
     if (!locked) {
+      releasing = true;
       await client.end();
     }
   }
   if (!locked) {
     return null;
   }
-  const lost = new AbortController();
-  client.on('error', (error) => {
-    lost.abort(error);
-  });
   return {
     lost: lost.signal,
     async release() {
+      releasing = true;
       if (lost.signal.aborted) {
         // The session is gone and the lock died with it.
         await client.end().catch(() => undefined);
