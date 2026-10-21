@@ -10,3 +10,4 @@ web/blob-report
 api/src/generated
 web/public/geo
 docs/openapi.yaml
+web/src/shared/api/schema.d.ts
