@@ -103,7 +103,10 @@ function CountryMarker({
   }, [code, label]);
 
   useEffect(() => {
-    if (selected) markerRef.current?.openPopup();
+    const marker = markerRef.current;
+    if (!marker) return;
+    if (selected) marker.openPopup();
+    else marker.closePopup();
   }, [selected]);
 
   const eventHandlers = useMemo(() => ({ click: () => onSelectRef.current(code) }), [code]);
