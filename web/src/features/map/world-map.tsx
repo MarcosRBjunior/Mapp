@@ -1,6 +1,6 @@
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Pane, TileLayer, useMap } from 'react-leaflet';
 import { getEnv } from '../../config/env';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { ErrorState } from '../../shared/ui/error-state';
@@ -67,14 +67,17 @@ export function WorldMap({
         aria-label="Mapa-múndi"
       >
         <TileLayer url={tilesUrl} attribution={tilesAttribution} />
-        {geo.data && (
-          <CountryPolygons
-            geo={geo.data}
-            knownCodes={knownCodes}
-            selectedCode={selectedCode}
-            onSelect={onSelect}
-          />
-        )}
+        {/* Own pane below the markers (overlayPane is 400), so polygons never cover them. */}
+        <Pane name="countries" style={{ zIndex: 350 }}>
+          {geo.data && (
+            <CountryPolygons
+              geo={geo.data}
+              knownCodes={knownCodes}
+              selectedCode={selectedCode}
+              onSelect={onSelect}
+            />
+          )}
+        </Pane>
         {countries && (
           <CountryMarkers
             countries={countries}
