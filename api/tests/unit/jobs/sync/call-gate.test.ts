@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { BudgetExhaustedError } from '../../../../src/jobs/sync/budget.js';
 import {
+  RATE_LIMIT_MESSAGE,
   createCallGate,
+  parseRetryAfter,
   type CallRecord,
   type ProviderCallStore,
   type RawFetch,
@@ -19,7 +21,11 @@ interface StoredCall extends CallRecord {
 function memoryStore(alreadyUsed = 0) {
   const calls: StoredCall[] = [];
   const store: ProviderCallStore = {
-    countSince: () => Promise.resolve(alreadyUsed + calls.length),
+    countUsage: () =>
+      Promise.resolve({
+        lastHour: alreadyUsed + calls.length,
+        thisMonth: alreadyUsed + calls.length,
+      }),
     record: (call) => {
       const id = BigInt(calls.length + 1);
       calls.push({ ...call, id, invalid: false });
@@ -78,6 +84,60 @@ const erroringBody = (error: Error): Response =>
   );
 
 describe('createCallGate', () => {
+  it('waits the Retry-After seconds on a 429', async () => {
+    const { fetch } = scriptedFetch(
+      new Response('[]', { status: 429, headers: { 'Retry-After': '5' } }),
+      200,
+    );
+    const { delays, sleep } = recordingSleep();
+    const { store } = memoryStore();
+
+    const response = await createCallGate({ store, limits: LIMITS, fetch, sleep }).fetch(
+      URL_CASES,
+      {
+        headers: HEADERS,
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(delays).toEqual([5_000]);
+  });
+
+  it('falls back to the default delay for an invalid or long Retry-After', async () => {
+    const { fetch } = scriptedFetch(
+      new Response('[]', { status: 429, headers: { 'Retry-After': '120' } }),
+      new Response('[]', {
+        status: 429,
+        headers: { 'Retry-After': 'Wed, 21 Oct 2026 07:28:00 GMT' },
+      }),
+      200,
+    );
+    const { delays, sleep } = recordingSleep();
+    const { store } = memoryStore();
+
+    await createCallGate({ store, limits: LIMITS, fetch, sleep }).fetch(URL_CASES, {
+      headers: HEADERS,
+    });
+
+    expect(delays).toEqual([1_000, 2_000]);
+  });
+
+  it('treats a 429 on the last attempt as an exhausted budget', async () => {
+    const { calls, store } = memoryStore();
+    const { fetch } = scriptedFetch(429, 429, 429);
+
+    const failure = createCallGate({
+      store,
+      limits: LIMITS,
+      fetch,
+      sleep: recordingSleep().sleep,
+    }).fetch(URL_CASES, { headers: HEADERS });
+
+    await expect(failure).rejects.toBeInstanceOf(BudgetExhaustedError);
+    await expect(failure).rejects.toThrow(RATE_LIMIT_MESSAGE);
+    expect(calls).toHaveLength(3);
+  });
+
   it('retries when the body read times out after the headers', async () => {
     const { calls, store } = memoryStore();
     const { fetch } = scriptedFetch(erroringBody(timeoutError()), 200);
@@ -267,5 +327,27 @@ describe('createCallGate', () => {
     await gate.markLastInvalid();
 
     expect(calls[0]?.invalid).toBe(true);
+  });
+});
+
+describe('parseRetryAfter', () => {
+  it('accepts whole seconds from 1 to 60', () => {
+    expect(parseRetryAfter('1')).toBe(1_000);
+    expect(parseRetryAfter('60')).toBe(60_000);
+  });
+
+  it('rejects anything else', () => {
+    for (const value of [
+      null,
+      '',
+      '0',
+      '61',
+      '1.5',
+      '-3',
+      'soon',
+      'Wed, 21 Oct 2026 07:28:00 GMT',
+    ]) {
+      expect(parseRetryAfter(value)).toBeNull();
+    }
   });
 });

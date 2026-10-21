@@ -79,7 +79,6 @@ export async function runSnapshot(deps: SnapshotDeps): Promise<SyncResult> {
     limits: deps.limits,
     fetch: deps.fetch,
     sleep: deps.sleep,
-    now: deps.now,
   });
   gateRef.current = activeGate;
   const logger = deps.logger.child({ runId, mode: 'snapshot', referenceDate: date });

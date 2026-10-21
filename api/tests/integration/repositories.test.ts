@@ -215,10 +215,9 @@ describe('sync runs and checkpoints', () => {
 });
 
 describe('provider call store', () => {
-  it('counts calls since an instant and marks invalid payloads', async () => {
+  it('counts the last hour and the UTC month with the database clock', async () => {
     const runId = await openRun();
     const store = createProviderCallStore(prisma, { sourceId, syncRunId: runId });
-    const before = new Date(Date.now() - 60_000);
     const id = await store.record({
       endpoint: '/v1/covid19?date=2023-03-09&type=deaths',
       statusCode: 200,
@@ -226,13 +225,29 @@ describe('provider call store', () => {
       outcome: 'ok',
     });
     expect(typeof id).toBe('bigint');
-    expect(await store.countSince(before)).toBe(1);
-    expect(await store.countSince(new Date(Date.now() + 60_000))).toBe(0);
+    await owner.query(
+      `INSERT INTO provider_call (source_id, endpoint, outcome, called_at) VALUES
+         ($1, '/a', 'ok', now() - interval '30 minutes'),
+         ($1, '/b', 'ok', now() - interval '2 hours'),
+         ($1, '/c', 'ok', now() - interval '40 days')`,
+      [sourceId],
+    );
+    const clock = await owner.query<{ now: Date; month_start: Date }>(
+      `SELECT now() AS now,
+              date_trunc('month', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' AS month_start`,
+    );
+    const { now, month_start: monthStart } = clock.rows[0]!;
+    const inMonth = [0, 30 * 60_000, 2 * 3_600_000].filter(
+      (ago) => now.getTime() - ago >= monthStart.getTime(),
+    ).length;
+
+    expect(await store.countUsage()).toEqual({ lastHour: 2, thisMonth: inMonth });
 
     await store.markInvalidPayload(id);
-
-    const calls = await owner.query('SELECT outcome, sync_run_id FROM provider_call');
-    expect(calls.rows).toEqual([{ outcome: 'invalid_payload', sync_run_id: runId }]);
+    const calls = await owner.query(
+      "SELECT outcome FROM provider_call WHERE endpoint LIKE '/v1/%'",
+    );
+    expect(calls.rows).toEqual([{ outcome: 'invalid_payload' }]);
   });
 });
 

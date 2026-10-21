@@ -9,7 +9,7 @@ export interface ProviderCallInput {
 }
 
 export interface ProviderCallRepository {
-  countSince(since: Date): Promise<number>;
+  countUsage(): Promise<{ lastHour: number; thisMonth: number }>;
   record(call: ProviderCallInput): Promise<bigint>;
   markInvalidPayload(id: bigint): Promise<void>;
 }
@@ -19,8 +19,22 @@ export function createProviderCallStore(
   scope: { sourceId: number; syncRunId: number },
 ): ProviderCallRepository {
   return {
-    countSince: (since) =>
-      db.providerCall.count({ where: { sourceId: scope.sourceId, calledAt: { gte: since } } }),
+    // One query with the database clock: the last hour and the UTC calendar month.
+    async countUsage() {
+      const [row] = await db.$queryRaw<{ lastHour: number; thisMonth: number }[]>`
+        SELECT
+          count(*) FILTER (WHERE called_at >= now() - interval '1 hour')::int AS "lastHour",
+          count(*) FILTER (
+            WHERE called_at >= date_trunc('month', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+          )::int AS "thisMonth"
+        FROM provider_call
+        WHERE source_id = ${scope.sourceId}
+          AND called_at >= least(
+            now() - interval '1 hour',
+            date_trunc('month', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+          )`;
+      return { lastHour: row?.lastHour ?? 0, thisMonth: row?.thisMonth ?? 0 };
+    },
     async record(call) {
       const row = await db.providerCall.create({
         data: { sourceId: scope.sourceId, syncRunId: scope.syncRunId, ...call },

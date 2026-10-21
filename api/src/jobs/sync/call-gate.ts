@@ -2,10 +2,10 @@ import type { FetchLike } from '../../providers/covid-provider.js';
 import { ProviderNetworkError, isTimeoutError } from '../../providers/provider-errors.js';
 import {
   BudgetExhaustedError,
-  hourAgo,
+  budgetExhausted,
   isBudgetExhausted,
-  monthStartUtc,
   type BudgetLimits,
+  type CallCounts,
 } from './budget.js';
 
 export type RawFetch = (
@@ -21,7 +21,7 @@ export interface CallRecord {
 }
 
 export interface ProviderCallStore {
-  countSince(since: Date): Promise<number>;
+  countUsage(): Promise<CallCounts>;
   record(call: CallRecord): Promise<bigint>;
   markInvalidPayload(id: bigint): Promise<void>;
 }
@@ -30,7 +30,6 @@ export interface CallGateOptions {
   store: ProviderCallStore;
   limits: BudgetLimits;
   fetch: RawFetch;
-  now?: () => Date;
   sleep?: (ms: number) => Promise<void>;
   timeoutMs?: number;
 }
@@ -46,6 +45,24 @@ type Attempt =
 const TIMEOUT_MS = 10_000;
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [1_000, 2_000] as const;
+const MAX_RETRY_AFTER_SECONDS = 60;
+
+export const RATE_LIMIT_MESSAGE = 'Provider rate limit reached (HTTP 429)';
+
+// Only whole seconds from 1 to 60 are honoured; anything else falls back to the default delay.
+export function parseRetryAfter(value: string | null): number | null {
+  if (value === null || !/^\d+$/.test(value)) return null;
+  const seconds = Number(value);
+  return seconds >= 1 && seconds <= MAX_RETRY_AFTER_SECONDS ? seconds * 1_000 : null;
+}
+
+function retryDelay(attempt: Attempt, attemptNumber: number): number {
+  const fallback = RETRY_DELAYS_MS[attemptNumber - 1] ?? RETRY_DELAYS_MS[1];
+  if (attempt.kind === 'response' && attempt.response.status === 429) {
+    return parseRetryAfter(attempt.response.headers.get('Retry-After')) ?? fallback;
+  }
+  return fallback;
+}
 
 const defaultSleep = (ms: number): Promise<void> =>
   new Promise((resolve) => {
@@ -62,19 +79,14 @@ function endpointOf(url: string): string {
 }
 
 export function createCallGate(options: CallGateOptions): CallGate {
-  const now = options.now ?? (() => new Date());
   const sleep = options.sleep ?? defaultSleep;
   const timeoutMs = options.timeoutMs ?? TIMEOUT_MS;
   let lastCallId: bigint | undefined;
 
   async function assertBudget(): Promise<void> {
-    const current = now();
-    const counts = {
-      lastHour: await options.store.countSince(hourAgo(current)),
-      thisMonth: await options.store.countSince(monthStartUtc(current)),
-    };
+    const counts = await options.store.countUsage();
     if (isBudgetExhausted(counts, options.limits)) {
-      throw new BudgetExhaustedError(counts, options.limits);
+      throw budgetExhausted(counts, options.limits);
     }
   }
 
@@ -119,9 +131,13 @@ export function createCallGate(options: CallGateOptions): CallGate {
         if (attempt.kind === 'failure') {
           throw attempt.error;
         }
+        if (attempt.response.status === 429) {
+          // The source says its own quota is gone: stop the run instead of burning more calls.
+          throw new BudgetExhaustedError(RATE_LIMIT_MESSAGE);
+        }
         return attempt.response;
       }
-      await sleep(RETRY_DELAYS_MS[attemptNumber - 1] ?? RETRY_DELAYS_MS[1]);
+      await sleep(retryDelay(attempt, attemptNumber));
     }
   };
 
