@@ -232,6 +232,7 @@ button {
 
 .map-panel {
   position: relative;
+  isolation: isolate;
 }
 
 .world-map {
