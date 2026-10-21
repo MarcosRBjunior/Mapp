@@ -49,6 +49,7 @@ export function CountrySearch({ countries, isError, onSelect }: CountrySearchPro
         options.length === 0 ? -1 : index <= 0 ? options.length - 1 : index - 1,
       );
     } else if (event.key === 'Enter') {
+      if (!expanded) return;
       const option = options[active] ?? options[0];
       if (option) {
         event.preventDefault();

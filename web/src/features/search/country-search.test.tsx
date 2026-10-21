@@ -57,6 +57,16 @@ describe('CountrySearch', () => {
     expect(input).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('ignores Enter while the list is closed', () => {
+    const { onSelect, input } = setup();
+
+    fireEvent.change(input, { target: { value: 'bra' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
   it('says when nothing matches', () => {
     const { input } = setup();
 
@@ -73,6 +83,7 @@ describe('CountrySearch', () => {
 
   it('says the search is unavailable after an error', () => {
     const { input } = setup({ countries: undefined, isError: true });
+    expect(input).toBeDisabled();
     expect(input).toHaveAttribute('placeholder', 'Busca indisponível');
   });
 });
