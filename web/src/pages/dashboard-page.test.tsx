@@ -1,15 +1,20 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import type { WorldMapProps } from '../features/map/world-map';
+import { countriesFixture } from '../test/fixtures';
 import { API, errorBody } from '../test/handlers';
 import { renderWithProviders } from '../test/render';
 import { server } from '../test/server';
 import { DashboardPage } from './dashboard-page';
 
 vi.mock('../features/map/world-map', () => ({
-  WorldMap: ({ selectedCode, onSelect }: WorldMapProps) => (
-    <div data-testid="world-map" data-selected={selectedCode ?? ''}>
+  WorldMap: ({ selectedCode, onSelect, countries }: WorldMapProps) => (
+    <div
+      data-testid="world-map"
+      data-selected={selectedCode ?? ''}
+      data-count={countries?.length ?? 0}
+    >
       <button type="button" onClick={() => onSelect('IND')}>
         Selecionar Índia no mapa
       </button>
@@ -86,6 +91,23 @@ describe('DashboardPage', () => {
     expect(await screen.findByText('6.000')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mortes' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('location')).toHaveTextContent('/paises/BRA?metric=deaths');
+  });
+
+  it('keeps the previous country list while the new metric loads', async () => {
+    server.use(
+      http.get(`${API}/api/v1/countries`, async ({ request }) => {
+        const deaths = new URL(request.url).searchParams.get('metric') === 'deaths';
+        if (deaths) await delay(200);
+        return HttpResponse.json(countriesFixture(deaths ? 'deaths' : 'cases'));
+      }),
+    );
+    renderWithProviders(<DashboardPage />, { route: '/paises/BRA', path: PATHS });
+    await waitFor(() => expect(screen.getByTestId('world-map')).toHaveAttribute('data-count', '5'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mortes' }));
+
+    expect(screen.getByTestId('world-map')).toHaveAttribute('data-count', '5');
+    expect(screen.getByRole('combobox', { name: 'Buscar país' })).toBeEnabled();
   });
 
   it('keeps the country card working when the global card fails', async () => {

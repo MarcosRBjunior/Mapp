@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { apiClient, unwrap } from './client';
 import type { Metric } from './types';
 
@@ -19,6 +19,7 @@ export function useGlobal() {
 export function useCountries(metric: Metric) {
   return useQuery({
     queryKey: ['countries', metric],
+    placeholderData: keepPreviousData,
     queryFn: () => unwrap(apiClient().GET('/api/v1/countries', { params: { query: { metric } } })),
   });
 }
