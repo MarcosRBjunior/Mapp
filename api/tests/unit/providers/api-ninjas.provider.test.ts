@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   API_NINJAS_FINAL_DATE,
+  apiNinjasFactory,
   createApiNinjasProvider,
 } from '../../../src/providers/api-ninjas/api-ninjas.provider.js';
 import type { FetchLike } from '../../../src/providers/covid-provider.js';
@@ -27,10 +28,8 @@ function provider(status: number, body: string) {
 
 describe('createApiNinjasProvider', () => {
   it('exposes the final date of the series (D-02)', () => {
-    const { provider: source } = provider(200, '[]');
     expect(API_NINJAS_FINAL_DATE).toBe('2023-03-09');
-    expect(source.finalDate).toBe('2023-03-09');
-    expect(source.sourceCode).toBe('api_ninjas');
+    expect(apiNinjasFactory('k').sourceCode).toBe('api_ninjas');
   });
 
   it('asks for one day of one metric with the key in the header', async () => {

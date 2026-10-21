@@ -27,8 +27,13 @@ export interface SeriesRow {
 }
 
 export interface CovidProvider {
-  readonly sourceCode: string;
-  readonly finalDate: string;
   fetchDay(date: string, metric: Metric): Promise<SourceRow[]>;
   fetchSeries(sourceName: string, metric: Metric): Promise<SeriesRow[]>;
+}
+
+// Knows the source before any call, so the run and its call gate exist before the provider.
+export interface ProviderFactory {
+  readonly sourceCode: string;
+  readonly finalDate: string;
+  create(fetch: FetchLike): CovidProvider;
 }

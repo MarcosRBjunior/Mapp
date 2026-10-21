@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { CovidProvider, FetchLike } from '../covid-provider.js';
+import type { CovidProvider, FetchLike, ProviderFactory } from '../covid-provider.js';
 import {
   ProviderAuthError,
   ProviderHttpError,
@@ -55,8 +55,6 @@ export function createApiNinjasProvider(options: {
   fetch: FetchLike;
 }): CovidProvider {
   return {
-    sourceCode: 'api_ninjas',
-    finalDate: API_NINJAS_FINAL_DATE,
     fetchDay: (date, metric) =>
       getJson(
         options.fetch,
@@ -78,5 +76,13 @@ export function createApiNinjasProvider(options: {
         ),
       }));
     },
+  };
+}
+
+export function apiNinjasFactory(apiKey: string): ProviderFactory {
+  return {
+    sourceCode: 'api_ninjas',
+    finalDate: API_NINJAS_FINAL_DATE,
+    create: (fetch) => createApiNinjasProvider({ apiKey, fetch }),
   };
 }
