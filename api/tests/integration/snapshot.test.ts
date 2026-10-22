@@ -4,7 +4,7 @@ import type { RawFetch } from '../../src/jobs/sync/call-gate.js';
 import { SyncLockedError, runSync, type RunSyncDeps } from '../../src/jobs/sync/run-sync.js';
 import { createLogger } from '../../src/lib/logger.js';
 import { createPrisma } from '../../src/lib/prisma.js';
-import { createApiNinjasProvider } from '../../src/providers/api-ninjas/api-ninjas.provider.js';
+import { apiNinjasFactory } from '../../src/providers/api-ninjas/api-ninjas.provider.js';
 import type { Metric } from '../../src/providers/covid-provider.js';
 import { SYNC_LOCK_KEY } from '../../src/repositories/sync-lock.repository.js';
 import { INTERRUPTED_ERROR } from '../../src/repositories/sync-run.repository.js';
@@ -55,12 +55,12 @@ function deps(fetch: RawFetch): RunSyncDeps {
   return {
     prisma,
     lockUrl: urls.syncUrl,
+    mode: 'snapshot',
     fetch,
     limits: { perHour: 90, perMonth: 3000 },
     logger: createLogger('silent'),
     sleep: () => Promise.resolve(),
-    createProvider: (gatedFetch) =>
-      createApiNinjasProvider({ apiKey: 'test-key', fetch: gatedFetch }),
+    source: apiNinjasFactory('test-key'),
   };
 }
 
@@ -176,11 +176,14 @@ describe('runSync in snapshot mode', () => {
   it('closes the run as failed and frees the lock when the snapshot crashes', async () => {
     const crashing: RunSyncDeps = {
       ...deps(fakeSource().fetch),
-      createProvider: () => ({
+      source: {
         sourceCode: 'api_ninjas',
         finalDate: '2023-03-09',
-        fetchDay: () => Promise.reject(new Error('boom')),
-      }),
+        create: () => ({
+          fetchDay: () => Promise.reject(new Error('boom')),
+          fetchSeries: () => Promise.reject(new Error('boom')),
+        }),
+      },
     };
 
     await expect(runSync(crashing)).rejects.toThrow('boom');

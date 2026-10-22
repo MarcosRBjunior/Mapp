@@ -1,11 +1,12 @@
 import type { FetchLike } from '../../providers/covid-provider.js';
 import { ProviderNetworkError, isTimeoutError } from '../../providers/provider-errors.js';
+import { LockLostError } from './lock-lost.js';
 import {
   BudgetExhaustedError,
-  hourAgo,
+  budgetExhausted,
   isBudgetExhausted,
-  monthStartUtc,
   type BudgetLimits,
+  type CallCounts,
 } from './budget.js';
 
 export type RawFetch = (
@@ -21,7 +22,7 @@ export interface CallRecord {
 }
 
 export interface ProviderCallStore {
-  countSince(since: Date): Promise<number>;
+  countUsage(): Promise<CallCounts>;
   record(call: CallRecord): Promise<bigint>;
   markInvalidPayload(id: bigint): Promise<void>;
 }
@@ -30,9 +31,10 @@ export interface CallGateOptions {
   store: ProviderCallStore;
   limits: BudgetLimits;
   fetch: RawFetch;
-  now?: () => Date;
   sleep?: (ms: number) => Promise<void>;
   timeoutMs?: number;
+  // Aborted when the sync lock is lost: no attempt may start and an in-flight one is cancelled.
+  signal?: AbortSignal;
 }
 
 export interface CallGate {
@@ -46,6 +48,30 @@ type Attempt =
 const TIMEOUT_MS = 10_000;
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [1_000, 2_000] as const;
+const MAX_RETRY_AFTER_SECONDS = 60;
+
+export const RATE_LIMIT_MESSAGE = 'Provider rate limit reached (HTTP 429)';
+
+// Whole seconds from 1 to 60 are honoured (in ms); anything else returns null.
+export function parseRetryAfter(value: string | null): number | null {
+  if (value === null || !/^\d+$/.test(value)) return null;
+  const seconds = Number(value);
+  return seconds >= 1 && seconds <= MAX_RETRY_AFTER_SECONDS ? seconds * 1_000 : null;
+}
+
+// Whole seconds above the cap: the source wants a wait too long for this run.
+function asksForTooLongAWait(response: Response): boolean {
+  const value = response.headers.get('Retry-After');
+  return value !== null && /^\d+$/.test(value) && Number(value) > MAX_RETRY_AFTER_SECONDS;
+}
+
+function retryDelay(attempt: Attempt, attemptNumber: number): number {
+  const fallback = RETRY_DELAYS_MS[attemptNumber - 1] ?? RETRY_DELAYS_MS[1];
+  if (attempt.kind === 'response' && attempt.response.status === 429) {
+    return parseRetryAfter(attempt.response.headers.get('Retry-After')) ?? fallback;
+  }
+  return fallback;
+}
 
 const defaultSleep = (ms: number): Promise<void> =>
   new Promise((resolve) => {
@@ -62,29 +88,25 @@ function endpointOf(url: string): string {
 }
 
 export function createCallGate(options: CallGateOptions): CallGate {
-  const now = options.now ?? (() => new Date());
   const sleep = options.sleep ?? defaultSleep;
   const timeoutMs = options.timeoutMs ?? TIMEOUT_MS;
   let lastCallId: bigint | undefined;
 
   async function assertBudget(): Promise<void> {
-    const current = now();
-    const counts = {
-      lastHour: await options.store.countSince(hourAgo(current)),
-      thisMonth: await options.store.countSince(monthStartUtc(current)),
-    };
+    const counts = await options.store.countUsage();
     if (isBudgetExhausted(counts, options.limits)) {
-      throw new BudgetExhaustedError(counts, options.limits);
+      throw budgetExhausted(counts, options.limits);
     }
   }
 
   async function attemptOnce(url: string, headers: Record<string, string>): Promise<Attempt> {
     const started = performance.now();
     let attempt: Attempt;
+    const timeout = AbortSignal.timeout(timeoutMs);
     try {
       const response = await options.fetch(url, {
         headers,
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: options.signal ? AbortSignal.any([timeout, options.signal]) : timeout,
       });
       // Buffer inside the try so a stalled or reset body is recorded and retried like any attempt.
       const body = await response.arrayBuffer();
@@ -107,11 +129,18 @@ export function createCallGate(options: CallGateOptions): CallGate {
       outcome:
         attempt.kind === 'failure' ? attempt.error.kind : attempt.response.ok ? 'ok' : 'http_error',
     });
+    // An abort caused by the lock signal is not a source timeout: surface it as such.
+    if (options.signal?.aborted && attempt.kind === 'failure') {
+      throw new LockLostError();
+    }
     return attempt;
   }
 
   const gatedFetch: FetchLike = async (url, init) => {
     for (let attemptNumber = 1; ; attemptNumber += 1) {
+      if (options.signal?.aborted) {
+        throw new LockLostError();
+      }
       await assertBudget();
       const attempt = await attemptOnce(url, init.headers);
       const retryable = attempt.kind === 'failure' || isRetryableStatus(attempt.response.status);
@@ -119,9 +148,18 @@ export function createCallGate(options: CallGateOptions): CallGate {
         if (attempt.kind === 'failure') {
           throw attempt.error;
         }
+        if (attempt.response.status === 429) {
+          // The source says its own quota is gone: stop the run instead of burning more calls.
+          throw new BudgetExhaustedError(RATE_LIMIT_MESSAGE);
+        }
         return attempt.response;
       }
-      await sleep(RETRY_DELAYS_MS[attemptNumber - 1] ?? RETRY_DELAYS_MS[1]);
+      if (attempt.kind === 'response' && attempt.response.status === 429) {
+        if (asksForTooLongAWait(attempt.response)) {
+          throw new BudgetExhaustedError(RATE_LIMIT_MESSAGE);
+        }
+      }
+      await sleep(retryDelay(attempt, attemptNumber));
     }
   };
 

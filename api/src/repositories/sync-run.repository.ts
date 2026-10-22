@@ -78,3 +78,17 @@ export async function failCheckpoint(
     data: { status: 'error', errorMessage: message },
   });
 }
+
+// Units already loaded by any run of this source and mode (the historical series never changes).
+export async function findDoneUnits(
+  db: Db,
+  sourceId: number,
+  mode: SyncMode,
+): Promise<Set<string>> {
+  const rows = await db.syncCheckpoint.findMany({
+    where: { status: 'done', syncRun: { sourceId, mode } },
+    select: { unit: true },
+    distinct: ['unit'],
+  });
+  return new Set(rows.map((row) => row.unit));
+}

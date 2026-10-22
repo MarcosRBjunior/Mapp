@@ -46,20 +46,25 @@ export function createDataStateRepository(db: Db): DataStateRepository {
       return run?.id ?? null;
     },
 
-    // RN-06: last date where both metrics have every country the source has ever sent.
+    // RN-06 from the view only: N of a metric is its highest country_count; the reference date
+    // is the last date where both metrics reach their own N. Rows not yet refreshed are ignored.
     async findCoverage(sourceId) {
       const [row] = await db.$queryRaw<CoverageRow[]>`
-        WITH present AS (
-          SELECT count(DISTINCT country_code)::int AS n FROM daily_stat WHERE source_id = ${sourceId}
+        WITH n AS (
+          SELECT metric, max(country_count) AS n
+          FROM global_daily_stat WHERE source_id = ${sourceId}
+          GROUP BY metric
+        ), complete AS (
+          SELECT g.stat_date
+          FROM global_daily_stat g JOIN n ON n.metric = g.metric
+          WHERE g.source_id = ${sourceId} AND g.country_count = n.n
+          GROUP BY g.stat_date
+          HAVING count(*) = 2
         )
         SELECT
           (SELECT min(stat_date) FROM global_daily_stat WHERE source_id = ${sourceId}) AS "from",
-          (SELECT max(complete.stat_date) FROM (
-             SELECT stat_date FROM global_daily_stat WHERE source_id = ${sourceId}
-             GROUP BY stat_date
-             HAVING count(*) = 2 AND min(country_count) = (SELECT n FROM present)
-           ) complete) AS "referenceDate",
-          (SELECT n FROM present) AS countries`;
+          (SELECT max(stat_date) FROM complete) AS "referenceDate",
+          coalesce((SELECT max(n) FROM n), 0)::int AS countries`;
       return {
         from: row?.from ? toIsoDate(row.from) : null,
         referenceDate: row?.referenceDate ? toIsoDate(row.referenceDate) : null,

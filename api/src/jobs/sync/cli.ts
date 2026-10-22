@@ -1,7 +1,7 @@
 import { loadSyncEnv } from '../../config/sync-env.js';
 import { createLogger } from '../../lib/logger.js';
 import { createPrisma } from '../../lib/prisma.js';
-import { createProvider } from '../../providers/create-provider.js';
+import { createProviderFactory } from '../../providers/create-provider.js';
 import { UsageError, parseSyncArgs, type SyncMode } from './cli-args.js';
 import { SyncLockedError, runSync } from './run-sync.js';
 
@@ -17,11 +17,6 @@ async function main(): Promise<number> {
     throw error;
   }
 
-  if (mode === 'full') {
-    console.error('mode=full is not available yet (phase F5)');
-    return 2;
-  }
-
   const env = loadSyncEnv();
   const logger = createLogger(env.LOG_LEVEL);
 
@@ -30,7 +25,8 @@ async function main(): Promise<number> {
     const result = await runSync({
       prisma,
       lockUrl: env.DATABASE_URL_SYNC,
-      createProvider: (fetch) => createProvider(env, fetch),
+      mode,
+      source: createProviderFactory(env),
       fetch,
       limits: { perHour: env.SYNC_CALLS_PER_HOUR, perMonth: env.SYNC_CALLS_PER_MONTH },
       logger,

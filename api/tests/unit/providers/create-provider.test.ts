@@ -1,25 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import type { FetchLike } from '../../../src/providers/covid-provider.js';
-import { createProvider } from '../../../src/providers/create-provider.js';
+import { createProviderFactory } from '../../../src/providers/create-provider.js';
 
-const fetch: FetchLike = () => Promise.reject(new Error('not used'));
-
-describe('createProvider', () => {
-  it('builds the api_ninjas provider', () => {
-    expect(
-      createProvider({ DATA_PROVIDER: 'api_ninjas', API_NINJAS_KEY: 'test-key' }, fetch).sourceCode,
-    ).toBe('api_ninjas');
+describe('createProviderFactory', () => {
+  it('builds the api_ninjas factory', () => {
+    const factory = createProviderFactory({
+      DATA_PROVIDER: 'api_ninjas',
+      API_NINJAS_KEY: 'test-key',
+    });
+    expect(factory.sourceCode).toBe('api_ninjas');
+    expect(factory.finalDate).toBe('2023-03-09');
   });
 
   it('requires the key for api_ninjas', () => {
     expect(() =>
-      createProvider({ DATA_PROVIDER: 'api_ninjas', API_NINJAS_KEY: undefined }, fetch),
+      createProviderFactory({ DATA_PROVIDER: 'api_ninjas', API_NINJAS_KEY: undefined }),
     ).toThrow(/API_NINJAS_KEY/);
   });
 
   it.each(['jhu_csv', 'apify'] as const)('reports %s as not implemented', (provider) => {
     expect(() =>
-      createProvider({ DATA_PROVIDER: provider, API_NINJAS_KEY: undefined }, fetch),
+      createProviderFactory({ DATA_PROVIDER: provider, API_NINJAS_KEY: undefined }),
     ).toThrow(/not implemented/);
   });
 });
