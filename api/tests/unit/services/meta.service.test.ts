@@ -6,7 +6,9 @@ describe('meta service', () => {
   it('describes source, coverage, last sync and dataVersion', async () => {
     const { meta } = createServices(createFakeRepositories(), 'api_ninjas');
 
-    expect(await meta.getMeta()).toEqual({
+    const result = await meta.getMeta();
+    expect(result.version).toBe('v7.r9');
+    expect(result.meta).toEqual({
       source: {
         code: FAKE_SOURCE.code,
         name: FAKE_SOURCE.name,
@@ -30,7 +32,9 @@ describe('meta service', () => {
   it('returns nulls when no data is loaded', async () => {
     const { meta } = createServices(createFakeRepositories({ ready: false }), 'api_ninjas');
 
-    expect(await meta.getMeta()).toMatchObject({
+    const result = await meta.getMeta();
+    expect(result.version).toBe('v0.r0');
+    expect(result.meta).toMatchObject({
       coverage: null,
       referenceDate: null,
       lastSync: null,

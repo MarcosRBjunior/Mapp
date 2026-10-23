@@ -31,7 +31,12 @@ const commonErrors = {
   '500': json(errorResponseSchema, 'INTERNAL_ERROR'),
 };
 
+const notModified = {
+  '304': { description: 'Not Modified: o If-None-Match bate com o ETag atual (dataVersion)' },
+};
+
 const dataErrors = {
+  ...notModified,
   '400': json(
     errorResponseSchema,
     'VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura',
@@ -47,7 +52,7 @@ export function createOpenApiDocument() {
       title: 'Mapp API',
       version: '1.0.0',
       description:
-        'Dados históricos de COVID-19 por país (casos e mortes). Só leitura. Sempre exiba a data de referência e a fonte.',
+        'Dados históricos de COVID-19 por país (casos e mortes). Só leitura. Sempre exiba a data de referência e a fonte. Respostas de dados trazem Cache-Control: public, max-age=3600 e ETag com o dataVersion; If-None-Match igual → 304.',
     },
     paths: {
       '/health': {
@@ -68,7 +73,11 @@ export function createOpenApiDocument() {
       '/api/v1/meta': {
         get: {
           summary: 'Fonte, licença, cobertura, data de referência e último sync',
-          responses: { '200': json(metaResponseSchema, 'Metadados'), ...commonErrors },
+          responses: {
+            '200': json(metaResponseSchema, 'Metadados'),
+            ...notModified,
+            ...commonErrors,
+          },
         },
       },
       '/api/v1/global': {

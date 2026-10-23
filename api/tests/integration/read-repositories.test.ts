@@ -58,6 +58,7 @@ describe('data state repository (read-only user)', () => {
 describe('meta repository (read-only user)', () => {
   it('returns the last finished run, whatever its status', async () => {
     expect(await repos.meta.findLastFinishedSync(fixture.sourceId)).toEqual({
+      id: fixture.failedId,
       status: 'failed',
       mode: 'snapshot',
       startedAt: new Date('2026-10-03T00:00:00Z'),

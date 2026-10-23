@@ -21,6 +21,8 @@ export interface AppDeps {
 export function createApp(deps: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
+  // ETags come from dataVersion (middlewares/cache.ts), not from a body hash.
+  app.set('etag', false);
   app.use(createHttpLogger(deps.logger));
   app.use(helmet());
   app.use(

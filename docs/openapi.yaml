@@ -3,8 +3,10 @@ openapi: 3.1.0
 info:
   title: Mapp API
   version: 1.0.0
-  description: Dados históricos de COVID-19 por país (casos e mortes). Só leitura.
-    Sempre exiba a data de referência e a fonte.
+  description: "Dados históricos de COVID-19 por país (casos e mortes). Só
+    leitura. Sempre exiba a data de referência e a fonte. Respostas de dados
+    trazem Cache-Control: public, max-age=3600 e ETag com o dataVersion;
+    If-None-Match igual → 304."
 paths:
   /health:
     get:
@@ -42,13 +44,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MetaResponse"
-        "429": &a1
+        "304": &a1
+          description: "Not Modified: o If-None-Match bate com o ETag atual (dataVersion)"
+        "429": &a2
           description: "RATE_LIMITED: mais de 120 requisições por minuto"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "500": &a2
+        "500": &a3
           description: INTERNAL_ERROR
           content:
             application/json:
@@ -71,15 +75,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GlobalResponse"
-        "400": &a3
+        "304": *a1
+        "400": &a4
           description: "VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "429": *a1
-        "500": *a2
-        "503": &a4
+        "429": *a2
+        "500": *a3
+        "503": &a5
           description: "DATA_NOT_READY: nenhum dado carregado ainda"
           content:
             application/json:
@@ -107,10 +112,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CountriesListResponse"
-        "400": *a3
-        "429": *a1
-        "500": *a2
-        "503": *a4
+        "304": *a1
+        "400": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
   /api/v1/countries/{code}:
     get:
       summary: Detalhe de um país, com participação % e posição no ranking
@@ -136,16 +142,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CountryDetailResponse"
-        "400": *a3
+        "304": *a1
+        "400": *a4
         "404":
           description: COUNTRY_NOT_FOUND
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "429": *a1
-        "500": *a2
-        "503": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
   /api/v1/rankings:
     get:
       summary: Ranking dos países pela métrica numa data (RN-05), com participação %
@@ -177,10 +184,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RankingsResponse"
-        "400": *a3
-        "429": *a1
-        "500": *a2
-        "503": *a4
+        "304": *a1
+        "400": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
   /api/v1/global/timeseries:
     get:
       summary: Série global da métrica por dia, semana ou mês (só datas completas)
@@ -214,10 +222,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GlobalTimeseriesResponse"
-        "400": *a3
-        "429": *a1
-        "500": *a2
-        "503": *a4
+        "304": *a1
+        "400": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
   /api/v1/countries/{code}/timeseries:
     get:
       summary: Série de um país por dia, semana ou mês (só datas completas)
@@ -259,16 +268,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CountryTimeseriesResponse"
-        "400": *a3
+        "304": *a1
+        "400": *a4
         "404":
           description: COUNTRY_NOT_FOUND
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "429": *a1
-        "500": *a2
-        "503": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
 components:
   schemas:
     Metric:

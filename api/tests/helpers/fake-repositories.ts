@@ -21,6 +21,7 @@ export const FAKE_SOURCE: SourceRecord = {
 };
 
 export const FAKE_LAST_SYNC: LastSyncRecord = {
+  id: 9,
   status: 'partial',
   mode: 'snapshot',
   startedAt: new Date('2026-10-20T10:00:00Z'),

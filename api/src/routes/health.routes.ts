@@ -6,6 +6,7 @@ export function createHealthRouter(dataState: DataStateService): Router {
   const router = express.Router();
 
   router.get('/health', (_req, res) => {
+    res.set('Cache-Control', 'no-store');
     res.status(200).json({ status: 'ok' });
   });
 
@@ -19,6 +20,7 @@ export function createHealthRouter(dataState: DataStateService): Router {
       });
     }
     if (!state) throw new AppError('DATA_NOT_READY', 503, 'no data has been loaded yet');
+    res.set('Cache-Control', 'no-store');
     res.json({
       status: 'ready',
       dataVersion: state.dataVersion,

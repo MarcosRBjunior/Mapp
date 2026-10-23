@@ -20,7 +20,7 @@ export interface MetaResponse {
 }
 
 export interface MetaService {
-  getMeta(): Promise<MetaResponse>;
+  getMeta(): Promise<{ meta: MetaResponse; version: string }>;
 }
 
 export function createMetaService(dataState: DataStateService, repo: MetaRepository): MetaService {
@@ -32,7 +32,7 @@ export function createMetaService(dataState: DataStateService, repo: MetaReposit
         repo.findLastFinishedSync(source.id),
         repo.listNonGeographic(),
       ]);
-      return {
+      const meta: MetaResponse = {
         source: {
           code: source.code,
           name: source.name,
@@ -55,6 +55,8 @@ export function createMetaService(dataState: DataStateService, repo: MetaReposit
         dataVersion: state?.dataVersion ?? null,
         nonGeographic,
       };
+      // lastSync changes even on a failed run, which keeps the dataVersion: the version covers both.
+      return { meta, version: `v${state?.dataVersion ?? 0}.r${lastSync?.id ?? 0}` };
     },
   };
 }

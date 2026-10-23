@@ -37,6 +37,9 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, req, res, next
     next(error);
     return;
   }
+  // An error is never cached, even when the cache middleware already set the headers.
+  res.removeHeader('ETag');
+  res.set('Cache-Control', 'no-store');
   res.status(appError.httpStatus).json({
     error: {
       code: appError.code,

@@ -106,6 +106,13 @@ export interface paths {
                         "application/json": components["schemas"]["MetaResponse"];
                     };
                 };
+                /** @description Not Modified: o If-None-Match bate com o ETag atual (dataVersion) */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
                 /** @description RATE_LIMITED: mais de 120 requisições por minuto */
                 429: {
                     headers: {
@@ -161,6 +168,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["GlobalResponse"];
                     };
+                };
+                /** @description Not Modified: o If-None-Match bate com o ETag atual (dataVersion) */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
                 400: {
@@ -236,6 +250,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["CountriesListResponse"];
                     };
+                };
+                /** @description Not Modified: o If-None-Match bate com o ETag atual (dataVersion) */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
                 400: {
@@ -313,6 +334,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["CountryDetailResponse"];
                     };
+                };
+                /** @description Not Modified: o If-None-Match bate com o ETag atual (dataVersion) */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
                 400: {
@@ -400,6 +428,13 @@ export interface paths {
                         "application/json": components["schemas"]["RankingsResponse"];
                     };
                 };
+                /** @description Not Modified: o If-None-Match bate com o ETag atual (dataVersion) */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
                 /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
                 400: {
                     headers: {
@@ -476,6 +511,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["GlobalTimeseriesResponse"];
                     };
+                };
+                /** @description Not Modified: o If-None-Match bate com o ETag atual (dataVersion) */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
                 400: {
@@ -556,6 +598,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["CountryTimeseriesResponse"];
                     };
+                };
+                /** @description Not Modified: o If-None-Match bate com o ETag atual (dataVersion) */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
                 400: {

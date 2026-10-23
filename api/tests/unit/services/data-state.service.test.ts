@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DataStateRepository } from '../../../src/repositories/data-state.repository.js';
-import { createDataStateService } from '../../../src/services/data-state.service.js';
+import {
+  createDataStateService,
+  DATA_VERSION_TTL_MS,
+} from '../../../src/services/data-state.service.js';
 import { FAKE_SOURCE } from '../../helpers/fake-repositories.js';
 
 // Each test adjusts the mocks it needs (mockResolvedValue) before calling the service.
@@ -30,16 +33,34 @@ describe('data state service', () => {
 
   it('recomputes the coverage only when dataVersion changes', async () => {
     const repo = stubRepo();
-    const service = createDataStateService(repo, 'api_ninjas');
+    let clock = 0;
+    const service = createDataStateService(repo, 'api_ninjas', { now: () => clock });
 
     await service.current();
+    clock += DATA_VERSION_TTL_MS;
     await service.current();
     expect(repo.findCoverage).toHaveBeenCalledTimes(1);
 
     repo.findDataVersion.mockResolvedValue(8);
+    clock += DATA_VERSION_TTL_MS;
     await service.current();
     expect(repo.findCoverage).toHaveBeenCalledTimes(2);
     expect(repo.findSource).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the dataVersion at most once per 5 s', async () => {
+    const repo = stubRepo();
+    let clock = 0;
+    const service = createDataStateService(repo, 'api_ninjas', { now: () => clock });
+
+    await service.current();
+    clock += DATA_VERSION_TTL_MS - 1;
+    await service.current();
+    expect(repo.findDataVersion).toHaveBeenCalledTimes(1);
+
+    clock += 1;
+    await service.current();
+    expect(repo.findDataVersion).toHaveBeenCalledTimes(2);
   });
 
   it('is not ready without dataVersion', async () => {

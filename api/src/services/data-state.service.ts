@@ -28,9 +28,17 @@ export interface DataStateService {
   resolveRange(from: string | undefined, to: string | undefined): Promise<ResolvedRange>;
 }
 
+// Reads the dataVersion at most once per 5 s per instance; a sync shows up within 5 s.
+export const DATA_VERSION_TTL_MS = 5000;
+
+export interface DataStateOptions {
+  now?: () => number;
+}
+
 export function createDataStateService(
   repo: DataStateRepository,
   sourceCode: DataProvider,
+  options: DataStateOptions = {},
 ): DataStateService {
   let sourcePromise: Promise<SourceRecord> | undefined;
   // Coverage only changes when a sync writes data, i.e. when dataVersion changes.
@@ -51,7 +59,7 @@ export function createDataStateService(
     return sourcePromise;
   }
 
-  async function current(): Promise<DataState | null> {
+  async function load(): Promise<DataState | null> {
     const { id: sourceId } = await source();
     const dataVersion = await repo.findDataVersion(sourceId);
     if (dataVersion === null) return null;
@@ -67,6 +75,17 @@ export function createDataStateService(
       countries: coverage.countries,
     };
     return memo;
+  }
+
+  const now = options.now ?? Date.now;
+  let recent: { at: number; state: DataState | null } | undefined;
+
+  async function current(): Promise<DataState | null> {
+    const at = now();
+    if (recent && at - recent.at < DATA_VERSION_TTL_MS) return recent.state;
+    const state = await load();
+    recent = { at, state };
+    return state;
   }
 
   async function resolveDate(date: string | undefined): Promise<ResolvedDate> {

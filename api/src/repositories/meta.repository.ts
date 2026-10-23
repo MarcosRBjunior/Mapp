@@ -1,6 +1,7 @@
 import type { Db } from '../lib/prisma.js';
 
 export interface LastSyncRecord {
+  id: number;
   status: 'success' | 'partial' | 'failed';
   mode: 'snapshot' | 'full';
   startedAt: Date;
@@ -23,10 +24,11 @@ export function createMetaRepository(db: Db): MetaRepository {
       const run = await db.syncRun.findFirst({
         where: { sourceId, finishedAt: { not: null } },
         orderBy: [{ finishedAt: 'desc' }, { id: 'desc' }],
-        select: { status: true, mode: true, startedAt: true, finishedAt: true },
+        select: { id: true, status: true, mode: true, startedAt: true, finishedAt: true },
       });
       if (!run?.finishedAt || run.status === 'running') return null;
       return {
+        id: run.id,
         status: run.status,
         mode: run.mode,
         startedAt: run.startedAt,
