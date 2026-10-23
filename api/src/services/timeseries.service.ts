@@ -9,8 +9,8 @@ import type { DataStateService } from './data-state.service.js';
 
 export interface TimeseriesQuery {
   metric: StatMetric;
-  from: string | undefined;
-  to: string | undefined;
+  from?: string;
+  to?: string;
   granularity: Granularity;
 }
 
