@@ -93,6 +93,7 @@ describe('/meta ETag', () => {
     const response = await request(createTestApp({ ready: false })).get('/api/v1/meta');
 
     expect(response.status).toBe(200);
-    expect(response.headers.etag).toBe('"v0.r0"');
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.headers.etag).toBeUndefined();
   });
 });

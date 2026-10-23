@@ -23,7 +23,7 @@ A participação % e a posição já existem desde a F3 (`/countries/:code`) e a
 
 - Rotas de dados de `/api/v1` (`/global`, `/global/timeseries`, `/countries`, `/countries/:code`, `/countries/:code/timeseries`, `/rankings`) com 200: `Cache-Control: public, max-age=3600` e `ETag: "v{dataVersion}"`.
 - `If-None-Match` igual ao ETag atual (lista separada por vírgula, comparação fraca, `W/` ignorado; `*` também casa) → **304** sem corpo, com os mesmos `ETag` e `Cache-Control`, **antes** de validar a query e consultar os dados. Uma URL com a mesma versão sempre devolve o mesmo corpo, então o atalho é seguro.
-- `/meta`: o `lastSync` muda até num run `failed`, que não muda o `dataVersion`. ETag `"v{dataVersion ?? 0}.r{id do último run finalizado ?? 0}"`, mesmo `Cache-Control`, 304 do mesmo jeito. Funciona sem dados carregados (o `/meta` responde 200 com nulos).
+- `/meta`: o `lastSync` muda até num run `failed`, que não muda o `dataVersion`. ETag `"v{dataVersion ?? 0}.r{id do último run finalizado ?? 0}"`, mesmo `Cache-Control`, 304 do mesmo jeito. Funciona sem dados carregados (o `/meta` responde 200 com nulos) (ajustado no /code-review: sem dados, `no-store` e sem ETag, logo sem 304).
 - Sem dados (`dataVersion` nulo) as rotas de dados seguem com 503, sem ETag.
 - Toda resposta de erro (400, 404, 429, 500, 503) leva `Cache-Control: no-store`. `/health` e `/ready` também `no-store`. `/api/docs` fica como está.
 - O ETag automático do Express é desligado (`app.set('etag', false)`) para não haver dois mecanismos.

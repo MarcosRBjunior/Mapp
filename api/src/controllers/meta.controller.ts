@@ -6,6 +6,11 @@ export function createMetaController(service: MetaService): { get: RequestHandle
   return {
     get: async (req, res) => {
       const { meta, version } = await service.getMeta();
+      if (meta.dataVersion === null) {
+        // No data yet: the empty meta must not stay cached after the first sync.
+        res.set('Cache-Control', 'no-store').json(meta);
+        return;
+      }
       if (sendIfFresh(req, res, `"${version}"`)) return;
       res.json(meta);
     },
