@@ -11,7 +11,7 @@ import {
   INTERRUPTED_ERROR,
   completeCheckpoint,
   failCheckpoint,
-  failOrphanRuns,
+  closeOrphanRuns,
   finishRun,
   startCheckpoint,
   findDoneUnits,
@@ -150,15 +150,27 @@ describe('sync runs and checkpoints', () => {
     await expect(openRun()).rejects.toThrow();
   });
 
-  it('fails orphan runs with the interrupted message', async () => {
+  it('fails an orphan run that finished no unit', async () => {
     const runId = await openRun();
-    expect(await failOrphanRuns(prisma)).toEqual([runId]);
+    expect(await closeOrphanRuns(prisma)).toEqual([{ id: runId, status: 'failed' }]);
     const run = await owner.query(
       'SELECT status, error, finished_at IS NOT NULL AS finished FROM sync_run WHERE id = $1',
       [runId],
     );
     expect(run.rows).toEqual([{ status: 'failed', error: INTERRUPTED_ERROR, finished: true }]);
-    expect(await failOrphanRuns(prisma)).toEqual([]);
+    expect(await closeOrphanRuns(prisma)).toEqual([]);
+  });
+
+  it('closes as partial an orphan run that finished a unit (it wrote data)', async () => {
+    const runId = await openRun();
+    await owner.query(
+      "INSERT INTO sync_checkpoint (sync_run_id, unit, status) VALUES ($1, 'u1', 'done'), ($1, 'u2', 'pending')",
+      [runId],
+    );
+
+    expect(await closeOrphanRuns(prisma)).toEqual([{ id: runId, status: 'partial' }]);
+    const run = await owner.query('SELECT status, error FROM sync_run WHERE id = $1', [runId]);
+    expect(run.rows).toEqual([{ status: 'partial', error: INTERRUPTED_ERROR }]);
   });
 
   it('records the calls an orphan run made when failing it', async () => {
@@ -172,7 +184,7 @@ describe('sync runs and checkpoints', () => {
         outcome,
       });
     }
-    await failOrphanRuns(prisma);
+    await closeOrphanRuns(prisma);
     const run = await owner.query('SELECT calls_used FROM sync_run WHERE id = $1', [runId]);
     expect(run.rows).toEqual([{ calls_used: 2 }]);
   });

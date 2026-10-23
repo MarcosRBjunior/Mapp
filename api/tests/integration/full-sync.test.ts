@@ -164,9 +164,15 @@ describe('runSync in full mode', () => {
     const again = fullSource();
     const result = await runSync(deps(again.fetch));
 
-    expect(result).toMatchObject({ status: 'success', callsUsed: 0, unitsRemaining: 0 });
+    expect(result).toMatchObject({
+      runId: null,
+      status: 'success',
+      callsUsed: 0,
+      unitsRemaining: 0,
+    });
     expect(again.requested).toEqual([]);
     expect(await rows('SELECT count(*)::int AS n FROM daily_stat')).toEqual(before);
+    expect(await rows('SELECT count(*)::int AS n FROM sync_run')).toEqual([{ n: 1 }]);
   });
 
   it('stops on a rejected key after writing and closes as partial', async () => {

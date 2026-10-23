@@ -19,24 +19,34 @@ export async function startRun(
   return run.id;
 }
 
+export interface ClosedOrphan {
+  id: number;
+  status: 'partial' | 'failed';
+}
+
 // Only safe while holding the sync lock: no live process owns a 'running' row then.
-export async function failOrphanRuns(db: Db): Promise<number[]> {
+// A done checkpoint means the run wrote data (rows and checkpoint share a transaction), so it
+// closes as partial and counts for the dataVersion; otherwise it failed.
+export async function closeOrphanRuns(db: Db): Promise<ClosedOrphan[]> {
   const orphans = await db.syncRun.findMany({
     where: { status: 'running' },
     select: { id: true },
     orderBy: { id: 'asc' },
   });
-  if (orphans.length === 0) {
-    return [];
-  }
+  const closed: ClosedOrphan[] = [];
   for (const orphan of orphans) {
-    const callsUsed = await db.providerCall.count({ where: { syncRunId: orphan.id } });
+    const [callsUsed, doneUnits] = await Promise.all([
+      db.providerCall.count({ where: { syncRunId: orphan.id } }),
+      db.syncCheckpoint.count({ where: { syncRunId: orphan.id, status: 'done' } }),
+    ]);
+    const status = doneUnits > 0 ? 'partial' : 'failed';
     await db.syncRun.update({
       where: { id: orphan.id },
-      data: { status: 'failed', finishedAt: new Date(), error: INTERRUPTED_ERROR, callsUsed },
+      data: { status, finishedAt: new Date(), error: INTERRUPTED_ERROR, callsUsed },
     });
+    closed.push({ id: orphan.id, status });
   }
-  return orphans.map((orphan) => orphan.id);
+  return closed;
 }
 
 export async function finishRun(

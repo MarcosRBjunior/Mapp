@@ -1,6 +1,6 @@
 import { refreshGlobalDailyStat } from '../../repositories/global-stat.repository.js';
 import { tryAcquireSyncLock } from '../../repositories/sync-lock.repository.js';
-import { failOrphanRuns } from '../../repositories/sync-run.repository.js';
+import { closeOrphanRuns } from '../../repositories/sync-run.repository.js';
 import { bestEffort } from './best-effort.js';
 import type { SyncMode } from './cli-args.js';
 import { fullPlan } from './full-plan.js';
@@ -25,9 +25,9 @@ export async function runSync(deps: RunSyncDeps): Promise<SyncResult> {
     throw new SyncLockedError();
   }
   try {
-    const interrupted = await failOrphanRuns(deps.prisma);
-    if (interrupted.length > 0) {
-      deps.logger.warn({ runIds: interrupted }, 'marked interrupted runs as failed');
+    const closed = await closeOrphanRuns(deps.prisma);
+    if (closed.length > 0) {
+      deps.logger.warn({ runs: closed }, 'closed interrupted runs');
       // A dead run may have written rows without refreshing the view.
       await bestEffort(deps.logger, 'refresh global view after orphan recovery', () =>
         refreshGlobalDailyStat(deps.prisma),

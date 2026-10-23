@@ -71,7 +71,7 @@ export interface RunUnitsDeps {
 }
 
 export interface SyncResult {
-  runId: number;
+  runId: number | null;
   status: RunStatus;
   callsUsed: number;
   pendingNames: string[];
@@ -102,7 +102,6 @@ export function decideStatus(input: {
   wroteRows: boolean;
   hasNotes: boolean;
 }): RunStatus {
-  if (input.planned === 0) return 'success';
   if (!input.wroteRows) return 'failed';
   return input.hasNotes || input.completed < input.planned ? 'partial' : 'success';
 }
@@ -115,6 +114,20 @@ export async function runUnits(deps: RunUnitsDeps, plan: RunPlan): Promise<SyncR
   }
   const aliases = await loadAliases(prisma, sourceId);
   const { units, alreadyDone } = await plan.planUnits({ prisma, sourceId, aliases });
+
+  // Nothing left (a finished full load): no run, so the dataVersion and the ETag stay.
+  if (units.length === 0) {
+    deps.logger.info({ mode: plan.mode, unitsDone: alreadyDone }, 'nothing to do');
+    return {
+      runId: null,
+      status: 'success',
+      callsUsed: 0,
+      pendingNames: [],
+      unitsPlanned: alreadyDone,
+      unitsDone: alreadyDone,
+      unitsRemaining: 0,
+    };
+  }
 
   const runId = await startRun(prisma, {
     sourceId,
