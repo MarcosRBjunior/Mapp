@@ -5,15 +5,18 @@ import {
   countriesListResponseSchema,
   countriesQuerySchema,
   countryDetailResponseSchema,
+  countryTimeseriesResponseSchema,
   countryParamsSchema,
   dateQuerySchema,
   errorResponseSchema,
   globalResponseSchema,
+  globalTimeseriesResponseSchema,
   healthResponseSchema,
   metaResponseSchema,
   rankingsQuerySchema,
   rankingsResponseSchema,
   readyResponseSchema,
+  timeseriesQuerySchema,
 } from '../routes/schemas.js';
 
 export const OPENAPI_YAML_PATH = new URL('../../../docs/openapi.yaml', import.meta.url);
@@ -101,6 +104,27 @@ export function createOpenApiDocument() {
           summary: 'Ranking dos países pela métrica numa data (RN-05), com participação %',
           requestParams: { query: rankingsQuerySchema },
           responses: { '200': json(rankingsResponseSchema, 'Ranking'), ...dataErrors },
+        },
+      },
+      '/api/v1/global/timeseries': {
+        get: {
+          summary: 'Série global da métrica por dia, semana ou mês (só datas completas)',
+          requestParams: { query: timeseriesQuerySchema },
+          responses: {
+            '200': json(globalTimeseriesResponseSchema, 'Série global'),
+            ...dataErrors,
+          },
+        },
+      },
+      '/api/v1/countries/{code}/timeseries': {
+        get: {
+          summary: 'Série de um país por dia, semana ou mês (só datas completas)',
+          requestParams: { path: countryParamsSchema, query: timeseriesQuerySchema },
+          responses: {
+            '200': json(countryTimeseriesResponseSchema, 'Série do país'),
+            '404': json(errorResponseSchema, 'COUNTRY_NOT_FOUND'),
+            ...dataErrors,
+          },
         },
       },
     },

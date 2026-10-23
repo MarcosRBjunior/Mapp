@@ -108,3 +108,56 @@ describe('data state service', () => {
     });
   });
 });
+
+describe('data state service: resolveRange', () => {
+  it('defaults to the whole coverage', async () => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    expect(await service.resolveRange(undefined, undefined)).toMatchObject({
+      from: '2023-03-01',
+      to: '2023-03-09',
+    });
+  });
+
+  it('keeps a range inside the coverage', async () => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    expect(await service.resolveRange('2023-03-02', '2023-03-05')).toMatchObject({
+      from: '2023-03-02',
+      to: '2023-03-05',
+    });
+  });
+
+  it('rejects from after to', async () => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    await expect(service.resolveRange('2023-03-05', '2023-03-02')).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      message: 'from must not be after to',
+      details: { from: '2023-03-05', to: '2023-03-02' },
+    });
+  });
+
+  it.each([
+    ['2023-02-28', undefined],
+    [undefined, '2023-03-10'],
+  ])('rejects from=%s to=%s outside the coverage', async (from, to) => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    await expect(service.resolveRange(from, to)).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      message: 'date is outside the data coverage',
+      details: { from: '2023-03-01', to: '2023-03-09' },
+    });
+  });
+
+  it('is not ready without data', async () => {
+    const repo = stubRepo();
+    repo.findDataVersion.mockResolvedValue(null);
+    const service = createDataStateService(repo, 'api_ninjas');
+
+    await expect(service.resolveRange(undefined, undefined)).rejects.toMatchObject({
+      code: 'DATA_NOT_READY',
+    });
+  });
+});

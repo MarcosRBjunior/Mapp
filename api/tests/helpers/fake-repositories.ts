@@ -144,6 +144,28 @@ export function createFakeRepositories(options: FakeOptions = {}): ReadRepositor
         ),
       findCountry: (code) =>
         Promise.resolve(COUNTRIES.find((country) => country.code === code) ?? null),
+      listGlobalSeries: (_sourceId, metric, range) =>
+        Promise.resolve(
+          Object.entries(GLOBAL)
+            .filter(([date]) => date >= range.from && date <= range.to)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .flatMap(([date, rows]) =>
+              rows
+                .filter((row) => row.metric === metric)
+                .map((row) => ({ date, total: row.total, newValue: row.newValue })),
+            ),
+        ),
+      listCountrySeries: (_sourceId, code, metric, range) =>
+        Promise.resolve(
+          Object.entries(DAY_STATS)
+            .filter(([date]) => date >= range.from && date <= range.to)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .flatMap(([date, stats]) =>
+              stats
+                .filter((stat) => stat.code === code && stat.metric === metric)
+                .map((stat) => ({ date, total: stat.total, newValue: stat.newValue })),
+            ),
+        ),
       listRanking: (_sourceId, metric, date, limit) =>
         Promise.resolve(rankedStats(date, metric).slice(0, limit)),
       findCountryRanks: (_sourceId, date, code) =>

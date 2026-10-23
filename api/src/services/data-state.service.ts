@@ -15,10 +15,17 @@ export interface ResolvedDate {
   date: string;
 }
 
+export interface ResolvedRange {
+  state: DataState;
+  from: string;
+  to: string;
+}
+
 export interface DataStateService {
   source(): Promise<SourceRecord>;
   current(): Promise<DataState | null>;
   resolveDate(date: string | undefined): Promise<ResolvedDate>;
+  resolveRange(from: string | undefined, to: string | undefined): Promise<ResolvedRange>;
 }
 
 export function createDataStateService(
@@ -80,5 +87,24 @@ export function createDataStateService(
     return { state, date };
   }
 
-  return { source, current, resolveDate };
+  async function resolveRange(
+    from: string | undefined,
+    to: string | undefined,
+  ): Promise<ResolvedRange> {
+    const state = await current();
+    if (!state) throw new AppError('DATA_NOT_READY', 503, 'no data has been loaded yet');
+    const range = { from: from ?? state.from, to: to ?? state.referenceDate };
+    if (range.from > range.to) {
+      throw new AppError('VALIDATION_ERROR', 400, 'from must not be after to', range);
+    }
+    if (range.from < state.from || range.to > state.referenceDate) {
+      throw new AppError('VALIDATION_ERROR', 400, 'date is outside the data coverage', {
+        from: state.from,
+        to: state.referenceDate,
+      });
+    }
+    return { state, ...range };
+  }
+
+  return { source, current, resolveDate, resolveRange };
 }

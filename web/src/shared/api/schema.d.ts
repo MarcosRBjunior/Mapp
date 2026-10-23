@@ -446,6 +446,172 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/global/timeseries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Série global da métrica por dia, semana ou mês (só datas completas) */
+        get: {
+            parameters: {
+                query?: {
+                    metric?: components["schemas"]["Metric"];
+                    from?: string;
+                    to?: string;
+                    granularity?: components["schemas"]["Granularity"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Série global */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GlobalTimeseriesResponse"];
+                    };
+                };
+                /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description RATE_LIMITED: mais de 120 requisições por minuto */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INTERNAL_ERROR */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description DATA_NOT_READY: nenhum dado carregado ainda */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/countries/{code}/timeseries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Série de um país por dia, semana ou mês (só datas completas) */
+        get: {
+            parameters: {
+                query?: {
+                    metric?: components["schemas"]["Metric"];
+                    from?: string;
+                    to?: string;
+                    granularity?: components["schemas"]["Granularity"];
+                };
+                header?: never;
+                path: {
+                    /** @description Código ISO3 do país (maiúsculas ou minúsculas) */
+                    code: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Série do país */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CountryTimeseriesResponse"];
+                    };
+                };
+                /** @description VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description COUNTRY_NOT_FOUND */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description RATE_LIMITED: mais de 120 requisições por minuto */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INTERNAL_ERROR */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description DATA_NOT_READY: nenhum dado carregado ainda */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -455,6 +621,11 @@ export interface components {
          * @enum {string}
          */
         Metric: "cases" | "deaths";
+        /**
+         * @description day = dia, week = semana ISO (segunda a domingo), month = mês
+         * @enum {string}
+         */
+        Granularity: "day" | "week" | "month";
         HealthResponse: {
             /** @constant */
             status: "ok";
@@ -557,6 +728,29 @@ export interface components {
                 new: number;
                 share: number | null;
             }[];
+        };
+        GlobalTimeseriesResponse: {
+            metric: components["schemas"]["Metric"];
+            granularity: components["schemas"]["Granularity"];
+            from: string;
+            to: string;
+            points: components["schemas"]["TimeseriesPoint"][];
+        };
+        TimeseriesPoint: {
+            date: string;
+            total: number;
+            new: number;
+        };
+        CountryTimeseriesResponse: {
+            metric: components["schemas"]["Metric"];
+            granularity: components["schemas"]["Granularity"];
+            from: string;
+            to: string;
+            points: components["schemas"]["TimeseriesPoint"][];
+            country: {
+                code: string;
+                name: string;
+            };
         };
     };
     responses: never;

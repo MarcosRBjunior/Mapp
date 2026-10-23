@@ -165,3 +165,39 @@ export const rankingsResponseSchema = z
     ),
   })
   .meta({ id: 'RankingsResponse' });
+
+export const granularitySchema = z.enum(['day', 'week', 'month']).meta({
+  id: 'Granularity',
+  description: 'day = dia, week = semana ISO (segunda a domingo), month = mês',
+});
+
+export const timeseriesQuerySchema = z.object({
+  metric: metricSchema.default('cases'),
+  from: isoDateSchema
+    .meta({ description: 'Início (YYYY-MM-DD). Sem ele, o início da cobertura.' })
+    .optional(),
+  to: isoDateSchema
+    .meta({ description: 'Fim (YYYY-MM-DD). Sem ele, a data de referência.' })
+    .optional(),
+  granularity: granularitySchema.default('day'),
+});
+
+const timeseriesShape = {
+  metric: metricSchema,
+  granularity: granularitySchema,
+  from: z.string(),
+  to: z.string(),
+  points: z.array(
+    z
+      .object({ date: z.string(), total: z.number().int(), new: z.number().int() })
+      .meta({ id: 'TimeseriesPoint' }),
+  ),
+};
+
+export const globalTimeseriesResponseSchema = z
+  .object(timeseriesShape)
+  .meta({ id: 'GlobalTimeseriesResponse' });
+
+export const countryTimeseriesResponseSchema = z
+  .object({ ...timeseriesShape, country: z.object({ code: z.string(), name: z.string() }) })
+  .meta({ id: 'CountryTimeseriesResponse' });
