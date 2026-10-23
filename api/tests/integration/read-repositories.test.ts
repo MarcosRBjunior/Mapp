@@ -47,9 +47,11 @@ describe('data state repository (read-only user)', () => {
     });
   });
 
-  it('checks whether the global view has a date', async () => {
-    expect(await repos.dataState.hasGlobalDate(fixture.sourceId, D1)).toBe(true);
-    expect(await repos.dataState.hasGlobalDate(fixture.sourceId, '2023-03-10')).toBe(false);
+  it('checks whether a date is complete', async () => {
+    // D2 misses ARG, so only D1 is complete.
+    expect(await repos.dataState.isCompleteDate(fixture.sourceId, D1)).toBe(true);
+    expect(await repos.dataState.isCompleteDate(fixture.sourceId, D2)).toBe(false);
+    expect(await repos.dataState.isCompleteDate(fixture.sourceId, '2023-03-10')).toBe(false);
   });
 });
 

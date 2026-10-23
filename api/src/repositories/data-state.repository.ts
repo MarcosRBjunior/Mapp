@@ -1,5 +1,6 @@
 import { toIsoDate } from '../lib/dates.js';
 import type { Db } from '../lib/prisma.js';
+import { completeDatesSql } from './complete-dates.js';
 
 export interface SourceRecord {
   id: number;
@@ -20,7 +21,7 @@ export interface DataStateRepository {
   findSource(code: string): Promise<SourceRecord | null>;
   findDataVersion(sourceId: number): Promise<number | null>;
   findCoverage(sourceId: number): Promise<Coverage>;
-  hasGlobalDate(sourceId: number, date: string): Promise<boolean>;
+  isCompleteDate(sourceId: number, date: string): Promise<boolean>;
 }
 
 interface CoverageRow {
@@ -46,25 +47,18 @@ export function createDataStateRepository(db: Db): DataStateRepository {
       return run?.id ?? null;
     },
 
-    // RN-06 from the view only: N of a metric is its highest country_count; the reference date
-    // is the last date where both metrics reach their own N. Rows not yet refreshed are ignored.
+    // RN-06 from the view only: coverage runs from the first to the last complete date.
+    // Rows not yet refreshed are ignored.
     async findCoverage(sourceId) {
       const [row] = await db.$queryRaw<CoverageRow[]>`
-        WITH n AS (
-          SELECT metric, max(country_count) AS n
-          FROM global_daily_stat WHERE source_id = ${sourceId}
-          GROUP BY metric
-        ), complete AS (
-          SELECT g.stat_date
-          FROM global_daily_stat g JOIN n ON n.metric = g.metric
-          WHERE g.source_id = ${sourceId} AND g.country_count = n.n
-          GROUP BY g.stat_date
-          HAVING count(*) = 2
-        )
+        WITH complete AS (${completeDatesSql(sourceId)})
         SELECT
-          (SELECT min(stat_date) FROM global_daily_stat WHERE source_id = ${sourceId}) AS "from",
+          (SELECT min(stat_date) FROM complete) AS "from",
           (SELECT max(stat_date) FROM complete) AS "referenceDate",
-          coalesce((SELECT max(n) FROM n), 0)::int AS countries`;
+          coalesce(
+            (SELECT max(country_count) FROM global_daily_stat WHERE source_id = ${sourceId}),
+            0
+          )::int AS countries`;
       return {
         from: row?.from ? toIsoDate(row.from) : null,
         referenceDate: row?.referenceDate ? toIsoDate(row.referenceDate) : null,
@@ -72,11 +66,13 @@ export function createDataStateRepository(db: Db): DataStateRepository {
       };
     },
 
-    async hasGlobalDate(sourceId, date) {
-      const [row] = await db.$queryRaw<{ n: number }[]>`
-        SELECT count(*)::int AS n FROM global_daily_stat
-        WHERE source_id = ${sourceId} AND stat_date = ${date}::date`;
-      return row?.n === 2;
+    async isCompleteDate(sourceId, date) {
+      const [row] = await db.$queryRaw<{ complete: boolean }[]>`
+        SELECT EXISTS (
+          SELECT 1 FROM (${completeDatesSql(sourceId)}) complete
+          WHERE complete.stat_date = ${date}::date
+        ) AS complete`;
+      return row?.complete === true;
     },
   };
 }

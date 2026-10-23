@@ -75,15 +75,50 @@ describe('findCoverage (RN-06 from the view, per metric)', () => {
     });
   });
 
-  it('has no reference date while one metric has no data at all', async () => {
+  it('has no coverage while one metric has no data at all', async () => {
     await insert([['BRA', 'cases', D1]]);
     await refresh();
 
     expect(await repos.dataState.findCoverage(sourceId)).toEqual({
-      from: D1,
+      from: null,
       referenceDate: null,
       countries: 1,
     });
+  });
+
+  it('starts at the first complete date and skips incomplete ones', async () => {
+    const D0 = '2023-03-07';
+    const D3 = '2023-03-10';
+    await insert([
+      // D0: only BRA → incomplete
+      ['BRA', 'cases', D0],
+      ['BRA', 'deaths', D0],
+      // D1: complete
+      ['BRA', 'cases', D1],
+      ['ARG', 'cases', D1],
+      ['BRA', 'deaths', D1],
+      ['ARG', 'deaths', D1],
+      // D2: ARG deaths missing → incomplete
+      ['BRA', 'cases', D2],
+      ['ARG', 'cases', D2],
+      ['BRA', 'deaths', D2],
+      // D3: complete
+      ['BRA', 'cases', D3],
+      ['ARG', 'cases', D3],
+      ['BRA', 'deaths', D3],
+      ['ARG', 'deaths', D3],
+    ]);
+    await refresh();
+
+    expect(await repos.dataState.findCoverage(sourceId)).toEqual({
+      from: D1,
+      referenceDate: D3,
+      countries: 2,
+    });
+    expect(await repos.dataState.isCompleteDate(sourceId, D0)).toBe(false);
+    expect(await repos.dataState.isCompleteDate(sourceId, D1)).toBe(true);
+    expect(await repos.dataState.isCompleteDate(sourceId, D2)).toBe(false);
+    expect(await repos.dataState.isCompleteDate(sourceId, D3)).toBe(true);
   });
 
   it('ignores rows written after the last refresh', async () => {

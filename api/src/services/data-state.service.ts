@@ -70,7 +70,7 @@ export function createDataStateService(
     const outside =
       date < state.from ||
       date > state.referenceDate ||
-      !(await repo.hasGlobalDate(state.sourceId, date));
+      !(await repo.isCompleteDate(state.sourceId, date));
     if (outside) {
       throw new AppError('VALIDATION_ERROR', 400, 'date is outside the data coverage', {
         from: state.from,

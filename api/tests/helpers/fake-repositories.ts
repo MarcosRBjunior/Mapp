@@ -88,7 +88,7 @@ export function createFakeRepositories(options: FakeOptions = {}): ReadRepositor
           : Promise.resolve(ready ? FAKE_DATA_VERSION : null),
       findCoverage: () =>
         Promise.resolve({ from: FAKE_FROM, referenceDate: FAKE_REFERENCE, countries: 3 }),
-      hasGlobalDate: (_sourceId, date) => Promise.resolve(date in GLOBAL),
+      isCompleteDate: (_sourceId, date) => Promise.resolve(date in GLOBAL),
     },
     meta: {
       findLastFinishedSync: () => Promise.resolve(ready ? FAKE_LAST_SYNC : null),

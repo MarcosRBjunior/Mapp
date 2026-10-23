@@ -130,9 +130,9 @@ describe('runSync in full mode', () => {
     const coverage = await createReadRepositories(reader).dataState.findCoverage(
       (await rows<{ id: number }>("SELECT id FROM data_source WHERE code = 'api_ninjas'"))[0]!.id,
     );
-    // XDP has no deaths: deaths closes with one country less and still dates the data.
+    // XDP has no deaths: deaths closes with one country less and still dates the data. Earlier fixture dates are incomplete, so coverage starts at the reference date.
     expect(coverage).toEqual({
-      from: '2023-03-05',
+      from: '2023-03-09',
       referenceDate: '2023-03-09',
       countries: mappedNames,
     });

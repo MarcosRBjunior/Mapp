@@ -11,7 +11,7 @@ function stubRepo() {
     findCoverage: vi
       .fn<DataStateRepository['findCoverage']>()
       .mockResolvedValue({ from: '2023-03-01', referenceDate: '2023-03-09', countries: 201 }),
-    hasGlobalDate: vi.fn<DataStateRepository['hasGlobalDate']>().mockResolvedValue(true),
+    isCompleteDate: vi.fn<DataStateRepository['isCompleteDate']>().mockResolvedValue(true),
   };
 }
 
@@ -94,12 +94,12 @@ describe('data state service', () => {
       message: 'date is outside the data coverage',
       details: { from: '2023-03-01', to: '2023-03-09' },
     });
-    expect(repo.hasGlobalDate).not.toHaveBeenCalled();
+    expect(repo.isCompleteDate).not.toHaveBeenCalled();
   });
 
-  it('rejects a date inside the range without a global row', async () => {
+  it('rejects a date inside the range that is not complete', async () => {
     const repo = stubRepo();
-    repo.hasGlobalDate.mockResolvedValue(false);
+    repo.isCompleteDate.mockResolvedValue(false);
     const service = createDataStateService(repo, 'api_ninjas');
 
     await expect(service.resolveDate('2023-03-05')).rejects.toMatchObject({
