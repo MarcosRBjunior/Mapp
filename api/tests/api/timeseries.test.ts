@@ -101,4 +101,23 @@ describe('GET /api/v1/countries/:code/timeseries', () => {
 
     expect(response.status).toBe(400);
   });
+  it('responds 503 without data', async () => {
+    const response = await request(createTestApp({ ready: false })).get(
+      '/api/v1/countries/BRA/timeseries',
+    );
+
+    expect(response.status).toBe(503);
+  });
+
+  it.each(['granularity=year', 'from=2023-03-09&to=2023-03-08'])(
+    'rejects the bad query %s',
+    async (query) => {
+      const response = await request(createTestApp()).get(
+        `/api/v1/countries/BRA/timeseries?${query}`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(errorResponseSchema.parse(response.body).error.code).toBe('VALIDATION_ERROR');
+    },
+  );
 });
