@@ -19,3 +19,10 @@ A F3 abriu a API REST só de leitura (`/ready`, `/api/v1/meta`, `/global`, `/cou
 - Mudar um schema exige rodar `npm run openapi -w api` e commitar o `docs/openapi.yaml`; o CI acusa o esquecimento.
 - Os tipos do front (F4) saem do `docs/openapi.yaml`.
 - O memo por `dataVersion` custa uma consulta barata por requisição (o id do último run) e evita recalcular a data de referência sobre toda a série.
+
+## Atualização da F6a (2026-10-23)
+
+- Cache por `dataVersion`: um middleware responde 304 antes de validar a query, porque a mesma URL na mesma versão sempre devolve o mesmo corpo. O ETag do Express (hash do corpo) foi desligado. O `/meta` tem ETag próprio (`dataVersion` + id do último run), porque o `lastSync` muda até num run `failed`. Erros nunca são cacheados (`no-store`).
+- O `dataVersion` é lido no máximo a cada 5 s por instância; depois de um sync, a API pode servir a versão anterior por até 5 s.
+- Ranking e ordem alfabética no SQL (`row_number()` + `COLLATE "pt-BR-x-icu"`), igual ao `localeCompare('pt-BR')` do front. O banco gerenciado precisa ter ICU.
+- Datas completas (RN-06) num fragmento SQL único (`repositories/complete-dates.ts`), usado pela cobertura, pela validação de `?date=` e pelas séries.
