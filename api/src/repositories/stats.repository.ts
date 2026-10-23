@@ -128,7 +128,7 @@ function rankedSql(sourceId: number, date: string): Prisma.Sql {
     SELECT s.metric::text AS metric, s.country_code AS code, c.name, s.total,
            s.new_value AS "newValue",
            row_number() OVER (
-             PARTITION BY s.metric ORDER BY s.total DESC, c.name COLLATE "pt-BR-x-icu"
+             PARTITION BY s.metric ORDER BY s.total DESC, c.name COLLATE "pt-BR-x-icu", s.country_code
            )::int AS rank,
            count(*) OVER (PARTITION BY s.metric)::int AS "rankedCount"
     FROM daily_stat s
@@ -163,7 +163,7 @@ export function createStatsRepository(db: Db): StatsRepository {
          AND s.metric = ${metric}::metric
          AND s.stat_date = ${date}::date
         WHERE c.kind = 'country'
-        ORDER BY c.name COLLATE "pt-BR-x-icu"`,
+        ORDER BY c.name COLLATE "pt-BR-x-icu", c.code`,
 
     async findCountry(code) {
       const country = await db.country.findUnique({ where: { code } });

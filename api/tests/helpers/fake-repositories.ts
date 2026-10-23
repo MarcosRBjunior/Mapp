@@ -85,7 +85,10 @@ const GLOBAL: Record<string, GlobalDayRow[]> = {
 function rankedStats(date: string, metric: StatMetric) {
   const entries = (DAY_STATS[date] ?? [])
     .filter((stat) => stat.metric === metric)
-    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'pt-BR'));
+    .sort(
+      (a, b) =>
+        b.total - a.total || a.name.localeCompare(b.name, 'pt-BR') || a.code.localeCompare(b.code),
+    );
   return entries.map((stat, index) => ({
     rank: index + 1,
     code: stat.code,
@@ -141,7 +144,7 @@ export function createFakeRepositories(options: FakeOptions = {}): ReadRepositor
                 newValue: stat?.newValue ?? null,
               };
             })
-            .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')),
+            .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR') || a.code.localeCompare(b.code)),
         ),
       findCountry: (code) =>
         Promise.resolve(COUNTRIES.find((country) => country.code === code) ?? null),
