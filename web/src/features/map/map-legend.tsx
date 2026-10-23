@@ -13,11 +13,15 @@ export function MapLegend({ countries, metric }: MapLegendProps) {
   const title = `Total de ${METRIC_LABELS[metric].noun}`;
 
   return (
-    <div className="map-legend" role="group" aria-label={`Legenda: ${title}`}>
-      <p className="map-legend-title">{title}</p>
-      <ul>
+    <div
+      className="absolute bottom-6 left-2 z-[900] rounded-md bg-background/90 px-3 py-2 text-xs"
+      role="group"
+      aria-label={`Legenda: ${title}`}
+    >
+      <p className="mb-1 font-semibold">{title}</p>
+      <ul className="flex items-end gap-3">
         {steps.map((step) => (
-          <li key={step.value}>
+          <li key={step.value} className="flex flex-col items-center">
             <svg width={step.radius * 2 + 2} height={step.radius * 2 + 2} aria-hidden="true">
               <circle
                 cx={step.radius + 1}

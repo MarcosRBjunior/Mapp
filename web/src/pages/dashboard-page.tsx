@@ -40,23 +40,35 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="dashboard">
+    <div className="@container/main flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
       {notFound && (
-        <div className="notice" role="alert">
-          <p>{`País não encontrado: ${rawCode}`}</p>
-          <Link to={{ pathname: '/', search: location.search }}>Voltar à visão mundial</Link>
+        <div className="px-4 lg:px-6">
+          <div
+            className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm"
+            role="alert"
+          >
+            <p>{`País não encontrado: ${rawCode}`}</p>
+            <Link
+              className="font-medium underline underline-offset-4"
+              to={{ pathname: '/', search: location.search }}
+            >
+              Voltar à visão mundial
+            </Link>
+          </div>
         </div>
       )}
-      <WorldMap
-        metric={metric}
-        countries={countries.data?.countries}
-        countriesStatus={countries.status}
-        onRetry={() => void countries.refetch()}
-        referenceDate={countries.data?.date}
-        selectedCode={selectedCode}
-        onSelect={onSelect}
-      />
-      <div className="cards">
+      <div className="px-4 lg:px-6">
+        <WorldMap
+          metric={metric}
+          countries={countries.data?.countries}
+          countriesStatus={countries.status}
+          onRetry={() => void countries.refetch()}
+          referenceDate={countries.data?.date}
+          selectedCode={selectedCode}
+          onSelect={onSelect}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
         <GlobalCard />
         <CountryCard code={selectedCode} metric={metric} />
       </div>
