@@ -35,11 +35,11 @@ export async function findOrphanRunIds(db: Db): Promise<number[]> {
 }
 
 // A done checkpoint means the run wrote data (rows and checkpoint share a transaction), so it
-// closes as partial and counts for the dataVersion; otherwise it failed.
-export async function closeOrphanRuns(db: Db): Promise<ClosedOrphan[]> {
-  const orphans = await findOrphanRunIds(db);
+// closes as partial and counts for the dataVersion; otherwise it failed. Closes exactly the given
+// ids (from findOrphanRunIds), so the caller can refresh the view between finding and closing.
+export async function closeOrphanRuns(db: Db, ids: readonly number[]): Promise<ClosedOrphan[]> {
   const closed: ClosedOrphan[] = [];
-  for (const orphanId of orphans) {
+  for (const orphanId of ids) {
     const [callsUsed, doneUnits] = await Promise.all([
       db.providerCall.count({ where: { syncRunId: orphanId } }),
       db.syncCheckpoint.count({ where: { syncRunId: orphanId, status: 'done' } }),

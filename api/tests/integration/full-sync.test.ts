@@ -251,6 +251,38 @@ describe('runSync in full mode', () => {
     ).toEqual([{ total: 7 }]);
   });
 
+  it('leaves the orphan running and fails the run when the view refresh fails', async () => {
+    const orphan = await rows<{ id: number }>(
+      `INSERT INTO sync_run (source_id, mode, status) VALUES (${SOURCE_ID}, 'full', 'running') RETURNING id`,
+    );
+    const orphanId = orphan[0]?.id ?? 0;
+    await owner.query(
+      `INSERT INTO sync_checkpoint (sync_run_id, unit, status) VALUES ($1, 'full:cases:Brazil', 'done')`,
+      [orphanId],
+    );
+    const source = fullSource();
+    const failingRefresh = new Proxy(prisma, {
+      get: (target, prop, receiver): unknown =>
+        prop === '$executeRaw'
+          ? () => Promise.reject(new Error('refresh failed'))
+          : Reflect.get(target, prop, receiver),
+    });
+
+    await expect(runSync({ ...deps(source.fetch), prisma: failingRefresh })).rejects.toThrow(
+      'refresh failed',
+    );
+
+    expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
+      { status: 'running' },
+    ]);
+    expect(source.requested).toHaveLength(0);
+    // The lock was released: the next run recovers the orphan.
+    await runSync(deps(fullSource().fetch, 1));
+    expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
+      { status: 'partial' },
+    ]);
+  });
+
   it('keeps /ready at 200 after a full run crashes having written rows', async () => {
     // Snapshot first: the reference date exists for both metrics.
     await runSync({

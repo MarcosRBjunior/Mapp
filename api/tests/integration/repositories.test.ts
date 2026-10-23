@@ -152,13 +152,13 @@ describe('sync runs and checkpoints', () => {
 
   it('fails an orphan run that finished no unit', async () => {
     const runId = await openRun();
-    expect(await closeOrphanRuns(prisma)).toEqual([{ id: runId, status: 'failed' }]);
+    expect(await closeOrphanRuns(prisma, [runId])).toEqual([{ id: runId, status: 'failed' }]);
     const run = await owner.query(
       'SELECT status, error, finished_at IS NOT NULL AS finished FROM sync_run WHERE id = $1',
       [runId],
     );
     expect(run.rows).toEqual([{ status: 'failed', error: INTERRUPTED_ERROR, finished: true }]);
-    expect(await closeOrphanRuns(prisma)).toEqual([]);
+    expect(await closeOrphanRuns(prisma, [])).toEqual([]);
   });
 
   it('closes as partial an orphan run that finished a unit (it wrote data)', async () => {
@@ -168,7 +168,7 @@ describe('sync runs and checkpoints', () => {
       [runId],
     );
 
-    expect(await closeOrphanRuns(prisma)).toEqual([{ id: runId, status: 'partial' }]);
+    expect(await closeOrphanRuns(prisma, [runId])).toEqual([{ id: runId, status: 'partial' }]);
     const run = await owner.query('SELECT status, error FROM sync_run WHERE id = $1', [runId]);
     expect(run.rows).toEqual([{ status: 'partial', error: INTERRUPTED_ERROR }]);
   });
@@ -184,7 +184,7 @@ describe('sync runs and checkpoints', () => {
         outcome,
       });
     }
-    await closeOrphanRuns(prisma);
+    await closeOrphanRuns(prisma, [runId]);
     const run = await owner.query('SELECT calls_used FROM sync_run WHERE id = $1', [runId]);
     expect(run.rows).toEqual([{ calls_used: 2 }]);
   });

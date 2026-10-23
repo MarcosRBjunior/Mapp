@@ -25,15 +25,13 @@ export async function runSync(deps: RunSyncDeps): Promise<SyncResult> {
     throw new SyncLockedError();
   }
   try {
-    // A dead run may have written rows without refreshing the view. Refresh before closing it:
-    // closing is what bumps the dataVersion, so readers never see the new version over a stale view.
-    if ((await findOrphanRunIds(deps.prisma)).length > 0) {
-      await bestEffort(deps.logger, 'refresh global view after orphan recovery', () =>
-        refreshGlobalDailyStat(deps.prisma),
-      );
-    }
-    const closed = await closeOrphanRuns(deps.prisma);
-    if (closed.length > 0) {
+    // A dead run may have written rows without refreshing the view. The refresh must succeed
+    // before closing it: closing bumps the dataVersion, so readers never see the new version over
+    // a stale view. If the refresh throws, the orphans stay 'running' and the next run retries.
+    const orphanIds = await findOrphanRunIds(deps.prisma);
+    if (orphanIds.length > 0) {
+      await refreshGlobalDailyStat(deps.prisma);
+      const closed = await closeOrphanRuns(deps.prisma, orphanIds);
       deps.logger.warn({ runs: closed }, 'closed interrupted runs');
     }
     const plan = deps.mode === 'full' ? fullPlan(deps.source) : snapshotPlan(deps.source);
