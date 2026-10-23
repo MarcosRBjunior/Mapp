@@ -13,3 +13,5 @@ export type ApiErrorCode = Schemas['ErrorResponse']['error']['code'];
 export type GlobalTimeseriesResponse = Schemas['GlobalTimeseriesResponse'];
 export type CountryTimeseriesResponse = Schemas['CountryTimeseriesResponse'];
 export type TimeseriesPoint = Schemas['TimeseriesPoint'];
+export type RankingsResponse = Schemas['RankingsResponse'];
+export type RankingItem = RankingsResponse['items'][number];

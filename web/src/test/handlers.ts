@@ -9,6 +9,7 @@ import {
   globalFixture,
   globalSeriesFixture,
   metaFixture,
+  rankingsFixture,
 } from './fixtures';
 
 export const API = 'http://api.test';
@@ -27,6 +28,11 @@ function seriesQuery(request: Request): { metric: Metric; from: string; to: stri
 }
 
 export const handlers = [
+  http.get(`${API}/api/v1/rankings`, ({ request }) => {
+    const params = new URL(request.url).searchParams;
+    const metric = params.get('metric') === 'deaths' ? 'deaths' : 'cases';
+    return HttpResponse.json(rankingsFixture(metric, Number(params.get('limit') ?? '10')));
+  }),
   http.get(`${API}/api/v1/meta`, () => HttpResponse.json(metaFixture)),
   http.get(`${API}/api/v1/global`, () => HttpResponse.json(globalFixture)),
   http.get(`${API}/api/v1/countries`, ({ request }) => {

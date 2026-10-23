@@ -24,6 +24,16 @@ vi.mock('../features/map/world-map', () => ({
 const PATHS = ['/', '/paises/:code'];
 
 describe('DashboardPage', () => {
+  it('shows the ranking and highlights the selected country', async () => {
+    renderWithProviders(<DashboardPage />, { route: '/paises/BRA', path: PATHS });
+
+    const ranking = await screen.findByRole('region', { name: 'Top 10 — casos em 09/03/2023' });
+    expect(within(ranking).getByRole('link', { name: 'Brasil' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
   it('shows the selected country in the card and on the map', async () => {
     renderWithProviders(<DashboardPage />, { route: '/paises/BRA', path: PATHS });
 
@@ -92,7 +102,8 @@ describe('DashboardPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Não foi possível carregar os números globais',
     );
-    expect(await screen.findByText('300.000')).toBeInTheDocument();
+    const card = await screen.findByRole('region', { name: 'Brasil' });
+    expect(await within(card).findByText('300.000')).toBeInTheDocument();
   });
 
   it('shows the new values of the selected country in the period from the URL', async () => {

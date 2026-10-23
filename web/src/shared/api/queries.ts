@@ -63,3 +63,11 @@ export function useMonthlySeries(code: string | null, metric: Metric, range: Ser
     },
   });
 }
+
+export function useRankings(metric: Metric, limit: number) {
+  return useQuery({
+    queryKey: ['rankings', metric, limit],
+    queryFn: () =>
+      unwrap(apiClient().GET('/api/v1/rankings', { params: { query: { metric, limit } } })),
+  });
+}

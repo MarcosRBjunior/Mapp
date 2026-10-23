@@ -6,6 +6,7 @@ import type {
   GlobalTimeseriesResponse,
   MetaResponse,
   Metric,
+  RankingsResponse,
   TimeseriesPoint,
 } from '../shared/api/types';
 
@@ -224,5 +225,30 @@ export function countrySeriesFixture(
     to,
     country: { code: country.code, name: country.name },
     points: value === null ? [] : seriesPoints(value.new, from, to),
+  };
+}
+
+export function rankingsFixture(metric: Metric, limit: number): RankingsResponse {
+  const ranked = fixtureCountries
+    .flatMap((country) => {
+      const value = country[metric];
+      return value === null ? [] : [{ country, value }];
+    })
+    .sort(
+      (a, b) =>
+        b.value.total - a.value.total || a.country.name.localeCompare(b.country.name, 'pt-BR'),
+    );
+  return {
+    date: REFERENCE_DATE,
+    metric,
+    rankedCount: ranked.length,
+    items: ranked.slice(0, limit).map(({ country, value }, index) => ({
+      rank: index + 1,
+      code: country.code,
+      name: country.name,
+      total: value.total,
+      new: value.new,
+      share: Math.round((value.total / globalFixture[metric].total) * 1000) / 10,
+    })),
   };
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { CountryCard } from '../features/stats/country-card';
+import { RankingTable } from '../features/ranking/ranking-table';
 import { PeriodCard } from '../features/stats/period-card';
 import { GlobalCard } from '../features/stats/global-card';
 import { WorldMap } from '../features/map/world-map';
@@ -75,6 +76,9 @@ export function DashboardPage() {
         <GlobalCard />
         <CountryCard code={selectedCode} metric={metric} />
         <PeriodCard code={selectedCode} metric={metric} period={period} />
+      </div>
+      <div className="px-4 lg:px-6">
+        <RankingTable metric={metric} selectedCode={selectedCode} />
       </div>
     </div>
   );
