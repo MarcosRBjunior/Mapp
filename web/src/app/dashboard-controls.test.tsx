@@ -7,7 +7,7 @@ describe('DashboardControls', () => {
   it('defaults to cases and 30 days', () => {
     renderWithProviders(<DashboardControls />, { route: '/' });
 
-    expect(screen.getByRole('group', { name: 'Métrica' })).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: 'Métrica' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Casos' })).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('radio', { name: '30 dias' })).toHaveAttribute('aria-checked', 'true');
   });

@@ -53,7 +53,7 @@ describe('App', () => {
     renderWithProviders(<App />, { route: '/sobre' });
 
     await screen.findByRole('heading', { name: 'Sobre os dados' });
-    expect(screen.queryByRole('group', { name: 'Métrica' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup', { name: 'Métrica' })).not.toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Principal' })).toBeInTheDocument();
   });
 

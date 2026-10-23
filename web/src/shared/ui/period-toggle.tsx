@@ -13,7 +13,6 @@ export function PeriodToggle({ period, onChange }: PeriodToggleProps) {
       variant="outline"
       spacing={0}
       value={period}
-      role="group"
       aria-label="Período"
       onValueChange={(value) => {
         const next = PERIODS.find((item) => item === value);

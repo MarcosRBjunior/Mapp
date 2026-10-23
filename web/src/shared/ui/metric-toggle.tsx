@@ -14,7 +14,6 @@ export function MetricToggle({ metric, onChange }: MetricToggleProps) {
       variant="outline"
       spacing={0}
       value={metric}
-      role="group"
       aria-label="Métrica"
       // Radix sends '' when the active item is clicked again; keep the current metric.
       onValueChange={(value) => {
