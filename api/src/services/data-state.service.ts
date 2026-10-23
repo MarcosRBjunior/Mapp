@@ -77,7 +77,7 @@ export function createDataStateService(
     return memo;
   }
 
-  const now = options.now ?? Date.now;
+  const now = options.now ?? (() => performance.now());
   let recent: { at: number; state: DataState | null } | undefined;
 
   async function current(): Promise<DataState | null> {
