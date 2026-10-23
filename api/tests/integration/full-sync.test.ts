@@ -222,6 +222,35 @@ describe('runSync in full mode', () => {
     ]);
   });
 
+  it('refreshes the view before closing a data-writing orphan', async () => {
+    const orphan = await rows<{ id: number }>(
+      `INSERT INTO sync_run (source_id, mode, status) VALUES (${SOURCE_ID}, 'full', 'running') RETURNING id`,
+    );
+    const orphanId = orphan[0]?.id ?? 0;
+    await owner.query(
+      `INSERT INTO sync_checkpoint (sync_run_id, unit, status) VALUES ($1, 'full:cases:Brazil', 'done')`,
+      [orphanId],
+    );
+    await owner.query(
+      `INSERT INTO daily_stat (country_code, metric, stat_date, source_id, total, new_value)
+       VALUES ('BRA', 'cases', '2020-01-01', ${SOURCE_ID}, 7, 7)`,
+    );
+    expect(
+      await rows("SELECT 1 FROM global_daily_stat WHERE stat_date = '2020-01-01'"),
+    ).toHaveLength(0);
+
+    await runSync(deps(fullSource().fetch, 1));
+
+    expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
+      { status: 'partial' },
+    ]);
+    expect(
+      await rows(
+        "SELECT total::int AS total FROM global_daily_stat WHERE stat_date = '2020-01-01' AND metric = 'cases'",
+      ),
+    ).toEqual([{ total: 7 }]);
+  });
+
   it('keeps /ready at 200 after a full run crashes having written rows', async () => {
     // Snapshot first: the reference date exists for both metrics.
     await runSync({
