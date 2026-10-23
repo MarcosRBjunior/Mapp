@@ -11,6 +11,8 @@ import {
   globalResponseSchema,
   healthResponseSchema,
   metaResponseSchema,
+  rankingsQuerySchema,
+  rankingsResponseSchema,
   readyResponseSchema,
 } from '../routes/schemas.js';
 
@@ -92,6 +94,13 @@ export function createOpenApiDocument() {
             '404': json(errorResponseSchema, 'COUNTRY_NOT_FOUND'),
             ...dataErrors,
           },
+        },
+      },
+      '/api/v1/rankings': {
+        get: {
+          summary: 'Ranking dos países pela métrica numa data (RN-05), com participação %',
+          requestParams: { query: rankingsQuerySchema },
+          responses: { '200': json(rankingsResponseSchema, 'Ranking'), ...dataErrors },
         },
       },
     },

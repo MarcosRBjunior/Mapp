@@ -3,6 +3,7 @@ import type { ReadRepositories } from '../repositories/read-repositories.js';
 import { createCountriesService, type CountriesService } from './countries.service.js';
 import { createDataStateService, type DataStateService } from './data-state.service.js';
 import { createGlobalService, type GlobalService } from './global.service.js';
+import { createRankingsService, type RankingsService } from './rankings.service.js';
 import { createMetaService, type MetaService } from './meta.service.js';
 
 export interface Services {
@@ -10,6 +11,7 @@ export interface Services {
   meta: MetaService;
   global: GlobalService;
   countries: CountriesService;
+  rankings: RankingsService;
 }
 
 export function createServices(repos: ReadRepositories, sourceCode: DataProvider): Services {
@@ -19,5 +21,6 @@ export function createServices(repos: ReadRepositories, sourceCode: DataProvider
     meta: createMetaService(dataState, repos.meta),
     global: createGlobalService(dataState, repos.stats),
     countries: createCountriesService(dataState, repos.stats),
+    rankings: createRankingsService(dataState, repos.stats),
   };
 }
