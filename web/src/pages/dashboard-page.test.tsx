@@ -1,8 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { delay, http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import type { WorldMapProps } from '../features/map/world-map';
-import { countriesFixture } from '../test/fixtures';
 import { API, errorBody } from '../test/handlers';
 import { renderWithProviders } from '../test/render';
 import { server } from '../test/server';
@@ -82,34 +81,6 @@ describe('DashboardPage', () => {
     expect(await screen.findByRole('region', { name: 'Índia' })).toBeInTheDocument();
   });
 
-  it('switches the metric of the country card', async () => {
-    renderWithProviders(<DashboardPage />, { route: '/paises/BRA', path: PATHS });
-    await screen.findByText('300.000');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Mortes' }));
-
-    expect(await screen.findByText('6.000')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mortes' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByTestId('location')).toHaveTextContent('/paises/BRA?metric=deaths');
-  });
-
-  it('keeps the previous country list while the new metric loads', async () => {
-    server.use(
-      http.get(`${API}/api/v1/countries`, async ({ request }) => {
-        const deaths = new URL(request.url).searchParams.get('metric') === 'deaths';
-        if (deaths) await delay(200);
-        return HttpResponse.json(countriesFixture(deaths ? 'deaths' : 'cases'));
-      }),
-    );
-    renderWithProviders(<DashboardPage />, { route: '/paises/BRA', path: PATHS });
-    await waitFor(() => expect(screen.getByTestId('world-map')).toHaveAttribute('data-count', '5'));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Mortes' }));
-
-    expect(screen.getByTestId('world-map')).toHaveAttribute('data-count', '5');
-    expect(screen.getByRole('combobox', { name: 'Buscar país' })).toBeEnabled();
-  });
-
   it('keeps the country card working when the global card fails', async () => {
     server.use(
       http.get(`${API}/api/v1/global`, () =>
@@ -122,16 +93,5 @@ describe('DashboardPage', () => {
       'Não foi possível carregar os números globais',
     );
     expect(await screen.findByText('300.000')).toBeInTheDocument();
-  });
-
-  it('searches and opens a country', async () => {
-    renderWithProviders(<DashboardPage />, { route: '/', path: PATHS });
-    const input = screen.getByRole('combobox', { name: 'Buscar país' });
-    await waitFor(() => expect(input).toBeEnabled());
-
-    fireEvent.change(input, { target: { value: 'dinamarca' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
-
-    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/paises/DNK'));
   });
 });

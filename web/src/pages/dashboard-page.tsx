@@ -1,12 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router';
-import { CountrySearch } from '../features/search/country-search';
 import { CountryCard } from '../features/stats/country-card';
 import { GlobalCard } from '../features/stats/global-card';
 import { WorldMap } from '../features/map/world-map';
 import { isApiError } from '../shared/api/client';
 import { useCountries, useCountry } from '../shared/api/queries';
-import { MetricToggle } from '../shared/ui/metric-toggle';
 import { useMetric } from '../shared/url/use-metric';
 
 const CODE_PATTERN = /^[A-Za-z]{3}$/;
@@ -15,7 +13,7 @@ export function DashboardPage() {
   const { code: rawCode } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const [metric, setMetric] = useMetric();
+  const [metric] = useMetric();
 
   const validCode =
     rawCode !== undefined && CODE_PATTERN.test(rawCode) ? rawCode.toUpperCase() : null;
@@ -43,14 +41,6 @@ export function DashboardPage() {
 
   return (
     <div className="dashboard">
-      <div className="dashboard-controls">
-        <CountrySearch
-          countries={countries.data?.countries}
-          isError={countries.isError}
-          onSelect={onSelect}
-        />
-        <MetricToggle metric={metric} onChange={setMetric} />
-      </div>
       {notFound && (
         <div className="notice" role="alert">
           <p>{`País não encontrado: ${rawCode}`}</p>
