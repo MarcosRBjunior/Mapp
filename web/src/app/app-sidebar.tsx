@@ -1,6 +1,6 @@
 import { InfoIcon, MapIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import {
   Sidebar,
   SidebarContent,
@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 const NAV_ITEMS = [
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
 
 export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
   const { pathname } = useLocation();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -39,16 +41,23 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <nav aria-label="Principal">
               <SidebarMenu>
-                {NAV_ITEMS.map((item) => (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton asChild isActive={item.isActive(pathname)}>
-                      <NavLink to={item.to} end>
-                        <item.icon aria-hidden="true" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {NAV_ITEMS.map((item) => {
+                  const active = item.isActive(pathname);
+                  return (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton asChild isActive={active}>
+                        <Link
+                          to={item.to}
+                          aria-current={active ? 'page' : undefined}
+                          onClick={() => setOpenMobile(false)}
+                        >
+                          <item.icon aria-hidden="true" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </nav>
           </SidebarGroupContent>

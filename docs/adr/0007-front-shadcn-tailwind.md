@@ -12,6 +12,7 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
   - shadcn/ui pelo CLI fixado (`npx shadcn@4.22.1`), estilo `radix-nova`, base Radix (pacote `radix-ui`), ícones `lucide-react`;
   - Tailwind CSS v4 com `@tailwindcss/vite`;
   - fonte Geist servida do próprio bundle (`@fontsource-variable/geist`), sem host externo.
+  - o pacote `shadcn` fica em devDependencies porque só o `@import "shadcn/tailwind.css"` do build o usa.
 - **Código gerado:** `web/src/components/ui`, `web/src/hooks/use-mobile.ts` e `web/src/lib/utils.ts` vêm do CLI e são versionados.
   - Ajustes locais:
     - textos em pt-BR;
