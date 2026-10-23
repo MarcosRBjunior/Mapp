@@ -8,14 +8,14 @@ export function DataBanner() {
 
   if (meta.isPending) {
     return (
-      <div className="data-banner">
+      <div className="sticky top-0 z-10 border-b bg-muted px-4 py-2 text-sm lg:px-6">
         <Skeleton label="Carregando data de referência" />
       </div>
     );
   }
   if (meta.isError) {
     return (
-      <div className="data-banner">
+      <div className="sticky top-0 z-10 border-b bg-muted px-4 py-2 text-sm lg:px-6">
         <ErrorState
           message="Não foi possível carregar a data de referência"
           onRetry={() => void meta.refetch()}
@@ -28,5 +28,7 @@ export function DataBanner() {
   const period = referenceDate
     ? `Dados históricos até ${formatDate(referenceDate)}`
     : 'Dados ainda não carregados';
-  return <p className="data-banner">{`${period} · Fonte: ${source.name}`}</p>;
+  return (
+    <p className="sticky top-0 z-10 border-b bg-muted px-4 py-2 text-sm lg:px-6">{`${period} · Fonte: ${source.name}`}</p>
+  );
 }

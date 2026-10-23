@@ -1,5 +1,15 @@
 import type { Page, Route } from '@playwright/test';
-import { countryDetail, countryList, global, meta } from './fixtures.js';
+import {
+  SERIES_START,
+  REFERENCE_DATE,
+  countryDetail,
+  countryList,
+  countrySeries,
+  global,
+  globalSeries,
+  meta,
+  rankings,
+} from './fixtures.js';
 
 const API_ORIGIN = 'http://api.test';
 const CORS_HEADERS = {
@@ -35,12 +45,21 @@ function handleApi(route: Route, url: URL) {
   const path = url.pathname;
   if (path === '/api/v1/meta') return json(route, 200, meta);
   if (path === '/api/v1/global') return json(route, 200, global);
+  const metric = url.searchParams.get('metric') === 'deaths' ? 'deaths' : 'cases';
+  const from = url.searchParams.get('from') ?? SERIES_START;
+  const to = url.searchParams.get('to') ?? REFERENCE_DATE;
   if (path === '/api/v1/countries') {
-    return json(
-      route,
-      200,
-      countryList(url.searchParams.get('metric') === 'deaths' ? 'deaths' : 'cases'),
-    );
+    return json(route, 200, countryList(metric));
+  }
+  if (path === '/api/v1/rankings') {
+    return json(route, 200, rankings(metric, Number(url.searchParams.get('limit') ?? '10')));
+  }
+  if (path === '/api/v1/global/timeseries') return json(route, 200, globalSeries(metric, from, to));
+  const series = /^\/api\/v1\/countries\/([^/]+)\/timeseries$/.exec(path);
+  if (series?.[1]) {
+    const code = decodeURIComponent(series[1]).toUpperCase();
+    const body = countrySeries(code, metric, from, to);
+    return body ? json(route, 200, body) : notFound(route, code);
   }
   const match = /^\/api\/v1\/countries\/([^/]+)$/.exec(path);
   if (match?.[1]) {

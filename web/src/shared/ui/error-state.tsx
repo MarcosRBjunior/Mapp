@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+
 interface ErrorStateProps {
   message: string;
   onRetry?: () => void;
@@ -5,12 +7,15 @@ interface ErrorStateProps {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <div className="error-state" role="alert">
+    <div
+      role="alert"
+      className="flex flex-col items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm"
+    >
       <p>{message}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry}>
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
           Tentar de novo
-        </button>
+        </Button>
       )}
     </div>
   );

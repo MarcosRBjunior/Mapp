@@ -1,9 +1,13 @@
 import type {
   CountriesListResponse,
   CountryDetailResponse,
+  CountryTimeseriesResponse,
   GlobalResponse,
+  GlobalTimeseriesResponse,
   MetaResponse,
   Metric,
+  RankingsResponse,
+  TimeseriesPoint,
 } from '../shared/api/types';
 
 // Invented numbers: the source's terms forbid storing its data and this repository is public.
@@ -154,5 +158,97 @@ export function countryDetailFixture(code: string): CountryDetailResponse | null
     cases: country.cases,
     deaths: country.deaths,
     comparison: { cases: compare(country, 'cases'), deaths: compare(country, 'deaths') },
+  };
+}
+
+export const SERIES_START = '2020-01-22';
+
+function addDays(isoDate: string, days: number): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function nextMonthStart(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function daysBetween(from: string, to: string): number {
+  return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000 + 1;
+}
+
+// One point per calendar month, the first cut at `from`; every day adds `perDay` new.
+export function seriesPoints(perDay: number, from: string, to: string): TimeseriesPoint[] {
+  const points: TimeseriesPoint[] = [];
+  for (let start = from; start <= to; start = nextMonthStart(start)) {
+    const next = nextMonthStart(start);
+    const end = next > to ? to : addDays(next, -1);
+    points.push({
+      date: start,
+      total: perDay * daysBetween(SERIES_START, end),
+      new: perDay * daysBetween(start, end),
+    });
+  }
+  return points;
+}
+
+export function globalSeriesFixture(
+  metric: Metric,
+  from: string,
+  to: string,
+): GlobalTimeseriesResponse {
+  return {
+    metric,
+    granularity: 'month',
+    from,
+    to,
+    points: seriesPoints(globalFixture[metric].new, from, to),
+  };
+}
+
+export function countrySeriesFixture(
+  code: string,
+  metric: Metric,
+  from: string,
+  to: string,
+): CountryTimeseriesResponse | null {
+  const country = fixtureCountries.find((item) => item.code === code);
+  if (!country) return null;
+  const value = country[metric];
+  return {
+    metric,
+    granularity: 'month',
+    from,
+    to,
+    country: { code: country.code, name: country.name },
+    points: value === null ? [] : seriesPoints(value.new, from, to),
+  };
+}
+
+export function rankingsFixture(metric: Metric, limit: number): RankingsResponse {
+  const ranked = fixtureCountries
+    .flatMap((country) => {
+      const value = country[metric];
+      return value === null ? [] : [{ country, value }];
+    })
+    .sort(
+      (a, b) =>
+        b.value.total - a.value.total || a.country.name.localeCompare(b.country.name, 'pt-BR'),
+    );
+  return {
+    date: REFERENCE_DATE,
+    metric,
+    rankedCount: ranked.length,
+    items: ranked.slice(0, limit).map(({ country, value }, index) => ({
+      rank: index + 1,
+      code: country.code,
+      name: country.name,
+      total: value.total,
+      new: value.new,
+      share: Math.round((value.total / globalFixture[metric].total) * 1000) / 10,
+    })),
   };
 }

@@ -9,10 +9,7 @@ test('a direct link opens the country with the metric from the URL', async ({ pa
   await page.goto('/paises/BRA?metric=deaths');
 
   await expect(page.getByRole('region', { name: 'Brasil' })).toContainText('6.000');
-  await expect(page.getByRole('button', { name: 'Mortes', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(page.getByRole('radio', { name: 'Mortes' })).toHaveAttribute('aria-checked', 'true');
   await expect(page).toHaveTitle('Brasil — Mapp');
 });
 

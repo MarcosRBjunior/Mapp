@@ -1,13 +1,14 @@
 import { useCallback, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router';
-import { CountrySearch } from '../features/search/country-search';
 import { CountryCard } from '../features/stats/country-card';
+import { RankingTable } from '../features/ranking/ranking-table';
+import { PeriodCard } from '../features/stats/period-card';
 import { GlobalCard } from '../features/stats/global-card';
 import { WorldMap } from '../features/map/world-map';
 import { isApiError } from '../shared/api/client';
 import { useCountries, useCountry } from '../shared/api/queries';
-import { MetricToggle } from '../shared/ui/metric-toggle';
 import { useMetric } from '../shared/url/use-metric';
+import { usePeriod } from '../shared/url/use-period';
 
 const CODE_PATTERN = /^[A-Za-z]{3}$/;
 
@@ -15,7 +16,8 @@ export function DashboardPage() {
   const { code: rawCode } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const [metric, setMetric] = useMetric();
+  const [metric] = useMetric();
+  const [period] = usePeriod();
 
   const validCode =
     rawCode !== undefined && CODE_PATTERN.test(rawCode) ? rawCode.toUpperCase() : null;
@@ -42,33 +44,41 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-controls">
-        <CountrySearch
-          countries={countries.data?.countries}
-          isError={countries.isError}
-          onSelect={onSelect}
-        />
-        <MetricToggle metric={metric} onChange={setMetric} />
-      </div>
+    <div className="@container/main flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
       {notFound && (
-        <div className="notice" role="alert">
-          <p>{`País não encontrado: ${rawCode}`}</p>
-          <Link to={{ pathname: '/', search: location.search }}>Voltar à visão mundial</Link>
+        <div className="px-4 lg:px-6">
+          <div
+            className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm"
+            role="alert"
+          >
+            <p>{`País não encontrado: ${rawCode}`}</p>
+            <Link
+              className="font-medium underline underline-offset-4"
+              to={{ pathname: '/', search: location.search }}
+            >
+              Voltar à visão mundial
+            </Link>
+          </div>
         </div>
       )}
-      <WorldMap
-        metric={metric}
-        countries={countries.data?.countries}
-        countriesStatus={countries.status}
-        onRetry={() => void countries.refetch()}
-        referenceDate={countries.data?.date}
-        selectedCode={selectedCode}
-        onSelect={onSelect}
-      />
-      <div className="cards">
+      <div className="px-4 lg:px-6">
+        <WorldMap
+          metric={metric}
+          countries={countries.data?.countries}
+          countriesStatus={countries.status}
+          onRetry={() => void countries.refetch()}
+          referenceDate={countries.data?.date}
+          selectedCode={selectedCode}
+          onSelect={onSelect}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
         <GlobalCard />
         <CountryCard code={selectedCode} metric={metric} />
+        <PeriodCard code={selectedCode} metric={metric} period={period} />
+      </div>
+      <div className="px-4 lg:px-6">
+        <RankingTable metric={metric} selectedCode={selectedCode} />
       </div>
     </div>
   );
