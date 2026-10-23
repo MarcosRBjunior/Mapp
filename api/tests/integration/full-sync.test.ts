@@ -130,9 +130,9 @@ describe('runSync in full mode', () => {
     const coverage = await createReadRepositories(reader).dataState.findCoverage(
       (await rows<{ id: number }>("SELECT id FROM data_source WHERE code = 'api_ninjas'"))[0]!.id,
     );
-    // XDP has no deaths: deaths closes with one country less and still dates the data.
+    // XDP has no deaths: deaths closes with one country less and still dates the data. Earlier fixture dates are incomplete, so coverage starts at the reference date.
     expect(coverage).toEqual({
-      from: '2023-03-05',
+      from: '2023-03-09',
       referenceDate: '2023-03-09',
       countries: mappedNames,
     });
@@ -164,9 +164,15 @@ describe('runSync in full mode', () => {
     const again = fullSource();
     const result = await runSync(deps(again.fetch));
 
-    expect(result).toMatchObject({ status: 'success', callsUsed: 0, unitsRemaining: 0 });
+    expect(result).toMatchObject({
+      runId: null,
+      status: 'success',
+      callsUsed: 0,
+      unitsRemaining: 0,
+    });
     expect(again.requested).toEqual([]);
     expect(await rows('SELECT count(*)::int AS n FROM daily_stat')).toEqual(before);
+    expect(await rows('SELECT count(*)::int AS n FROM sync_run')).toEqual([{ n: 1 }]);
   });
 
   it('stops on a rejected key after writing and closes as partial', async () => {
@@ -213,6 +219,67 @@ describe('runSync in full mode', () => {
     expect(source.requested).not.toContain('cases:Albania');
     expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphan[0]?.id ?? 0}`)).toEqual([
       { status: 'failed' },
+    ]);
+  });
+
+  it('refreshes the view before closing a data-writing orphan', async () => {
+    const orphan = await rows<{ id: number }>(
+      `INSERT INTO sync_run (source_id, mode, status) VALUES (${SOURCE_ID}, 'full', 'running') RETURNING id`,
+    );
+    const orphanId = orphan[0]?.id ?? 0;
+    await owner.query(
+      `INSERT INTO sync_checkpoint (sync_run_id, unit, status) VALUES ($1, 'full:cases:Brazil', 'done')`,
+      [orphanId],
+    );
+    await owner.query(
+      `INSERT INTO daily_stat (country_code, metric, stat_date, source_id, total, new_value)
+       VALUES ('BRA', 'cases', '2020-01-01', ${SOURCE_ID}, 7, 7)`,
+    );
+    expect(
+      await rows("SELECT 1 FROM global_daily_stat WHERE stat_date = '2020-01-01'"),
+    ).toHaveLength(0);
+
+    await runSync(deps(fullSource().fetch, 1));
+
+    expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
+      { status: 'partial' },
+    ]);
+    expect(
+      await rows(
+        "SELECT total::int AS total FROM global_daily_stat WHERE stat_date = '2020-01-01' AND metric = 'cases'",
+      ),
+    ).toEqual([{ total: 7 }]);
+  });
+
+  it('leaves the orphan running and fails the run when the view refresh fails', async () => {
+    const orphan = await rows<{ id: number }>(
+      `INSERT INTO sync_run (source_id, mode, status) VALUES (${SOURCE_ID}, 'full', 'running') RETURNING id`,
+    );
+    const orphanId = orphan[0]?.id ?? 0;
+    await owner.query(
+      `INSERT INTO sync_checkpoint (sync_run_id, unit, status) VALUES ($1, 'full:cases:Brazil', 'done')`,
+      [orphanId],
+    );
+    const source = fullSource();
+    const failingRefresh = new Proxy(prisma, {
+      get: (target, prop, receiver): unknown =>
+        prop === '$executeRaw'
+          ? () => Promise.reject(new Error('refresh failed'))
+          : Reflect.get(target, prop, receiver),
+    });
+
+    await expect(runSync({ ...deps(source.fetch), prisma: failingRefresh })).rejects.toThrow(
+      'refresh failed',
+    );
+
+    expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
+      { status: 'running' },
+    ]);
+    expect(source.requested).toHaveLength(0);
+    // The lock was released: the next run recovers the orphan.
+    await runSync(deps(fullSource().fetch, 1));
+    expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
+      { status: 'partial' },
     ]);
   });
 

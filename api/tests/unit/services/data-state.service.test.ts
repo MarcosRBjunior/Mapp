@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DataStateRepository } from '../../../src/repositories/data-state.repository.js';
-import { createDataStateService } from '../../../src/services/data-state.service.js';
+import {
+  createDataStateService,
+  DATA_VERSION_TTL_MS,
+} from '../../../src/services/data-state.service.js';
 import { FAKE_SOURCE } from '../../helpers/fake-repositories.js';
 
 // Each test adjusts the mocks it needs (mockResolvedValue) before calling the service.
@@ -11,7 +14,7 @@ function stubRepo() {
     findCoverage: vi
       .fn<DataStateRepository['findCoverage']>()
       .mockResolvedValue({ from: '2023-03-01', referenceDate: '2023-03-09', countries: 201 }),
-    hasGlobalDate: vi.fn<DataStateRepository['hasGlobalDate']>().mockResolvedValue(true),
+    isCompleteDate: vi.fn<DataStateRepository['isCompleteDate']>().mockResolvedValue(true),
   };
 }
 
@@ -30,16 +33,34 @@ describe('data state service', () => {
 
   it('recomputes the coverage only when dataVersion changes', async () => {
     const repo = stubRepo();
-    const service = createDataStateService(repo, 'api_ninjas');
+    let clock = 0;
+    const service = createDataStateService(repo, 'api_ninjas', { now: () => clock });
 
     await service.current();
+    clock += DATA_VERSION_TTL_MS;
     await service.current();
     expect(repo.findCoverage).toHaveBeenCalledTimes(1);
 
     repo.findDataVersion.mockResolvedValue(8);
+    clock += DATA_VERSION_TTL_MS;
     await service.current();
     expect(repo.findCoverage).toHaveBeenCalledTimes(2);
     expect(repo.findSource).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the dataVersion at most once per 5 s', async () => {
+    const repo = stubRepo();
+    let clock = 0;
+    const service = createDataStateService(repo, 'api_ninjas', { now: () => clock });
+
+    await service.current();
+    clock += DATA_VERSION_TTL_MS - 1;
+    await service.current();
+    expect(repo.findDataVersion).toHaveBeenCalledTimes(1);
+
+    clock += 1;
+    await service.current();
+    expect(repo.findDataVersion).toHaveBeenCalledTimes(2);
   });
 
   it('is not ready without dataVersion', async () => {
@@ -94,17 +115,71 @@ describe('data state service', () => {
       message: 'date is outside the data coverage',
       details: { from: '2023-03-01', to: '2023-03-09' },
     });
-    expect(repo.hasGlobalDate).not.toHaveBeenCalled();
+    expect(repo.isCompleteDate).not.toHaveBeenCalled();
   });
 
-  it('rejects a date inside the range without a global row', async () => {
+  it('rejects a date inside the range that is not complete', async () => {
     const repo = stubRepo();
-    repo.hasGlobalDate.mockResolvedValue(false);
+    repo.isCompleteDate.mockResolvedValue(false);
     const service = createDataStateService(repo, 'api_ninjas');
 
     await expect(service.resolveDate('2023-03-05')).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',
       details: { from: '2023-03-01', to: '2023-03-09' },
+    });
+  });
+});
+
+describe('data state service: resolveRange', () => {
+  it('defaults to the whole coverage', async () => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    expect(await service.resolveRange(undefined, undefined)).toMatchObject({
+      from: '2023-03-01',
+      to: '2023-03-09',
+    });
+  });
+
+  it('keeps a range inside the coverage', async () => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    expect(await service.resolveRange('2023-03-02', '2023-03-05')).toMatchObject({
+      from: '2023-03-02',
+      to: '2023-03-05',
+    });
+  });
+
+  it('rejects from after to', async () => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    await expect(service.resolveRange('2023-03-05', '2023-03-02')).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      message: 'from must not be after to',
+      details: { from: '2023-03-05', to: '2023-03-02' },
+    });
+  });
+
+  it.each([
+    ['2023-02-28', undefined],
+    [undefined, '2023-03-10'],
+    ['2023-03-10', undefined],
+  ])('rejects from=%s to=%s outside the coverage', async (from, to) => {
+    const service = createDataStateService(stubRepo(), 'api_ninjas');
+
+    await expect(service.resolveRange(from, to)).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      message: 'date is outside the data coverage',
+      details: { from: '2023-03-01', to: '2023-03-09' },
+    });
+  });
+
+  it('is not ready without data', async () => {
+    const repo = stubRepo();
+    repo.findDataVersion.mockResolvedValue(null);
+    const service = createDataStateService(repo, 'api_ninjas');
+
+    await expect(service.resolveRange(undefined, undefined)).rejects.toMatchObject({
+      code: 'DATA_NOT_READY',
     });
   });
 });

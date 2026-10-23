@@ -4,12 +4,6 @@ import { bestEffort } from '../../../../src/jobs/sync/best-effort.js';
 import { decideStatus } from '../../../../src/jobs/sync/run-units.js';
 
 describe('decideStatus', () => {
-  it('is success when there was nothing left to do', () => {
-    expect(decideStatus({ planned: 0, completed: 0, wroteRows: false, hasNotes: false })).toBe(
-      'success',
-    );
-  });
-
   it('is failed only when nothing was written', () => {
     expect(decideStatus({ planned: 2, completed: 2, wroteRows: false, hasNotes: false })).toBe(
       'failed',

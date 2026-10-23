@@ -52,3 +52,8 @@ Uma chamada real autorizada (2026-10-19) confirmou que a série termina em `2023
 - **`Retry-After`:** um 429 com mais de 60 s (segundos inteiros) encerra na hora como orçamento esgotado; data HTTP ou outro formato mantém o atraso padrão.
 - **Workflow:** `.github/workflows/sync.yml` é só manual (`workflow_dispatch`), com `concurrency` e `environment: production`; os segredos (`DATABASE_URL_SYNC`, `API_NINJAS_KEY`) ficam só no `env` do passo `npm run sync`, para que os scripts do `npm ci` não os vejam.
 - **Refazer uma série:** unidades `done` nunca rodam de novo; para recarregar um país (por exemplo, depois de remapear um alias), apague os checkpoints `full:cases:<nome>` e `full:deaths:<nome>` e rode o full.
+
+## Atualização da F6a (2026-10-23)
+
+- Run órfão com algum checkpoint `done` fecha `partial` (gravou dados, então conta no `dataVersion`); sem nenhum, `failed`.
+- `--mode=full` sem unidades restantes não abre run: registra "nothing to do" e sai com 0, sem trocar o ETag.

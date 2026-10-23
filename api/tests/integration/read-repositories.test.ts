@@ -47,15 +47,18 @@ describe('data state repository (read-only user)', () => {
     });
   });
 
-  it('checks whether the global view has a date', async () => {
-    expect(await repos.dataState.hasGlobalDate(fixture.sourceId, D1)).toBe(true);
-    expect(await repos.dataState.hasGlobalDate(fixture.sourceId, '2023-03-10')).toBe(false);
+  it('checks whether a date is complete', async () => {
+    // D2 misses ARG, so only D1 is complete.
+    expect(await repos.dataState.isCompleteDate(fixture.sourceId, D1)).toBe(true);
+    expect(await repos.dataState.isCompleteDate(fixture.sourceId, D2)).toBe(false);
+    expect(await repos.dataState.isCompleteDate(fixture.sourceId, '2023-03-10')).toBe(false);
   });
 });
 
 describe('meta repository (read-only user)', () => {
   it('returns the last finished run, whatever its status', async () => {
     expect(await repos.meta.findLastFinishedSync(fixture.sourceId)).toEqual({
+      id: fixture.failedId,
       status: 'failed',
       mode: 'snapshot',
       startedAt: new Date('2026-10-03T00:00:00Z'),
@@ -95,6 +98,8 @@ describe('stats repository (read-only user)', () => {
       newValue: null,
     });
     expect(values.some((value) => value.code === 'XDP')).toBe(false);
+    const names = values.map((value) => value.name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'pt-BR')));
   });
 
   it('finds a country with population as a number', async () => {
@@ -110,13 +115,26 @@ describe('stats repository (read-only user)', () => {
     expect(await repos.stats.findCountry('XYZ')).toBeNull();
   });
 
-  it('lists the day stats of kind=country only', async () => {
-    expect(await repos.stats.listCountryDayStats(fixture.sourceId, D1)).toEqual([
-      { code: 'ARG', name: 'Argentina', metric: 'cases', total: 100, newValue: 5 },
-      { code: 'BRA', name: 'Brasil', metric: 'cases', total: 100, newValue: 10 },
-      { code: 'ARG', name: 'Argentina', metric: 'deaths', total: 20, newValue: 2 },
-      { code: 'BRA', name: 'Brasil', metric: 'deaths', total: 10, newValue: 1 },
+  it('ranks kind=country by total, ties in pt-BR alphabetical order (RN-05)', async () => {
+    // D1 cases: ARG 100 and BRA 100 tie → Argentina first; XDP is not a country.
+    expect(await repos.stats.listRanking(fixture.sourceId, 'cases', D1, 10)).toEqual([
+      { rank: 1, code: 'ARG', name: 'Argentina', total: 100, newValue: 5, rankedCount: 2 },
+      { rank: 2, code: 'BRA', name: 'Brasil', total: 100, newValue: 10, rankedCount: 2 },
     ]);
-    expect(await repos.stats.listCountryDayStats(fixture.sourceId, D2)).toHaveLength(2);
+    expect(await repos.stats.listRanking(fixture.sourceId, 'deaths', D1, 1)).toEqual([
+      { rank: 1, code: 'ARG', name: 'Argentina', total: 20, newValue: 2, rankedCount: 2 },
+    ]);
+  });
+
+  it('finds the rank of one country per metric, null when it has no data', async () => {
+    expect(await repos.stats.findCountryRanks(fixture.sourceId, D1, 'BRA')).toEqual([
+      { metric: 'cases', total: 100, newValue: 10, rank: 2, rankedCount: 2 },
+      { metric: 'deaths', total: 10, newValue: 1, rank: 2, rankedCount: 2 },
+    ]);
+    // ARG has no row on D2; BRA is the only ranked country there.
+    expect(await repos.stats.findCountryRanks(fixture.sourceId, D2, 'ARG')).toEqual([
+      { metric: 'cases', total: null, newValue: null, rank: null, rankedCount: 1 },
+      { metric: 'deaths', total: null, newValue: null, rank: null, rankedCount: 1 },
+    ]);
   });
 });

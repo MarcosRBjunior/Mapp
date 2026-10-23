@@ -1,6 +1,6 @@
 import { AppError } from '../lib/app-error.js';
 import type { StatMetric, StatsRepository } from '../repositories/stats.repository.js';
-import { compareNames, rankOf, sharePercent, type Rank } from './comparison.js';
+import { sharePercent, type Rank } from './comparison.js';
 import type { DataStateService } from './data-state.service.js';
 import type { MetricValue } from './global.service.js';
 
@@ -50,16 +50,14 @@ export function createCountriesService(
     async listCountries(metric, date) {
       const resolved = await dataState.resolveDate(date);
       const rows = await repo.listCountryValues(resolved.state.sourceId, metric, resolved.date);
-      const countries = rows
-        .map((row) => ({
-          code: row.code,
-          name: row.name,
-          lat: row.lat,
-          lng: row.lng,
-          total: row.total,
-          new: row.newValue,
-        }))
-        .sort((a, b) => compareNames(a.name, b.name));
+      const countries = rows.map((row) => ({
+        code: row.code,
+        name: row.name,
+        lat: row.lat,
+        lng: row.lng,
+        total: row.total,
+        new: row.newValue,
+      }));
       return { date: resolved.date, metric, countries };
     },
 
@@ -71,20 +69,24 @@ export function createCountriesService(
       const resolved = await dataState.resolveDate(date);
 
       const { sourceId } = resolved.state;
-      const [dayStats, globalRows] = await Promise.all([
-        repo.listCountryDayStats(sourceId, resolved.date),
+      const [ranks, globalRows] = await Promise.all([
+        repo.findCountryRanks(sourceId, resolved.date, code),
         repo.findGlobalDay(sourceId, resolved.date),
       ]);
 
       const byMetric = (metric: StatMetric) => {
-        const entries = dayStats.filter((stat) => stat.metric === metric);
-        const own = entries.find((stat) => stat.code === code);
-        const globalTotal = globalRows.find((row) => row.metric === metric)?.total;
+        const row = ranks.find((entry) => entry.metric === metric);
+        const globalTotal = globalRows.find((entry) => entry.metric === metric)?.total;
+        const value =
+          row && row.total !== null && row.newValue !== null
+            ? { total: row.total, new: row.newValue }
+            : null;
         return {
-          value: own ? { total: own.total, new: own.newValue } : null,
+          value,
           comparison: {
-            share: own ? sharePercent(own.total, globalTotal) : null,
-            ...rankOf(code, entries),
+            share: value ? sharePercent(value.total, globalTotal) : null,
+            rank: row?.rank ?? null,
+            rankedCount: row?.rankedCount ?? 0,
           },
         };
       };

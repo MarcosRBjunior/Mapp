@@ -15,6 +15,9 @@ describe('OpenAPI document', () => {
       '/api/v1/global',
       '/api/v1/countries',
       '/api/v1/countries/{code}',
+      '/api/v1/rankings',
+      '/api/v1/global/timeseries',
+      '/api/v1/countries/{code}/timeseries',
     ]);
   });
 

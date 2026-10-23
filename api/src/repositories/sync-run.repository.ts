@@ -19,24 +19,39 @@ export async function startRun(
   return run.id;
 }
 
+export interface ClosedOrphan {
+  id: number;
+  status: 'partial' | 'failed';
+}
+
 // Only safe while holding the sync lock: no live process owns a 'running' row then.
-export async function failOrphanRuns(db: Db): Promise<number[]> {
+export async function findOrphanRunIds(db: Db): Promise<number[]> {
   const orphans = await db.syncRun.findMany({
     where: { status: 'running' },
     select: { id: true },
     orderBy: { id: 'asc' },
   });
-  if (orphans.length === 0) {
-    return [];
-  }
-  for (const orphan of orphans) {
-    const callsUsed = await db.providerCall.count({ where: { syncRunId: orphan.id } });
-    await db.syncRun.update({
-      where: { id: orphan.id },
-      data: { status: 'failed', finishedAt: new Date(), error: INTERRUPTED_ERROR, callsUsed },
-    });
-  }
   return orphans.map((orphan) => orphan.id);
+}
+
+// A done checkpoint means the run wrote data (rows and checkpoint share a transaction), so it
+// closes as partial and counts for the dataVersion; otherwise it failed. Closes exactly the given
+// ids (from findOrphanRunIds), so the caller can refresh the view between finding and closing.
+export async function closeOrphanRuns(db: Db, ids: readonly number[]): Promise<ClosedOrphan[]> {
+  const closed: ClosedOrphan[] = [];
+  for (const orphanId of ids) {
+    const [callsUsed, doneUnits] = await Promise.all([
+      db.providerCall.count({ where: { syncRunId: orphanId } }),
+      db.syncCheckpoint.count({ where: { syncRunId: orphanId, status: 'done' } }),
+    ]);
+    const status = doneUnits > 0 ? 'partial' : 'failed';
+    await db.syncRun.update({
+      where: { id: orphanId },
+      data: { status, finishedAt: new Date(), error: INTERRUPTED_ERROR, callsUsed },
+    });
+    closed.push({ id: orphanId, status });
+  }
+  return closed;
 }
 
 export async function finishRun(

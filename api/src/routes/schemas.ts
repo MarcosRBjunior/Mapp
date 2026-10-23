@@ -135,3 +135,69 @@ export const countryDetailResponseSchema = z
     comparison: z.object({ cases: comparisonSchema, deaths: comparisonSchema }),
   })
   .meta({ id: 'CountryDetailResponse' });
+
+export const rankingsQuerySchema = z.object({
+  metric: metricSchema.default('cases'),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(50)
+    .default(10)
+    .meta({ description: 'Quantos países devolver (1 a 50)' }),
+  date: isoDateSchema.optional(),
+});
+
+export const rankingsResponseSchema = z
+  .object({
+    date: z.string(),
+    metric: metricSchema,
+    rankedCount: z.number().int(),
+    items: z.array(
+      z.object({
+        rank: z.number().int(),
+        code: z.string(),
+        name: z.string(),
+        total: z.number().int(),
+        new: z.number().int(),
+        share: z.number().nullable(),
+      }),
+    ),
+  })
+  .meta({ id: 'RankingsResponse' });
+
+export const granularitySchema = z.enum(['day', 'week', 'month']).meta({
+  id: 'Granularity',
+  description: 'day = dia, week = semana ISO (segunda a domingo), month = mês',
+});
+
+export const timeseriesQuerySchema = z.object({
+  metric: metricSchema.default('cases'),
+  from: isoDateSchema
+    .meta({ description: 'Início (YYYY-MM-DD). Sem ele, o início da cobertura.' })
+    .optional(),
+  to: isoDateSchema
+    .meta({ description: 'Fim (YYYY-MM-DD). Sem ele, a data de referência.' })
+    .optional(),
+  granularity: granularitySchema.default('day'),
+});
+
+const timeseriesShape = {
+  metric: metricSchema,
+  granularity: granularitySchema,
+  from: z.string(),
+  to: z.string(),
+  points: z.array(
+    z
+      .object({ date: z.string(), total: z.number().int(), new: z.number().int() })
+      .meta({ id: 'TimeseriesPoint' }),
+  ),
+};
+
+export const globalTimeseriesResponseSchema = z
+  .object(timeseriesShape)
+  .meta({ id: 'GlobalTimeseriesResponse' });
+
+export const countryTimeseriesResponseSchema = z
+  .object({ ...timeseriesShape, country: z.object({ code: z.string(), name: z.string() }) })
+  .meta({ id: 'CountryTimeseriesResponse' });

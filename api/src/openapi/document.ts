@@ -5,13 +5,18 @@ import {
   countriesListResponseSchema,
   countriesQuerySchema,
   countryDetailResponseSchema,
+  countryTimeseriesResponseSchema,
   countryParamsSchema,
   dateQuerySchema,
   errorResponseSchema,
   globalResponseSchema,
+  globalTimeseriesResponseSchema,
   healthResponseSchema,
   metaResponseSchema,
+  rankingsQuerySchema,
+  rankingsResponseSchema,
   readyResponseSchema,
+  timeseriesQuerySchema,
 } from '../routes/schemas.js';
 
 export const OPENAPI_YAML_PATH = new URL('../../../docs/openapi.yaml', import.meta.url);
@@ -26,7 +31,12 @@ const commonErrors = {
   '500': json(errorResponseSchema, 'INTERNAL_ERROR'),
 };
 
+const notModified = {
+  '304': { description: 'Not Modified: o If-None-Match bate com o ETag atual (dataVersion)' },
+};
+
 const dataErrors = {
+  ...notModified,
   '400': json(
     errorResponseSchema,
     'VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura',
@@ -42,7 +52,7 @@ export function createOpenApiDocument() {
       title: 'Mapp API',
       version: '1.0.0',
       description:
-        'Dados históricos de COVID-19 por país (casos e mortes). Só leitura. Sempre exiba a data de referência e a fonte.',
+        'Dados históricos de COVID-19 por país (casos e mortes). Só leitura. Sempre exiba a data de referência e a fonte. Respostas de dados trazem Cache-Control: public, max-age=3600 e ETag com o dataVersion; If-None-Match igual → 304.',
     },
     paths: {
       '/health': {
@@ -63,7 +73,11 @@ export function createOpenApiDocument() {
       '/api/v1/meta': {
         get: {
           summary: 'Fonte, licença, cobertura, data de referência e último sync',
-          responses: { '200': json(metaResponseSchema, 'Metadados'), ...commonErrors },
+          responses: {
+            '200': json(metaResponseSchema, 'Metadados'),
+            ...notModified,
+            ...commonErrors,
+          },
         },
       },
       '/api/v1/global': {
@@ -89,6 +103,34 @@ export function createOpenApiDocument() {
           requestParams: { path: countryParamsSchema, query: dateQuerySchema },
           responses: {
             '200': json(countryDetailResponseSchema, 'Detalhe do país'),
+            '404': json(errorResponseSchema, 'COUNTRY_NOT_FOUND'),
+            ...dataErrors,
+          },
+        },
+      },
+      '/api/v1/rankings': {
+        get: {
+          summary: 'Ranking dos países pela métrica numa data (RN-05), com participação %',
+          requestParams: { query: rankingsQuerySchema },
+          responses: { '200': json(rankingsResponseSchema, 'Ranking'), ...dataErrors },
+        },
+      },
+      '/api/v1/global/timeseries': {
+        get: {
+          summary: 'Série global da métrica por dia, semana ou mês (só datas completas)',
+          requestParams: { query: timeseriesQuerySchema },
+          responses: {
+            '200': json(globalTimeseriesResponseSchema, 'Série global'),
+            ...dataErrors,
+          },
+        },
+      },
+      '/api/v1/countries/{code}/timeseries': {
+        get: {
+          summary: 'Série de um país por dia, semana ou mês (só datas completas)',
+          requestParams: { path: countryParamsSchema, query: timeseriesQuerySchema },
+          responses: {
+            '200': json(countryTimeseriesResponseSchema, 'Série do país'),
             '404': json(errorResponseSchema, 'COUNTRY_NOT_FOUND'),
             ...dataErrors,
           },

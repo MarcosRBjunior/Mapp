@@ -99,9 +99,16 @@ afterAll(async () => {
 });
 
 describe('runUnits', () => {
-  it('closes as success with nothing to do and makes no call', async () => {
+  it('opens no run when there is nothing to do', async () => {
     const result = await runUnits(deps(), plan([]));
-    expect(result).toMatchObject({ status: 'success', callsUsed: 0, unitsRemaining: 0 });
+
+    expect(result).toMatchObject({
+      runId: null,
+      status: 'success',
+      callsUsed: 0,
+      unitsRemaining: 0,
+    });
+    expect(await rows('SELECT id FROM sync_run')).toEqual([]);
   });
 
   it('stops after a rejected key once it wrote, closing as partial', async () => {

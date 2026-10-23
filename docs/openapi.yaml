@@ -3,8 +3,10 @@ openapi: 3.1.0
 info:
   title: Mapp API
   version: 1.0.0
-  description: Dados históricos de COVID-19 por país (casos e mortes). Só leitura.
-    Sempre exiba a data de referência e a fonte.
+  description: "Dados históricos de COVID-19 por país (casos e mortes). Só
+    leitura. Sempre exiba a data de referência e a fonte. Respostas de dados
+    trazem Cache-Control: public, max-age=3600 e ETag com o dataVersion;
+    If-None-Match igual → 304."
 paths:
   /health:
     get:
@@ -42,13 +44,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MetaResponse"
-        "429": &a1
+        "304": &a1
+          description: "Not Modified: o If-None-Match bate com o ETag atual (dataVersion)"
+        "429": &a2
           description: "RATE_LIMITED: mais de 120 requisições por minuto"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "500": &a2
+        "500": &a3
           description: INTERNAL_ERROR
           content:
             application/json:
@@ -71,15 +75,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GlobalResponse"
-        "400": &a3
+        "304": *a1
+        "400": &a4
           description: "VALIDATION_ERROR: parâmetro inválido ou data fora da cobertura"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "429": *a1
-        "500": *a2
-        "503": &a4
+        "429": *a2
+        "500": *a3
+        "503": &a5
           description: "DATA_NOT_READY: nenhum dado carregado ainda"
           content:
             application/json:
@@ -107,10 +112,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CountriesListResponse"
-        "400": *a3
-        "429": *a1
-        "500": *a2
-        "503": *a4
+        "304": *a1
+        "400": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
   /api/v1/countries/{code}:
     get:
       summary: Detalhe de um país, com participação % e posição no ranking
@@ -136,16 +142,143 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CountryDetailResponse"
-        "400": *a3
+        "304": *a1
+        "400": *a4
         "404":
           description: COUNTRY_NOT_FOUND
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "429": *a1
-        "500": *a2
-        "503": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
+  /api/v1/rankings:
+    get:
+      summary: Ranking dos países pela métrica numa data (RN-05), com participação %
+      parameters:
+        - in: query
+          name: metric
+          schema:
+            default: cases
+            $ref: "#/components/schemas/Metric"
+        - in: query
+          name: limit
+          schema:
+            default: 10
+            description: Quantos países devolver (1 a 50)
+            type: integer
+            minimum: 1
+            maximum: 50
+          description: Quantos países devolver (1 a 50)
+        - in: query
+          name: date
+          schema:
+            type: string
+            pattern: ^\d{4}-\d{2}-\d{2}$
+            description: Data no formato YYYY-MM-DD. Sem ela, vale a data de referência.
+      responses:
+        "200":
+          description: Ranking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RankingsResponse"
+        "304": *a1
+        "400": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
+  /api/v1/global/timeseries:
+    get:
+      summary: Série global da métrica por dia, semana ou mês (só datas completas)
+      parameters:
+        - in: query
+          name: metric
+          schema:
+            default: cases
+            $ref: "#/components/schemas/Metric"
+        - in: query
+          name: from
+          schema:
+            type: string
+            pattern: ^\d{4}-\d{2}-\d{2}$
+            description: Início (YYYY-MM-DD). Sem ele, o início da cobertura.
+        - in: query
+          name: to
+          schema:
+            type: string
+            pattern: ^\d{4}-\d{2}-\d{2}$
+            description: Fim (YYYY-MM-DD). Sem ele, a data de referência.
+        - in: query
+          name: granularity
+          schema:
+            default: day
+            $ref: "#/components/schemas/Granularity"
+      responses:
+        "200":
+          description: Série global
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalTimeseriesResponse"
+        "304": *a1
+        "400": *a4
+        "429": *a2
+        "500": *a3
+        "503": *a5
+  /api/v1/countries/{code}/timeseries:
+    get:
+      summary: Série de um país por dia, semana ou mês (só datas completas)
+      parameters:
+        - in: path
+          name: code
+          schema:
+            description: Código ISO3 do país (maiúsculas ou minúsculas)
+            type: string
+            pattern: ^[A-Za-z]{3}$
+          required: true
+          description: Código ISO3 do país (maiúsculas ou minúsculas)
+        - in: query
+          name: metric
+          schema:
+            default: cases
+            $ref: "#/components/schemas/Metric"
+        - in: query
+          name: from
+          schema:
+            type: string
+            pattern: ^\d{4}-\d{2}-\d{2}$
+            description: Início (YYYY-MM-DD). Sem ele, o início da cobertura.
+        - in: query
+          name: to
+          schema:
+            type: string
+            pattern: ^\d{4}-\d{2}-\d{2}$
+            description: Fim (YYYY-MM-DD). Sem ele, a data de referência.
+        - in: query
+          name: granularity
+          schema:
+            default: day
+            $ref: "#/components/schemas/Granularity"
+      responses:
+        "200":
+          description: Série do país
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CountryTimeseriesResponse"
+        "304": *a1
+        "400": *a4
+        "404":
+          description: COUNTRY_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429": *a2
+        "500": *a3
+        "503": *a5
 components:
   schemas:
     Metric:
@@ -154,6 +287,13 @@ components:
         - cases
         - deaths
       description: cases = casos, deaths = mortes
+    Granularity:
+      type: string
+      enum:
+        - day
+        - week
+        - month
+      description: day = dia, week = semana ISO (segunda a domingo), month = mês
     HealthResponse:
       type: object
       properties:
@@ -473,4 +613,128 @@ components:
         - share
         - rank
         - rankedCount
+      additionalProperties: false
+    RankingsResponse:
+      type: object
+      properties:
+        date:
+          type: string
+        metric:
+          $ref: "#/components/schemas/Metric"
+        rankedCount:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              rank:
+                type: integer
+                minimum: -9007199254740991
+                maximum: 9007199254740991
+              code:
+                type: string
+              name:
+                type: string
+              total:
+                type: integer
+                minimum: -9007199254740991
+                maximum: 9007199254740991
+              new:
+                type: integer
+                minimum: -9007199254740991
+                maximum: 9007199254740991
+              share:
+                type:
+                  - number
+                  - "null"
+            required:
+              - rank
+              - code
+              - name
+              - total
+              - new
+              - share
+            additionalProperties: false
+      required:
+        - date
+        - metric
+        - rankedCount
+        - items
+      additionalProperties: false
+    GlobalTimeseriesResponse:
+      type: object
+      properties:
+        metric:
+          $ref: "#/components/schemas/Metric"
+        granularity:
+          $ref: "#/components/schemas/Granularity"
+        from:
+          type: string
+        to:
+          type: string
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeseriesPoint"
+      required:
+        - metric
+        - granularity
+        - from
+        - to
+        - points
+      additionalProperties: false
+    TimeseriesPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        total:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        new:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+      required:
+        - date
+        - total
+        - new
+      additionalProperties: false
+    CountryTimeseriesResponse:
+      type: object
+      properties:
+        metric:
+          $ref: "#/components/schemas/Metric"
+        granularity:
+          $ref: "#/components/schemas/Granularity"
+        from:
+          type: string
+        to:
+          type: string
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeseriesPoint"
+        country:
+          type: object
+          properties:
+            code:
+              type: string
+            name:
+              type: string
+          required:
+            - code
+            - name
+          additionalProperties: false
+      required:
+        - metric
+        - granularity
+        - from
+        - to
+        - points
+        - country
       additionalProperties: false
