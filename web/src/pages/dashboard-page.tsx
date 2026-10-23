@@ -1,11 +1,13 @@
 import { useCallback, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { CountryCard } from '../features/stats/country-card';
+import { PeriodCard } from '../features/stats/period-card';
 import { GlobalCard } from '../features/stats/global-card';
 import { WorldMap } from '../features/map/world-map';
 import { isApiError } from '../shared/api/client';
 import { useCountries, useCountry } from '../shared/api/queries';
 import { useMetric } from '../shared/url/use-metric';
+import { usePeriod } from '../shared/url/use-period';
 
 const CODE_PATTERN = /^[A-Za-z]{3}$/;
 
@@ -14,6 +16,7 @@ export function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [metric] = useMetric();
+  const [period] = usePeriod();
 
   const validCode =
     rawCode !== undefined && CODE_PATTERN.test(rawCode) ? rawCode.toUpperCase() : null;
@@ -71,6 +74,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
         <GlobalCard />
         <CountryCard code={selectedCode} metric={metric} />
+        <PeriodCard code={selectedCode} metric={metric} period={period} />
       </div>
     </div>
   );

@@ -10,3 +10,6 @@ export type CountryListItem = CountriesListResponse['countries'][number];
 export type CountryDetailResponse = Schemas['CountryDetailResponse'];
 export type MetricValue = Schemas['MetricValue'];
 export type ApiErrorCode = Schemas['ErrorResponse']['error']['code'];
+export type GlobalTimeseriesResponse = Schemas['GlobalTimeseriesResponse'];
+export type CountryTimeseriesResponse = Schemas['CountryTimeseriesResponse'];
+export type TimeseriesPoint = Schemas['TimeseriesPoint'];

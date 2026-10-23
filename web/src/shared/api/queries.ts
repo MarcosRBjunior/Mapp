@@ -34,3 +34,32 @@ export function useCountry(code: string | null) {
     enabled: code !== null,
   });
 }
+
+export interface SeriesRange {
+  from: string;
+  to: string;
+}
+
+// Monthly points keep the payload small (~38 points for the whole history); the API cuts the
+// first and last blocks at the range, so summing `new` gives the period total (RN-11).
+export function useMonthlySeries(code: string | null, metric: Metric, range: SeriesRange | null) {
+  return useQuery({
+    queryKey: ['timeseries', code ?? 'world', metric, range?.from, range?.to, 'month'],
+    enabled: range !== null,
+    queryFn: () => {
+      const query = {
+        metric,
+        from: range?.from,
+        to: range?.to,
+        granularity: 'month' as const,
+      };
+      return code === null
+        ? unwrap(apiClient().GET('/api/v1/global/timeseries', { params: { query } }))
+        : unwrap(
+            apiClient().GET('/api/v1/countries/{code}/timeseries', {
+              params: { path: { code }, query },
+            }),
+          );
+    },
+  });
+}

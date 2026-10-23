@@ -94,4 +94,12 @@ describe('DashboardPage', () => {
     );
     expect(await screen.findByText('300.000')).toBeInTheDocument();
   });
+
+  it('shows the new values of the selected country in the period from the URL', async () => {
+    renderWithProviders(<DashboardPage />, { route: '/paises/BRA?period=7d', path: PATHS });
+
+    const card = screen.getByRole('region', { name: 'Por tempo' });
+    expect(await within(card).findByText('840')).toBeInTheDocument();
+    expect(within(card).getByText('Brasil')).toBeInTheDocument();
+  });
 });
