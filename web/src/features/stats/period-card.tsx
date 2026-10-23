@@ -1,11 +1,7 @@
 import type { ReactNode } from 'react';
 import { isApiError } from '../../shared/api/client';
-import { useMeta, useMonthlySeries } from '../../shared/api/queries';
-import type {
-  CountryTimeseriesResponse,
-  GlobalTimeseriesResponse,
-  Metric,
-} from '../../shared/api/types';
+import { useCountry, useMeta, useMonthlySeries } from '../../shared/api/queries';
+import type { Metric } from '../../shared/api/types';
 import { formatDate, formatNumber } from '../../shared/format/format';
 import { PERIOD_PHRASES, periodRange, type Period } from '../../shared/period/period';
 import { EmptyState } from '../../shared/ui/empty-state';
@@ -16,12 +12,6 @@ import { Skeleton } from '../../shared/ui/skeleton';
 const NOT_LOADED = 'Dados ainda não carregados';
 
 const NEW_LABELS: Record<Metric, string> = { cases: 'Novos casos', deaths: 'Novas mortes' };
-
-function isCountrySeries(
-  data: GlobalTimeseriesResponse | CountryTimeseriesResponse,
-): data is CountryTimeseriesResponse {
-  return 'country' in data;
-}
 
 interface PeriodCardProps {
   code: string | null;
@@ -34,6 +24,7 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
   const coverage = meta.data?.coverage ?? null;
   const range = coverage ? periodRange(period, coverage) : null;
   const series = useMonthlySeries(code, metric, range);
+  const country = useCountry(code);
   const loading = <Skeleton label="Carregando novos no período" height="6rem" />;
 
   let content: ReactNode;
@@ -60,7 +51,9 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
       content = (
         <ErrorState
           message="Não foi possível carregar os novos no período"
-          onRetry={() => void series.refetch()}
+          onRetry={() => {
+            void meta.refetch().then(() => series.refetch());
+          }}
         />
       );
     }
@@ -88,12 +81,7 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
     );
   }
 
-  const scope =
-    code === null
-      ? 'Mundo'
-      : series.data && isCountrySeries(series.data)
-        ? series.data.country.name
-        : undefined;
+  const scope = code === null ? 'Mundo' : country.data?.country.name;
   return (
     <SectionCard titleId="period-card-title" title="Por tempo" description={scope}>
       {content}

@@ -16,7 +16,8 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
 - **Código gerado:** `web/src/components/ui`, `web/src/hooks/use-mobile.ts` e `web/src/lib/utils.ts` vêm do CLI e são versionados.
   - Ajustes locais:
     - textos em pt-BR;
-    - `SidebarInset` como `<div>`, para o `<main>` da página ser o único landmark principal.
+    - `SidebarInset` como `<div>`, para o `<main>` da página ser o único landmark principal;
+    - sem o atalho Ctrl/Cmd+B do `SidebarProvider`, que capturava a tecla até dentro da busca.
   - O ESLint desliga só ali `react-refresh/only-export-components` e `react-hooks/set-state-in-effect`.
   - O `cn` vem do pacote `cn`, do próprio shadcn.
 - **Do bloco `dashboard-01`:**

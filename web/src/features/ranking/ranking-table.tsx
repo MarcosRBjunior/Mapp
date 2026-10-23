@@ -85,8 +85,8 @@ export function RankingTable({ metric, selectedCode }: RankingTableProps) {
   }
 
   const title = ranking.data
-    ? `Top 10 — ${noun} em ${formatDate(ranking.data.date)}`
-    : `Top 10 — ${noun}`;
+    ? `Top ${RANKING_LIMIT} — ${noun} em ${formatDate(ranking.data.date)}`
+    : `Top ${RANKING_LIMIT} — ${noun}`;
   return (
     <SectionCard titleId={TITLE_ID} title={title}>
       {content}

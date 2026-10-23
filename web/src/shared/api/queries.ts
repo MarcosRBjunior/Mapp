@@ -41,7 +41,8 @@ export interface SeriesRange {
 }
 
 // Monthly points keep the payload small (~38 points for the whole history); the API cuts the
-// first and last blocks at the range, so summing `new` gives the period total (RN-11).
+// first and last blocks at the range and returns only complete dates (RN-06), so summing `new`
+// gives the total of the complete days of the period (RN-11).
 export function useMonthlySeries(code: string | null, metric: Metric, range: SeriesRange | null) {
   return useQuery({
     queryKey: ['timeseries', code ?? 'world', metric, range?.from, range?.to, 'month'],

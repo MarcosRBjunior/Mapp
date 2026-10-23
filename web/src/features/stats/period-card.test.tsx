@@ -1,5 +1,5 @@
 import { fireEvent, screen, within } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { metaFixture } from '../../test/fixtures';
 import { API, errorBody } from '../../test/handlers';
@@ -133,5 +133,46 @@ describe('PeriodCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
 
     expect(await within(card()).findByText('36.000')).toBeInTheDocument();
+  });
+
+  it('refetches the meta before the series when retrying a series error', async () => {
+    let metaCalls = 0;
+    server.use(
+      http.get(`${API}/api/v1/meta`, () => {
+        metaCalls += 1;
+        return HttpResponse.json(metaFixture);
+      }),
+      http.get(`${API}/api/v1/global/timeseries`, () =>
+        HttpResponse.json(errorBody('VALIDATION_ERROR', 'bad range'), { status: 400 }),
+      ),
+    );
+    renderWithProviders(<PeriodCard code={null} metric="cases" period="30d" />);
+
+    await screen.findByRole('alert');
+    expect(metaCalls).toBe(1);
+    server.resetHandlers();
+    server.use(
+      http.get(`${API}/api/v1/meta`, () => {
+        metaCalls += 1;
+        return HttpResponse.json(metaFixture);
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+    expect(await within(card()).findByText('36.000')).toBeInTheDocument();
+    expect(metaCalls).toBe(2);
+  });
+
+  it('shows the country name while the series is still loading', async () => {
+    server.use(
+      http.get(`${API}/api/v1/countries/:code/timeseries`, async () => {
+        await delay(200);
+        return HttpResponse.json(errorBody('INTERNAL_ERROR', 'late'), { status: 500 });
+      }),
+    );
+    renderWithProviders(<PeriodCard code="BRA" metric="cases" period="30d" />);
+
+    expect(await within(card()).findByText('Brasil')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Carregando novos no período' })).toBeInTheDocument();
   });
 });

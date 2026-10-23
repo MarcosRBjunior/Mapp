@@ -12,7 +12,7 @@ export function Skeleton({ label, height = '1.5rem', className }: SkeletonProps)
     <UiSkeleton
       role="status"
       aria-label={label}
-      className={cn('w-full', className)}
+      className={cn('w-full motion-reduce:animate-none', className)}
       style={{ height }}
     />
   );
