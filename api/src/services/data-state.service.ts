@@ -113,14 +113,15 @@ export function createDataStateService(
     const state = await current();
     if (!state) throw new AppError('DATA_NOT_READY', 503, 'no data has been loaded yet');
     const range = { from: from ?? state.from, to: to ?? state.referenceDate };
-    if (range.from > range.to) {
-      throw new AppError('VALIDATION_ERROR', 400, 'from must not be after to', range);
-    }
-    if (range.from < state.from || range.to > state.referenceDate) {
+    const outside = (date: string) => date < state.from || date > state.referenceDate;
+    if (outside(range.from) || outside(range.to)) {
       throw new AppError('VALIDATION_ERROR', 400, 'date is outside the data coverage', {
         from: state.from,
         to: state.referenceDate,
       });
+    }
+    if (range.from > range.to) {
+      throw new AppError('VALIDATION_ERROR', 400, 'from must not be after to', range);
     }
     return { state, ...range };
   }

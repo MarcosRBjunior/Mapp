@@ -162,6 +162,7 @@ describe('data state service: resolveRange', () => {
   it.each([
     ['2023-02-28', undefined],
     [undefined, '2023-03-10'],
+    ['2023-03-10', undefined],
   ])('rejects from=%s to=%s outside the coverage', async (from, to) => {
     const service = createDataStateService(stubRepo(), 'api_ninjas');
 
