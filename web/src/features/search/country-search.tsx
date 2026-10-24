@@ -1,4 +1,5 @@
 import { useId, useMemo, useState, type KeyboardEvent } from 'react';
+import { Input } from '@/components/ui/input';
 import { filterCountries } from './normalize';
 
 interface SearchOption {
@@ -62,9 +63,11 @@ export function CountrySearch({ countries, isError, onSelect }: CountrySearchPro
   }
 
   return (
-    <div className="country-search">
-      <label htmlFor={inputId}>Buscar país</label>
-      <input
+    <div className="relative flex min-w-[min(100%,280px)] flex-col">
+      <label htmlFor={inputId} className="sr-only">
+        Buscar país
+      </label>
+      <Input
         id={inputId}
         type="text"
         role="combobox"
@@ -88,7 +91,7 @@ export function CountrySearch({ countries, isError, onSelect }: CountrySearchPro
         id={listId}
         role="listbox"
         aria-label="Países encontrados"
-        className="search-listbox"
+        className="absolute top-full right-0 left-0 z-50 mt-1 rounded-md border bg-popover py-1 text-popover-foreground shadow-md"
         hidden={!expanded || options.length === 0}
       >
         {options.map((option, index) => (
@@ -97,7 +100,7 @@ export function CountrySearch({ countries, isError, onSelect }: CountrySearchPro
             id={`${id}-option-${index}`}
             role="option"
             aria-selected={index === active}
-            className="search-option"
+            className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent aria-selected:bg-accent"
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => select(option)}
           >
@@ -106,7 +109,10 @@ export function CountrySearch({ countries, isError, onSelect }: CountrySearchPro
         ))}
       </ul>
       {expanded && options.length === 0 && (
-        <p className="search-empty" role="status">
+        <p
+          className="absolute top-full right-0 left-0 z-50 mt-1 rounded-md border bg-popover px-3 py-2 text-sm shadow-md"
+          role="status"
+        >
           Nenhum país encontrado
         </p>
       )}

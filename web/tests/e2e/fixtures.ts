@@ -145,3 +145,86 @@ export function countryDetail(code: string) {
     comparison: { cases: compare(country, 'cases'), deaths: compare(country, 'deaths') },
   };
 }
+
+export const SERIES_START = '2020-01-22';
+
+function addDays(isoDate: string, days: number): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function nextMonthStart(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function daysBetween(from: string, to: string): number {
+  return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000 + 1;
+}
+
+// One point per calendar month, the first cut at `from`; every day adds `perDay` new.
+function seriesPoints(perDay: number, from: string, to: string) {
+  const points: { date: string; total: number; new: number }[] = [];
+  for (let start = from; start <= to; start = nextMonthStart(start)) {
+    const next = nextMonthStart(start);
+    const end = next > to ? to : addDays(next, -1);
+    points.push({
+      date: start,
+      total: perDay * daysBetween(SERIES_START, end),
+      new: perDay * daysBetween(start, end),
+    });
+  }
+  return points;
+}
+
+export function globalSeries(metric: Metric, from: string, to: string) {
+  return {
+    metric,
+    granularity: 'month',
+    from,
+    to,
+    points: seriesPoints(global[metric].new, from, to),
+  };
+}
+
+export function countrySeries(code: string, metric: Metric, from: string, to: string) {
+  const country = countries.find((c) => c.code === code);
+  if (!country) return null;
+  const value = country[metric];
+  return {
+    metric,
+    granularity: 'month',
+    from,
+    to,
+    country: { code: country.code, name: country.name },
+    points: value === null ? [] : seriesPoints(value.new, from, to),
+  };
+}
+
+export function rankings(metric: Metric, limit: number) {
+  const ranked = countries
+    .flatMap((country) => {
+      const value = country[metric];
+      return value === null ? [] : [{ country, value }];
+    })
+    .sort(
+      (a, b) =>
+        b.value.total - a.value.total || a.country.name.localeCompare(b.country.name, 'pt-BR'),
+    );
+  return {
+    date: REFERENCE_DATE,
+    metric,
+    rankedCount: ranked.length,
+    items: ranked.slice(0, limit).map(({ country, value }, index) => ({
+      rank: index + 1,
+      code: country.code,
+      name: country.name,
+      total: value.total,
+      new: value.new,
+      share: Math.round((value.total / global[metric].total) * 1000) / 10,
+    })),
+  };
+}

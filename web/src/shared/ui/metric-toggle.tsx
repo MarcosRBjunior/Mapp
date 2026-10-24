@@ -1,3 +1,4 @@
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { Metric } from '../api/types';
 import { METRICS, METRIC_LABELS } from '../format/format';
 
@@ -8,17 +9,23 @@ interface MetricToggleProps {
 
 export function MetricToggle({ metric, onChange }: MetricToggleProps) {
   return (
-    <div className="metric-toggle" role="group" aria-label="Métrica">
+    <ToggleGroup
+      type="single"
+      variant="outline"
+      spacing={0}
+      value={metric}
+      aria-label="Métrica"
+      // Radix sends '' when the active item is clicked again; keep the current metric.
+      onValueChange={(value) => {
+        const next = METRICS.find((item) => item === value);
+        if (next) onChange(next);
+      }}
+    >
       {METRICS.map((item) => (
-        <button
-          key={item}
-          type="button"
-          aria-pressed={metric === item}
-          onClick={() => onChange(item)}
-        >
+        <ToggleGroupItem key={item} value={item}>
           {METRIC_LABELS[item].title}
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }

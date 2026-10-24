@@ -1,6 +1,7 @@
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo } from 'react';
 import { MapContainer, Pane, TileLayer, useMap } from 'react-leaflet';
+import { Card } from '@/components/ui/card';
 import { getEnv } from '../../config/env';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { ErrorState } from '../../shared/ui/error-state';
@@ -57,9 +58,9 @@ export function WorldMap({
   );
 
   return (
-    <div className="map-panel">
+    <Card className="relative isolate gap-0 overflow-hidden py-0">
       <MapContainer
-        className="world-map"
+        className="h-[360px] w-full md:h-[480px]"
         center={[30, 10]}
         zoom={2}
         minZoom={2}
@@ -91,16 +92,20 @@ export function WorldMap({
       </MapContainer>
       {countries && <MapLegend countries={countries} metric={metric} />}
       {countriesStatus === 'pending' && (
-        <div className="map-overlay">
-          <Skeleton label="Carregando países" height="100%" />
+        <div className="absolute inset-0 z-[900] flex items-center justify-center bg-background/60 p-4">
+          <Skeleton label="Carregando países" height="100%" className="pointer-events-none" />
         </div>
       )}
       {countriesStatus === 'error' && (
-        <div className="map-overlay">
+        <div className="absolute inset-0 z-[900] flex items-center justify-center bg-background/60 p-4">
           <ErrorState message="Não foi possível carregar os países" onRetry={onRetry} />
         </div>
       )}
-      {geo.isError && <p className="map-note">Contornos indisponíveis</p>}
-    </div>
+      {geo.isError && (
+        <p className="absolute top-2 right-2 z-[900] m-0 rounded bg-background px-2 py-1 text-xs">
+          Contornos indisponíveis
+        </p>
+      )}
+    </Card>
   );
 }

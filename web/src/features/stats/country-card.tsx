@@ -11,6 +11,7 @@ import {
 } from '../../shared/format/format';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
+import { SectionCard } from '../../shared/ui/section-card';
 import { Skeleton } from '../../shared/ui/skeleton';
 
 const SELECT_MESSAGE = 'Selecione um país no mapa ou na busca';
@@ -40,7 +41,9 @@ export function CountryCard({ code, metric }: CountryCardProps) {
   } else {
     const value = country.data[metric];
     const comparison = country.data.comparison[metric];
-    const date = <p className="card-date">{`Data: ${formatDate(country.data.date)}`}</p>;
+    const date = (
+      <p className="text-xs text-muted-foreground">{`Data: ${formatDate(country.data.date)}`}</p>
+    );
     content =
       value === null ? (
         <>
@@ -49,18 +52,22 @@ export function CountryCard({ code, metric }: CountryCardProps) {
         </>
       ) : (
         <>
-          <dl className="card-figures">
-            <div>
-              <dt>{`Total de ${METRIC_LABELS[metric].noun}`}</dt>
-              <dd>{formatNumber(value.total)}</dd>
+          <dl className="grid gap-3">
+            <div className="flex flex-col gap-1">
+              <dt className="text-sm text-muted-foreground">{`Total de ${METRIC_LABELS[metric].noun}`}</dt>
+              <dd className="text-xl font-semibold tabular-nums">{formatNumber(value.total)}</dd>
             </div>
-            <div>
-              <dt>Participação no global</dt>
-              <dd>{formatPercent(comparison.share)}</dd>
+            <div className="flex flex-col gap-1">
+              <dt className="text-sm text-muted-foreground">Participação no global</dt>
+              <dd className="text-xl font-semibold tabular-nums">
+                {formatPercent(comparison.share)}
+              </dd>
             </div>
-            <div>
-              <dt>Posição</dt>
-              <dd>{formatRank(comparison.rank, comparison.rankedCount)}</dd>
+            <div className="flex flex-col gap-1">
+              <dt className="text-sm text-muted-foreground">Posição</dt>
+              <dd className="text-xl font-semibold tabular-nums">
+                {formatRank(comparison.rank, comparison.rankedCount)}
+              </dd>
             </div>
           </dl>
           {date}
@@ -70,9 +77,8 @@ export function CountryCard({ code, metric }: CountryCardProps) {
 
   const title = code !== null && country.data ? country.data.country.name : 'Por país';
   return (
-    <section className="card" aria-labelledby="country-card-title">
-      <h2 id="country-card-title">{title}</h2>
+    <SectionCard titleId="country-card-title" title={title}>
       {content}
-    </section>
+    </SectionCard>
   );
 }

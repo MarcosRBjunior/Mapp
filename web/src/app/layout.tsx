@@ -1,26 +1,28 @@
-import { Link, NavLink, Outlet } from 'react-router';
+import type { CSSProperties } from 'react';
+import { Outlet } from 'react-router';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { DataBanner } from '../shared/ui/data-banner';
 import { SiteFooter } from '../shared/ui/site-footer';
+import { AppSidebar } from './app-sidebar';
+import { SiteHeader } from './site-header';
+
+const SHELL_SIZES = {
+  '--sidebar-width': 'calc(var(--spacing) * 60)',
+  '--header-height': 'calc(var(--spacing) * 12)',
+} as CSSProperties;
 
 export function Layout() {
   return (
-    <div className="app">
-      <header className="site-header">
-        <h1>
-          <Link to="/">Mapp</Link>
-        </h1>
-        <nav aria-label="Principal">
-          <NavLink to="/" end>
-            Mapa
-          </NavLink>
-          <NavLink to="/sobre">Sobre</NavLink>
-        </nav>
-      </header>
-      <DataBanner />
-      <main className="content">
-        <Outlet />
-      </main>
-      <SiteFooter />
-    </div>
+    <SidebarProvider style={SHELL_SIZES}>
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <DataBanner />
+        <main className="flex flex-1 flex-col">
+          <Outlet />
+        </main>
+        <SiteFooter />
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
