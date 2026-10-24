@@ -4,7 +4,7 @@ Data: 2026-10-23 · Status: aceita
 
 ## Contexto
 
-O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do shadcn/ui, no tema claro padrão. Se um projeto do Figma chegar, ele prevalece. A F6 acrescenta o card Por tempo e o ranking, e o CSS escrito à mão da F4 não escalava.
+O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do shadcn/ui, no tema claro padrão. A F6 acrescenta o card Por tempo e o ranking, e o CSS escrito à mão da F4 não escalava.
 
 ## Decisão
 
@@ -35,5 +35,4 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
 ## Consequências
 
 - Componente novo do shadcn: `npx shadcn@4.22.1 add <nome>` dentro de `web/`, depois `npx prettier --write`.
-- Um projeto do Figma troca tokens e classes; a estrutura de componentes e os nomes acessíveis continuam.
 - Atualizar o CLI muda o código gerado. Faça isso numa tarefa própria e revise o diff.

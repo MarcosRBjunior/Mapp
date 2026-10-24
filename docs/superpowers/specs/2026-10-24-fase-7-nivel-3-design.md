@@ -2,14 +2,14 @@
 
 Data: 2026-10-24. Fase do roteiro: F7 Nível 3 (2 gráficos e minigráfico no popup; os endpoints de série já entraram na F6a). Critério de saída: E2E do histórico.
 
-Esta spec cobre só **comportamento, dados, estados, acessibilidade e testes**. O visual (posição, tamanhos, cores, tipo de marca, controles, aparência do popup) vem do modelo do Figma do usuário e entra na seção "Visual" quando ele chegar. Nada visual é implementado antes disso.
+O visual segue o shadcn/ui, como o resto do front (ADR 0007): os gráficos usam o componente `chart` do shadcn (sobre o Recharts), a partir do `chart-area-interactive` do `dashboard-01`.
 
 ## Decisões do usuário (2026-10-24)
 
 - D-04 segundo gráfico: **novos por dia com média de 7 dias**.
 - D-06 gráficos ao mapa: **o clique seleciona e abre um popup**: navega para `/paises/:code` como hoje e abre no marcador um popup com um minigráfico.
 - Os dois gráficos **seguem o período** do cabeçalho (`?period=`), como o card Por tempo.
-- O visual é do Figma do usuário (ADR 0007).
+- Visual com o shadcn/ui; a ideia de um modelo do Figma foi descartada.
 
 ## Dados
 
@@ -47,17 +47,13 @@ Esta spec cobre só **comportamento, dados, estados, acessibilidade e testes**. 
   - {lugar} = nome do país ou "no mundo"; métrica no texto conforme `?metric=` (casos/mortes).
 - Números e datas em pt-BR.
 
-## Visual (pendente do Figma)
+## Visual (shadcn/ui)
 
-Fica para o modelo do usuário:
-
-- posição dos gráficos na página e no celular;
-- tipo de marca de cada série (linha, área, barras), cores e legenda;
-- controle de escala linear/log;
-- aparência e tamanho do popup e do minigráfico;
-- biblioteca de componente: componente `chart` do shadcn (sobre Recharts) ou Recharts puro. O Recharts está na arquitetura de qualquer forma.
-
-O plano de implementação só é escrito com o modelo em mãos, ou com o usuário liberando começar pela parte não visual (funções puras e hooks).
+- Componente `chart` do shadcn, adicionado pelo CLI (`npx shadcn@latest add chart`), com `ChartContainer`, `ChartTooltip` e `ChartLegend`; cores pelos tokens `--chart-1..5` do tema claro.
+- Os dois gráficos ficam em `Card`s, lado a lado entre os cards de estatística e o ranking; no celular, empilhados.
+- Acumulado: linhas (país e mundo); o controle de escala linear/log usa o `ToggleGroup`, como a métrica e o período.
+- Novos por dia: barras diárias e a linha da média de 7 dias por cima.
+- Minigráfico: o mesmo `chart` em versão compacta (área, sem eixos nem grade) dentro do popup do Leaflet.
 
 ## Testes
 
