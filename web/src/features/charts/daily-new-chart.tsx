@@ -56,7 +56,11 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
       content = (
         <>
           <ChartContainer config={config} className="aspect-auto h-60 w-full" aria-hidden="true">
-            <ComposedChart data={rows} margin={{ top: 8, left: 4, right: 12 }}>
+            <ComposedChart
+              accessibilityLayer={false}
+              data={rows}
+              margin={{ top: 8, left: 4, right: 12 }}
+            >
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"

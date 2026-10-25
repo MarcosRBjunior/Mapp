@@ -46,7 +46,11 @@ export function CountrySparkline({ code, name, metric }: CountrySparklineProps) 
   return (
     <figure className="m-0 flex w-56 flex-col gap-1">
       <ChartContainer config={config} className="aspect-auto h-16 w-full" aria-hidden="true">
-        <AreaChart data={points} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+        <AreaChart
+          accessibilityLayer={false}
+          data={points}
+          margin={{ top: 4, right: 0, bottom: 0, left: 0 }}
+        >
           <Area
             dataKey="total"
             type="monotone"

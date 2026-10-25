@@ -119,9 +119,18 @@ function CountryMarker({
     const onFocusIn = () => {
       focusInside = true;
     };
+    // Focus moving to another element outside the popup (e.g. the search) is not "inside" anymore.
+    // A null relatedTarget (popup removed while focused) keeps the flag.
+    const onFocusOut = (event: FocusEvent) => {
+      const next = event.relatedTarget;
+      const popup = marker.getPopup()?.getElement();
+      if (next instanceof Node && popup && !popup.contains(next)) focusInside = false;
+    };
     const onOpen = () => {
       focusInside = false;
       const popup = marker.getPopup()?.getElement();
+      popup?.querySelector('.leaflet-popup-close-button')?.setAttribute('aria-label', 'Fechar');
+      popup?.addEventListener('focusout', onFocusOut);
       popup?.addEventListener('keydown', onPopupKeyDown);
       popup?.addEventListener('focusin', onFocusIn);
     };
@@ -129,6 +138,7 @@ function CountryMarker({
       const popup = marker.getPopup()?.getElement();
       popup?.removeEventListener('keydown', onPopupKeyDown);
       popup?.removeEventListener('focusin', onFocusIn);
+      popup?.removeEventListener('focusout', onFocusOut);
       if (focusInside) element.focus();
     };
     marker.on('popupopen', onOpen);

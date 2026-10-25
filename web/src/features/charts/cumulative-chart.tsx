@@ -88,7 +88,11 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
         <>
           <ScaleToggle scale={scale} onChange={setScale} />
           <ChartContainer config={config} className="aspect-auto h-60 w-full" aria-hidden="true">
-            <LineChart data={rows} margin={{ top: 8, left: 4, right: 12 }}>
+            <LineChart
+              accessibilityLayer={false}
+              data={rows}
+              margin={{ top: 8, left: 4, right: 12 }}
+            >
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
