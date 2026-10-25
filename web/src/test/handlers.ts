@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { ApiErrorCode, Metric } from '../shared/api/types';
+import type { ApiErrorCode, Granularity, Metric } from '../shared/api/types';
 import {
   REFERENCE_DATE,
   SERIES_START,
@@ -18,12 +18,20 @@ export function errorBody(code: ApiErrorCode, message: string, details: unknown 
   return { error: { code, message, details, requestId: 'req-test' } };
 }
 
-function seriesQuery(request: Request): { metric: Metric; from: string; to: string } {
+function seriesQuery(request: Request): {
+  metric: Metric;
+  from: string;
+  to: string;
+  granularity: Granularity;
+} {
   const params = new URL(request.url).searchParams;
+  const granularity = params.get('granularity');
   return {
     metric: params.get('metric') === 'deaths' ? 'deaths' : 'cases',
     from: params.get('from') ?? SERIES_START,
     to: params.get('to') ?? REFERENCE_DATE,
+    // Same default as the API.
+    granularity: granularity === 'week' || granularity === 'month' ? granularity : 'day',
   };
 }
 
@@ -50,13 +58,13 @@ export const handlers = [
         });
   }),
   http.get(`${API}/api/v1/global/timeseries`, ({ request }) => {
-    const { metric, from, to } = seriesQuery(request);
-    return HttpResponse.json(globalSeriesFixture(metric, from, to));
+    const { metric, from, to, granularity } = seriesQuery(request);
+    return HttpResponse.json(globalSeriesFixture(metric, from, to, granularity));
   }),
   http.get(`${API}/api/v1/countries/:code/timeseries`, ({ params, request }) => {
     const code = (typeof params.code === 'string' ? params.code : '').toUpperCase();
-    const { metric, from, to } = seriesQuery(request);
-    const series = countrySeriesFixture(code, metric, from, to);
+    const { metric, from, to, granularity } = seriesQuery(request);
+    const series = countrySeriesFixture(code, metric, from, to, granularity);
     return series
       ? HttpResponse.json(series)
       : HttpResponse.json(errorBody('COUNTRY_NOT_FOUND', 'country not found', { code }), {

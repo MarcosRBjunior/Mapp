@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { isApiError } from '../../shared/api/client';
-import { useCountry, useMeta, useMonthlySeries } from '../../shared/api/queries';
+import { useCountry, useMeta, useTimeseries } from '../../shared/api/queries';
 import type { Metric } from '../../shared/api/types';
 import { NEW_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { PERIOD_PHRASES, periodRange, type Period } from '../../shared/period/period';
@@ -21,7 +21,9 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
   const meta = useMeta();
   const coverage = meta.data?.coverage ?? null;
   const range = coverage ? periodRange(period, coverage) : null;
-  const series = useMonthlySeries(code, metric, range);
+  // Monthly points keep the payload small (~38 points for the whole history); summing `new`
+  // gives the total of the complete days of the period (RN-11).
+  const series = useTimeseries(code, metric, range, 'month');
   const country = useCountry(code);
   const loading = <Skeleton label="Carregando novos no período" height="6rem" />;
 

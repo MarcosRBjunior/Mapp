@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { apiClient, unwrap } from './client';
-import type { Metric } from './types';
+import type { Granularity, Metric } from './types';
 
 export function useMeta() {
   return useQuery({
@@ -40,20 +40,18 @@ export interface SeriesRange {
   to: string;
 }
 
-// Monthly points keep the payload small (~38 points for the whole history); the API cuts the
-// first and last blocks at the range and returns only complete dates (RN-06), so summing `new`
-// gives the total of the complete days of the period (RN-11).
-export function useMonthlySeries(code: string | null, metric: Metric, range: SeriesRange | null) {
+// The API cuts the first and last blocks at the range and returns only complete dates (RN-06).
+export function useTimeseries(
+  code: string | null,
+  metric: Metric,
+  range: SeriesRange | null,
+  granularity: Granularity,
+) {
   return useQuery({
-    queryKey: ['timeseries', code ?? 'world', metric, range?.from, range?.to, 'month'],
+    queryKey: ['timeseries', code ?? 'world', metric, range?.from, range?.to, granularity],
     enabled: range !== null,
     queryFn: () => {
-      const query = {
-        metric,
-        from: range?.from,
-        to: range?.to,
-        granularity: 'month' as const,
-      };
+      const query = { metric, from: range?.from, to: range?.to, granularity };
       return code === null
         ? unwrap(apiClient().GET('/api/v1/global/timeseries', { params: { query } }))
         : unwrap(

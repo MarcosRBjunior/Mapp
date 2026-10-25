@@ -165,11 +165,26 @@ function daysBetween(from: string, to: string): number {
   return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000 + 1;
 }
 
-// One point per calendar month, the first cut at `from`; every day adds `perDay` new.
-function seriesPoints(perDay: number, from: string, to: string) {
+type Granularity = 'day' | 'week' | 'month';
+
+// ISO weeks run Monday to Sunday.
+function nextMonday(isoDate: string): string {
+  const day = new Date(`${isoDate}T00:00:00Z`).getUTCDay();
+  return addDays(isoDate, (8 - day) % 7 || 7);
+}
+
+function nextBlockStart(isoDate: string, granularity: Granularity): string {
+  if (granularity === 'day') return addDays(isoDate, 1);
+  if (granularity === 'week') return nextMonday(isoDate);
+  return nextMonthStart(isoDate);
+}
+
+// One point per day, ISO week or calendar month, the first cut at `from`; every day adds
+// `perDay` new.
+function seriesPoints(perDay: number, from: string, to: string, granularity: Granularity) {
   const points: { date: string; total: number; new: number }[] = [];
-  for (let start = from; start <= to; start = nextMonthStart(start)) {
-    const next = nextMonthStart(start);
+  for (let start = from; start <= to; start = nextBlockStart(start, granularity)) {
+    const next = nextBlockStart(start, granularity);
     const end = next > to ? to : addDays(next, -1);
     points.push({
       date: start,
@@ -180,27 +195,33 @@ function seriesPoints(perDay: number, from: string, to: string) {
   return points;
 }
 
-export function globalSeries(metric: Metric, from: string, to: string) {
+export function globalSeries(metric: Metric, from: string, to: string, granularity: Granularity) {
   return {
     metric,
-    granularity: 'month',
+    granularity,
     from,
     to,
-    points: seriesPoints(global[metric].new, from, to),
+    points: seriesPoints(global[metric].new, from, to, granularity),
   };
 }
 
-export function countrySeries(code: string, metric: Metric, from: string, to: string) {
+export function countrySeries(
+  code: string,
+  metric: Metric,
+  from: string,
+  to: string,
+  granularity: Granularity,
+) {
   const country = countries.find((c) => c.code === code);
   if (!country) return null;
   const value = country[metric];
   return {
     metric,
-    granularity: 'month',
+    granularity,
     from,
     to,
     country: { code: country.code, name: country.name },
-    points: value === null ? [] : seriesPoints(value.new, from, to),
+    points: value === null ? [] : seriesPoints(value.new, from, to, granularity),
   };
 }
 
