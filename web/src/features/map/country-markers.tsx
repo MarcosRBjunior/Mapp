@@ -1,5 +1,5 @@
 import type { CircleMarker as LeafletCircleMarker } from 'leaflet';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { CountrySparkline } from '../charts/country-sparkline';
@@ -116,8 +116,9 @@ function CountryMarker({
     const onPopupKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') marker.closePopup();
     };
-    const onFocusIn = () => {
-      focusInside = true;
+    const onFocusIn = (event: FocusEvent) => {
+      // Only keyboard focus returns to the marker: a mouse close must not open its tooltip.
+      if ((event.target as Element).matches(':focus-visible')) focusInside = true;
     };
     // Focus moving to another element outside the popup (e.g. the search) is not "inside" anymore.
     // A null relatedTarget (popup removed while focused) keeps the flag.
@@ -156,6 +157,8 @@ function CountryMarker({
     else marker.closePopup();
   }, [selected]);
 
+  const relayoutPopup = useCallback(() => markerRef.current?.getPopup()?.update(), []);
+
   const eventHandlers = useMemo(() => ({ click: () => onSelectRef.current(code) }), [code]);
 
   return (
@@ -188,7 +191,12 @@ function CountryMarker({
               </>
             )}
           </p>
-          <CountrySparkline code={code} name={country.name} metric={metric} />
+          <CountrySparkline
+            code={code}
+            name={country.name}
+            metric={metric}
+            onLayoutChange={relayoutPopup}
+          />
         </div>
       </Popup>
     </CircleMarker>

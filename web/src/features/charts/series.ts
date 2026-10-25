@@ -30,10 +30,14 @@ export interface DailyNewRow {
   date: string;
   value: number;
   bar: number;
+  // Drawn line: never negative.
   average: number | null;
+  // The real rounded average, negative when the source corrections outweigh the day.
+  averageValue: number | null;
 }
 
-// RN-07: `value` keeps what the source sent; `bar` and `average` are never negative.
+// RN-07: `value` keeps what the source sent; `bar` and `average` (what is drawn) are never negative;
+// `averageValue` keeps the real average for the tooltip and the summary.
 export function dailyNewRows(
   points: readonly TimeseriesPoint[],
   visibleFrom: string,
@@ -46,16 +50,20 @@ export function dailyNewRows(
       if (value === undefined) return null;
       sum += value;
     }
-    return Math.max(0, Math.round(sum / AVERAGE_WINDOW));
+    return Math.round(sum / AVERAGE_WINDOW);
   };
   return points
     .filter((point) => point.date >= visibleFrom)
-    .map((point) => ({
-      date: point.date,
-      value: point.new,
-      bar: Math.max(0, point.new),
-      average: averageAt(point.date),
-    }));
+    .map((point) => {
+      const averageValue = averageAt(point.date);
+      return {
+        date: point.date,
+        value: point.new,
+        bar: Math.max(0, point.new),
+        average: averageValue === null ? null : Math.max(0, averageValue),
+        averageValue,
+      };
+    });
 }
 
 // A log axis has no place for zero or negatives: those days become gaps.
@@ -120,6 +128,6 @@ export function dailyNewSummary(
   if (!first) return '';
   // The first day wins a tie.
   const peak = rest.reduce((best, row) => (row.value > best.value ? row : best), first);
-  const lastAverage = rows.at(-1)?.average ?? null;
+  const lastAverage = rows.at(-1)?.averageValue ?? null;
   return `${NEW_LABELS[metric]} (${place}) ${rangeText(range)}: pico de ${formatNumber(peak.value)} em ${formatDate(peak.date)}; média de 7 dias no último dia: ${formatNumber(lastAverage)}.`;
 }

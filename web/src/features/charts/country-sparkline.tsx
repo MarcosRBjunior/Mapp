@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Area, AreaChart } from 'recharts';
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart';
 import { useMeta, useTimeseries } from '../../shared/api/queries';
@@ -11,14 +12,21 @@ interface CountrySparklineProps {
   code: string;
   name: string;
   metric: Metric;
+  // Called when the rendered content changes size, so the popup around it can re-fit.
+  onLayoutChange?: () => void;
 }
 
 // The whole history by week (~165 points), whatever the period of the page.
-export function CountrySparkline({ code, name, metric }: CountrySparklineProps) {
+export function CountrySparkline({ code, name, metric, onLayoutChange }: CountrySparklineProps) {
   const meta = useMeta();
   const coverage = meta.data?.coverage ?? null;
   const range = coverage ? { from: coverage.from, to: coverage.to } : null;
   const series = useTimeseries(code, metric, range, 'week');
+
+  const pointCount = series.data?.points.length ?? 0;
+  useEffect(() => {
+    onLayoutChange?.();
+  }, [onLayoutChange, series.status, pointCount]);
 
   const fallback = seriesFallback({
     meta,

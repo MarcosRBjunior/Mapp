@@ -53,7 +53,9 @@ test('clicking a marker opens the popup with the country history', async ({ page
   await expect(popup.locator('svg.recharts-surface[tabindex]')).toHaveCount(0);
 
   // Esc from inside the popup closes it and returns the focus to the marker.
+  // A key press first, so the script focus counts as keyboard focus (:focus-visible).
   const close = popup.getByRole('button', { name: 'Fechar' });
+  await page.keyboard.press('Shift');
   await close.focus();
   await page.keyboard.press('Escape');
   await expect(popup).toHaveCount(0);

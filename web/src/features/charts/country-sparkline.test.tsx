@@ -1,6 +1,6 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { API, errorBody } from '../../test/handlers';
 import { renderWithProviders } from '../../test/render';
 import { server } from '../../test/server';
@@ -24,6 +24,16 @@ describe('CountrySparkline', () => {
     expect(requested?.searchParams.get('from')).toBe('2020-01-22');
     expect(requested?.searchParams.get('to')).toBe('2023-03-09');
     server.events.removeAllListeners();
+  });
+
+  it('tells the popup to re-layout once the series loads', async () => {
+    const onLayoutChange = vi.fn();
+    renderWithProviders(
+      <CountrySparkline code="BRA" name="Brasil" metric="cases" onLayoutChange={onLayoutChange} />,
+    );
+
+    await screen.findByText(/Casos acumulados de 22\/01\/2020/);
+    expect(onLayoutChange).toHaveBeenCalled();
   });
 
   it('shows the empty state for a country without data', async () => {

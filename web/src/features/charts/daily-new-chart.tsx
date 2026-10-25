@@ -86,7 +86,7 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
                       return row
                         ? [
                             { name: NEW_LABELS[metric], value: formatNumber(row.value) },
-                            { name: AVERAGE_LABEL, value: formatNumber(row.average) },
+                            { name: AVERAGE_LABEL, value: formatNumber(row.averageValue) },
                           ]
                         : null;
                     }}

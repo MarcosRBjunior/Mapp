@@ -58,15 +58,27 @@ describe('dailyNewRows', () => {
       '2023-03-08',
       '2023-03-09',
     ]);
-    expect(rows[0]).toEqual({ date: '2023-03-03', value: 3, bar: 3, average: null });
-    expect(rows[4]).toEqual({ date: '2023-03-07', value: 7, bar: 7, average: 4 });
-    expect(rows[6]).toEqual({ date: '2023-03-09', value: 9, bar: 9, average: 6 });
+    expect(rows[0]).toEqual({
+      date: '2023-03-03',
+      value: 3,
+      bar: 3,
+      average: null,
+      averageValue: null,
+    });
+    expect(rows[4]).toEqual({ date: '2023-03-07', value: 7, bar: 7, average: 4, averageValue: 4 });
+    expect(rows[6]).toEqual({ date: '2023-03-09', value: 9, bar: 9, average: 6, averageValue: 6 });
   });
 
   it('keeps a negative value but never draws it (RN-07)', () => {
     const rows = dailyNewRows(daily('2023-03-01', [10, 10, 10, 10, 10, -14, 10]), '2023-03-01');
 
-    expect(rows[5]).toEqual({ date: '2023-03-06', value: -14, bar: 0, average: null });
+    expect(rows[5]).toEqual({
+      date: '2023-03-06',
+      value: -14,
+      bar: 0,
+      average: null,
+      averageValue: null,
+    });
     // (6 × 10 − 14) / 7 = 6,57 → 7
     expect(rows[6]?.average).toBe(7);
   });
@@ -74,7 +86,13 @@ describe('dailyNewRows', () => {
   it('draws a negative average as zero', () => {
     const rows = dailyNewRows(daily('2023-03-01', [-7, -7, -7, -7, -7, -7, -7]), '2023-03-01');
 
-    expect(rows[6]).toEqual({ date: '2023-03-07', value: -7, bar: 0, average: 0 });
+    expect(rows[6]).toEqual({
+      date: '2023-03-07',
+      value: -7,
+      bar: 0,
+      average: 0,
+      averageValue: -7,
+    });
   });
 
   it('leaves the average empty when a day of the window is missing', () => {
@@ -87,6 +105,7 @@ describe('dailyNewRows', () => {
       value: 1,
       bar: 1,
       average: null,
+      averageValue: null,
     });
   });
 });
@@ -173,6 +192,14 @@ describe('summaries', () => {
 
     expect(dailyNewSummary('cases', 'Brasil', { from: '2023-03-01', to: '2023-03-09' }, rows)).toBe(
       'Novos casos (Brasil) de 01/03/2023 a 09/03/2023: pico de 50 em 03/03/2023; média de 7 dias no último dia: 18.',
+    );
+  });
+
+  it('reports a negative real average instead of the drawn zero', () => {
+    const rows = dailyNewRows(daily('2023-03-01', [-7, -7, -7, -7, -7, -7, -7]), '2023-03-01');
+
+    expect(dailyNewSummary('cases', 'Brasil', { from: '2023-03-01', to: '2023-03-07' }, rows)).toBe(
+      'Novos casos (Brasil) de 01/03/2023 a 07/03/2023: pico de -7 em 01/03/2023; média de 7 dias no último dia: -7.',
     );
   });
 
