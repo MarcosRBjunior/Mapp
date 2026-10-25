@@ -42,9 +42,9 @@ O visual segue o shadcn/ui, como o resto do front (ADR 0007): os gráficos usam 
 
 - Skeleton, vazio ("Sem dados no período"), erro com "Tentar de novo", `DATA_NOT_READY` → "Dados ainda não carregados". Um erro não derruba os outros componentes.
 - Resumo textual em cada gráfico (e no minigráfico):
-  - acumulado: "Casos acumulados em {lugar} de DD/MM/AAAA a DD/MM/AAAA: de X para Y" (com país, a mesma frase para o mundo);
-  - novos: "Novos casos em {lugar} de DD/MM/AAAA a DD/MM/AAAA: pico de X em DD/MM/AAAA; média de 7 dias no último dia: Y".
-  - {lugar} = nome do país ou "no mundo"; métrica no texto conforme `?metric=` (casos/mortes).
+  - acumulado: "Casos acumulados de DD/MM/AAAA a DD/MM/AAAA — Brasil: de X para Y; Mundo: de X para Y." (sem país, só "Mundo"; o minigráfico usa a mesma frase só com o país);
+  - novos: "Novos casos (Brasil) de DD/MM/AAAA a DD/MM/AAAA: pico de X em DD/MM/AAAA; média de 7 dias no último dia: Y." (sem país, "(Mundo)"; média ainda vazia → "—");
+  - a métrica no texto segue `?metric=` ("Casos acumulados"/"Mortes acumuladas", "Novos casos"/"Novas mortes"); a média de 7 dias é arredondada para inteiro.
 - Números e datas em pt-BR.
 
 ## Visual (shadcn/ui)
