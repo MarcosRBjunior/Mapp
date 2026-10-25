@@ -113,4 +113,13 @@ describe('DashboardPage', () => {
     expect(await within(card).findByText('840')).toBeInTheDocument();
     expect(within(card).getByText('Brasil')).toBeInTheDocument();
   });
+
+  it('shows the two charts of the selected country', async () => {
+    renderWithProviders(<DashboardPage />, { route: '/paises/BRA', path: PATHS });
+
+    const cumulative = await screen.findByRole('region', { name: 'Crescimento acumulado' });
+    const daily = screen.getByRole('region', { name: 'Novos por dia' });
+    expect(await within(cumulative).findByText(/— Brasil: de /)).toBeInTheDocument();
+    expect(await within(daily).findByText(/^Novos casos \(Brasil\)/)).toBeInTheDocument();
+  });
 });
