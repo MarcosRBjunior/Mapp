@@ -17,7 +17,7 @@ A F8 do roteiro pede "metas verdes no CI". Até a F7 o E2E só rodava localmente
   - roda no build de produção servido pelo `vite preview`, com a API e os tiles vindos de um mock Node que lê as fixtures do E2E (`web/tests/e2e/api-routes.ts`);
   - mediana de 3 execuções, preset desktop, nas rotas `/` e `/paises/BRA`;
   - notas mínimas: Acessibilidade 1, Boas práticas ≥ 0,9, SEO ≥ 0,9, Performance ≥ 0,8.
-- **Dependências:** Dependabot semanal (npm e actions, minor e patch agrupados, major do TypeScript ignorado) e actions fixadas por SHA.
+- **Dependências:** Dependabot semanal (npm e actions, minor e patch agrupados, major e minor do TypeScript ignorados, pelo `~6.0.3` do ADR 0001) e actions fixadas por SHA.
 - **Telemetria:** a do `@scarf/scarf` fica desligada nos workflows.
 
 ## Consequências
