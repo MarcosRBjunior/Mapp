@@ -2,6 +2,7 @@ import type { CircleMarker as LeafletCircleMarker } from 'leaflet';
 import { useEffect, useMemo, useRef } from 'react';
 import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
+import { CountrySparkline } from '../charts/country-sparkline';
 import { METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { METRIC_COLORS, markerRadius, maxTotal } from './marker-scale';
 
@@ -88,6 +89,10 @@ function CountryMarker({
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         onSelectRef.current(code);
+        // Already selected: the selection effect will not run again, so open it here.
+        marker.openPopup();
+      } else if (event.key === 'Escape') {
+        marker.closePopup();
       }
     };
     const onFocus = () => marker.openTooltip();
@@ -101,6 +106,38 @@ function CountryMarker({
       element.removeEventListener('blur', onBlur);
     };
   }, [code, label]);
+
+  // Esc inside the popup closes it; when the focus was inside, it goes back to the marker.
+  useEffect(() => {
+    const marker = markerRef.current;
+    const element = marker?.getElement() as SVGElement | undefined;
+    if (!marker || !element) return;
+    let focusInside = false;
+    const onPopupKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') marker.closePopup();
+    };
+    const onFocusIn = () => {
+      focusInside = true;
+    };
+    const onOpen = () => {
+      focusInside = false;
+      const popup = marker.getPopup()?.getElement();
+      popup?.addEventListener('keydown', onPopupKeyDown);
+      popup?.addEventListener('focusin', onFocusIn);
+    };
+    const onClose = () => {
+      const popup = marker.getPopup()?.getElement();
+      popup?.removeEventListener('keydown', onPopupKeyDown);
+      popup?.removeEventListener('focusin', onFocusIn);
+      if (focusInside) element.focus();
+    };
+    marker.on('popupopen', onOpen);
+    marker.on('popupclose', onClose);
+    return () => {
+      marker.off('popupopen', onOpen);
+      marker.off('popupclose', onClose);
+    };
+  }, []);
 
   useEffect(() => {
     const marker = markerRef.current;
@@ -127,17 +164,22 @@ function CountryMarker({
     >
       <Tooltip>{label}</Tooltip>
       <Popup>
-        <strong>{country.name}</strong>
-        <br />
-        {`${METRIC_LABELS[metric].title}: ${formatNumber(country.total)}`}
-        <br />
-        {`Novos no dia: ${formatNumber(country.new)}`}
-        {referenceDate && (
-          <>
+        <div className="flex flex-col gap-2">
+          <p className="m-0">
+            <strong>{country.name}</strong>
             <br />
-            {`Data: ${formatDate(referenceDate)}`}
-          </>
-        )}
+            {`${METRIC_LABELS[metric].title}: ${formatNumber(country.total)}`}
+            <br />
+            {`Novos no dia: ${formatNumber(country.new)}`}
+            {referenceDate && (
+              <>
+                <br />
+                {`Data: ${formatDate(referenceDate)}`}
+              </>
+            )}
+          </p>
+          <CountrySparkline code={code} name={country.name} metric={metric} />
+        </div>
       </Popup>
     </CircleMarker>
   );
