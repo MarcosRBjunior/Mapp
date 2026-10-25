@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { METRIC_LABELS, formatDate, formatNumber, formatPercent, formatRank } from './format';
+import {
+  CUMULATIVE_LABELS,
+  METRIC_LABELS,
+  NEW_LABELS,
+  formatCompact,
+  formatDate,
+  formatNumber,
+  formatPercent,
+  formatRank,
+} from './format';
 
 describe('format', () => {
   it('formats numbers in pt-BR and null as a dash', () => {
@@ -28,5 +37,18 @@ describe('format', () => {
   it('labels the metrics', () => {
     expect(METRIC_LABELS.cases).toEqual({ title: 'Casos', noun: 'casos' });
     expect(METRIC_LABELS.deaths).toEqual({ title: 'Mortes', noun: 'mortes' });
+  });
+});
+
+describe('chart labels and compact numbers', () => {
+  it('names the new and cumulative values of each metric', () => {
+    expect(NEW_LABELS).toEqual({ cases: 'Novos casos', deaths: 'Novas mortes' });
+    expect(CUMULATIVE_LABELS).toEqual({ cases: 'Casos acumulados', deaths: 'Mortes acumuladas' });
+  });
+
+  it('formats axis numbers in compact pt-BR', () => {
+    // Intl puts a no-break space before the unit.
+    expect(formatCompact(1371600).replace(/\s/g, ' ')).toBe('1,4 mi');
+    expect(formatCompact(950)).toBe('950');
   });
 });

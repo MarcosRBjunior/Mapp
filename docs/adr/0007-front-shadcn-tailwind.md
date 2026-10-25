@@ -4,7 +4,7 @@ Data: 2026-10-23 · Status: aceita
 
 ## Contexto
 
-O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do shadcn/ui, no tema claro padrão. Se um projeto do Figma chegar, ele prevalece. A F6 acrescenta o card Por tempo e o ranking, e o CSS escrito à mão da F4 não escalava.
+O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do shadcn/ui, no tema claro padrão. A F6 acrescenta o card Por tempo e o ranking, e o CSS escrito à mão da F4 não escalava.
 
 ## Decisão
 
@@ -30,10 +30,10 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
   - o preflight do Tailwind limita a largura de `img`, e uma regra em `.leaflet-container img` desfaz isso para os tiles;
   - o mapa fica num `Card` com `isolate`, para os z-index do Leaflet não passarem por cima do menu lateral nem da faixa de dados.
 - **Controles:** métrica e período são `ToggleGroup` de seleção única com `role="radiogroup"` e itens `role="radio"`/`aria-checked`. Um segundo clique no item ativo é ignorado.
+- **Gráficos:** componente `chart` do shadcn sobre o Recharts, com as cores `--chart-*` do tema; o SVG fica com `aria-hidden` e cada gráfico tem um resumo textual. O tooltip é próprio, para mostrar os valores em pt-BR e o `new` real da fonte. No `jsdom` o `ResizeObserver` é simulado e os gráficos ficam com tamanho 0: os testes de componente conferem o resumo; o desenho é conferido no E2E.
 - **Testes:** o `jsdom` não tem `matchMedia`, e o setup dos testes o simula.
 
 ## Consequências
 
 - Componente novo do shadcn: `npx shadcn@4.22.1 add <nome>` dentro de `web/`, depois `npx prettier --write`.
-- Um projeto do Figma troca tokens e classes; a estrutura de componentes e os nomes acessíveis continuam.
 - Atualizar o CLI muda o código gerado. Faça isso numa tarefa própria e revise o diff.

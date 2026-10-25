@@ -25,7 +25,7 @@ export interface DateRange {
 }
 
 // UTC arithmetic on YYYY-MM-DD strings, so the day never shifts with the local time zone.
-function addDays(isoDate: string, days: number): string {
+export function addDays(isoDate: string, days: number): string {
   const date = new Date(`${isoDate}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);

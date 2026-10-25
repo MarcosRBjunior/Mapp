@@ -3,6 +3,7 @@ import type { components } from './schema';
 type Schemas = components['schemas'];
 
 export type Metric = Schemas['Metric'];
+export type Granularity = Schemas['Granularity'];
 export type MetaResponse = Schemas['MetaResponse'];
 export type GlobalResponse = Schemas['GlobalResponse'];
 export type CountriesListResponse = Schemas['CountriesListResponse'];

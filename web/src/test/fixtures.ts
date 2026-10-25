@@ -180,11 +180,31 @@ function daysBetween(from: string, to: string): number {
   return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000 + 1;
 }
 
-// One point per calendar month, the first cut at `from`; every day adds `perDay` new.
-export function seriesPoints(perDay: number, from: string, to: string): TimeseriesPoint[] {
+type Granularity = GlobalTimeseriesResponse['granularity'];
+
+// ISO weeks run Monday to Sunday.
+function nextMonday(isoDate: string): string {
+  const day = new Date(`${isoDate}T00:00:00Z`).getUTCDay();
+  return addDays(isoDate, (8 - day) % 7 || 7);
+}
+
+function nextBlockStart(isoDate: string, granularity: Granularity): string {
+  if (granularity === 'day') return addDays(isoDate, 1);
+  if (granularity === 'week') return nextMonday(isoDate);
+  return nextMonthStart(isoDate);
+}
+
+// One point per day, ISO week or calendar month, the first cut at `from`; every day adds
+// `perDay` new.
+export function seriesPoints(
+  perDay: number,
+  from: string,
+  to: string,
+  granularity: Granularity = 'month',
+): TimeseriesPoint[] {
   const points: TimeseriesPoint[] = [];
-  for (let start = from; start <= to; start = nextMonthStart(start)) {
-    const next = nextMonthStart(start);
+  for (let start = from; start <= to; start = nextBlockStart(start, granularity)) {
+    const next = nextBlockStart(start, granularity);
     const end = next > to ? to : addDays(next, -1);
     points.push({
       date: start,
@@ -199,13 +219,14 @@ export function globalSeriesFixture(
   metric: Metric,
   from: string,
   to: string,
+  granularity: Granularity = 'month',
 ): GlobalTimeseriesResponse {
   return {
     metric,
-    granularity: 'month',
+    granularity,
     from,
     to,
-    points: seriesPoints(globalFixture[metric].new, from, to),
+    points: seriesPoints(globalFixture[metric].new, from, to, granularity),
   };
 }
 
@@ -214,17 +235,18 @@ export function countrySeriesFixture(
   metric: Metric,
   from: string,
   to: string,
+  granularity: Granularity = 'month',
 ): CountryTimeseriesResponse | null {
   const country = fixtureCountries.find((item) => item.code === code);
   if (!country) return null;
   const value = country[metric];
   return {
     metric,
-    granularity: 'month',
+    granularity,
     from,
     to,
     country: { code: country.code, name: country.name },
-    points: value === null ? [] : seriesPoints(value.new, from, to),
+    points: value === null ? [] : seriesPoints(value.new, from, to, granularity),
   };
 }
 

@@ -15,8 +15,25 @@ export const METRIC_LABELS: Record<Metric, { title: string; noun: string }> = {
   deaths: { title: 'Mortes', noun: 'mortes' },
 };
 
+export const NEW_LABELS: Record<Metric, string> = { cases: 'Novos casos', deaths: 'Novas mortes' };
+
+export const CUMULATIVE_LABELS: Record<Metric, string> = {
+  cases: 'Casos acumulados',
+  deaths: 'Mortes acumuladas',
+};
+
+const compactFormat = new Intl.NumberFormat('pt-BR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
 export function formatNumber(value: number | null | undefined): string {
   return value === null || value === undefined ? EMPTY : numberFormat.format(value);
+}
+
+// Short axis labels: 1.371.600 → "1,4 mi".
+export function formatCompact(value: number): string {
+  return compactFormat.format(value);
 }
 
 export function formatPercent(value: number | null | undefined): string {
