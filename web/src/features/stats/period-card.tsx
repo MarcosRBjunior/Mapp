@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { isApiError } from '../../shared/api/client';
 import { useCountry, useMeta, useMonthlySeries } from '../../shared/api/queries';
 import type { Metric } from '../../shared/api/types';
-import { formatDate, formatNumber } from '../../shared/format/format';
+import { NEW_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { PERIOD_PHRASES, periodRange, type Period } from '../../shared/period/period';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
@@ -10,8 +10,6 @@ import { SectionCard } from '../../shared/ui/section-card';
 import { Skeleton } from '../../shared/ui/skeleton';
 
 const NOT_LOADED = 'Dados ainda não carregados';
-
-const NEW_LABELS: Record<Metric, string> = { cases: 'Novos casos', deaths: 'Novas mortes' };
 
 interface PeriodCardProps {
   code: string | null;
