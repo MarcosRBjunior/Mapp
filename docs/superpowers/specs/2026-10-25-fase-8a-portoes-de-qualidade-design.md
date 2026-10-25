@@ -29,9 +29,8 @@ A F8 tem duas partes, cada uma com plano e PR próprios:
   - `aria-labelledby` repetido na tabela do ranking;
   - `dt`/`dd` do card Geral;
   - botão de fechar do popup (já com "Fechar" na F7).
-- Também entram, por serem de acessibilidade:
-  - ordem de Tab dos marcadores: hoje segue o tamanho (maiores primeiro, para os pequenos ficarem por cima); passa a seguir a ordem alfabética do nome do país;
-  - E2E do menu no celular (abrir, navegar, fechar).
+- Também entra, por ser de acessibilidade: E2E do menu no celular (abrir, navegar, fechar).
+- Ordem de Tab dos marcadores: **continua por tamanho** (o maior primeiro). No SVG do Leaflet a ordem no DOM é a mesma do desenho, e os maiores precisam vir antes para os pequenos ficarem por cima e clicáveis; separar as duas ordens exigiria um pane por marcador. A busca já dá acesso por nome pelo teclado. A pendência sai do "Adiado" e vira decisão registrada.
 - Se o axe apontar algo que não dá para corrigir sem mudar o visual ou um componente gerado, a regra pode ser desligada só para aquele seletor, com o motivo num comentário e registro no "Adiado".
 
 ## 3. Lighthouse
