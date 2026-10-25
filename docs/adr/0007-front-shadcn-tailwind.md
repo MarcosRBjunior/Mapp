@@ -30,6 +30,7 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
   - o preflight do Tailwind limita a largura de `img`, e uma regra em `.leaflet-container img` desfaz isso para os tiles;
   - o mapa fica num `Card` com `isolate`, para os z-index do Leaflet não passarem por cima do menu lateral nem da faixa de dados.
 - **Controles:** métrica e período são `ToggleGroup` de seleção única com `role="radiogroup"` e itens `role="radio"`/`aria-checked`. Um segundo clique no item ativo é ignorado.
+- **Gráficos:** componente `chart` do shadcn sobre o Recharts, com as cores `--chart-*` do tema; o SVG fica com `aria-hidden` e cada gráfico tem um resumo textual. O tooltip é próprio, para mostrar os valores em pt-BR e o `new` real da fonte. No `jsdom` o `ResizeObserver` é simulado e os gráficos ficam com tamanho 0: os testes de componente conferem o resumo; o desenho é conferido no E2E.
 - **Testes:** o `jsdom` não tem `matchMedia`, e o setup dos testes o simula.
 
 ## Consequências
