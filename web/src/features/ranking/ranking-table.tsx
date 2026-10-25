@@ -46,7 +46,7 @@ export function RankingTable({ metric, selectedCode }: RankingTableProps) {
     content = <EmptyState message="Sem dados na data de referência" />;
   } else {
     content = (
-      <Table aria-labelledby={TITLE_ID}>
+      <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-16">Posição</TableHead>
