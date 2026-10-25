@@ -1,87 +1,35 @@
-import type { Page, Route } from '@playwright/test';
-import {
-  SERIES_START,
-  REFERENCE_DATE,
-  countryDetail,
-  countryList,
-  countrySeries,
-  global,
-  globalSeries,
-  meta,
-  rankings,
-} from './fixtures.js';
+import type { Page } from '@playwright/test';
+import { BLANK_PNG, CORS_HEADERS, resolveApi } from './api-routes.js';
 
 const API_ORIGIN = 'http://api.test';
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-};
+const TILES_ORIGIN = 'http://tiles.test';
 
-function json(route: Route, status: number, body: unknown) {
-  return route.fulfill({
-    status,
-    contentType: 'application/json',
-    headers: CORS_HEADERS,
-    body: JSON.stringify(body),
-  });
-}
-
-function notFound(route: Route, code: string) {
-  return json(route, 404, {
-    error: {
-      code: 'COUNTRY_NOT_FOUND',
-      message: 'country not found',
-      details: { code },
-      requestId: 'req-e2e',
-    },
-  });
-}
-
-function handleApi(route: Route, url: URL) {
-  if (route.request().method() === 'OPTIONS') {
-    return route.fulfill({ status: 204, headers: CORS_HEADERS });
-  }
-  const path = url.pathname;
-  if (path === '/api/v1/meta') return json(route, 200, meta);
-  if (path === '/api/v1/global') return json(route, 200, global);
-  const metric = url.searchParams.get('metric') === 'deaths' ? 'deaths' : 'cases';
-  const from = url.searchParams.get('from') ?? SERIES_START;
-  const to = url.searchParams.get('to') ?? REFERENCE_DATE;
-  const rawGranularity = url.searchParams.get('granularity');
-  const granularity =
-    rawGranularity === 'week' || rawGranularity === 'month' ? rawGranularity : 'day';
-  if (path === '/api/v1/countries') {
-    return json(route, 200, countryList(metric));
-  }
-  if (path === '/api/v1/rankings') {
-    return json(route, 200, rankings(metric, Number(url.searchParams.get('limit') ?? '10')));
-  }
-  if (path === '/api/v1/global/timeseries')
-    return json(route, 200, globalSeries(metric, from, to, granularity));
-  const series = /^\/api\/v1\/countries\/([^/]+)\/timeseries$/.exec(path);
-  if (series?.[1]) {
-    const code = decodeURIComponent(series[1]).toUpperCase();
-    const body = countrySeries(code, metric, from, to, granularity);
-    return body ? json(route, 200, body) : notFound(route, code);
-  }
-  const match = /^\/api\/v1\/countries\/([^/]+)$/.exec(path);
-  if (match?.[1]) {
-    const code = decodeURIComponent(match[1]).toUpperCase();
-    const detail = countryDetail(code);
-    return detail ? json(route, 200, detail) : notFound(route, code);
-  }
-  return json(route, 404, {
-    error: { code: 'NOT_FOUND', message: 'route not found', details: null, requestId: 'req-e2e' },
-  });
-}
-
-// Serves the API from fixtures and blocks every other external host (tiles included).
-export async function mockApi(page: Page): Promise<void> {
+// Serves the API and the tiles from fixtures. Only the app's own origin passes through; every
+// other origin (including other localhost ports, such as a real local API) is aborted and
+// recorded. The returned list is live, so the test fixture can check it after the test.
+export async function mockApi(page: Page, appOrigin: string): Promise<string[]> {
+  const external: string[] = [];
   await page.route('**/*', (route) => {
-    const url = new URL(route.request().url());
-    if (url.hostname === 'localhost') return route.continue();
-    if (url.origin === API_ORIGIN) return handleApi(route, url);
+    const request = route.request();
+    const url = new URL(request.url());
+    if (url.origin === appOrigin) return route.continue();
+    if (url.origin === TILES_ORIGIN) {
+      return route.fulfill({ status: 200, contentType: 'image/png', body: BLANK_PNG });
+    }
+    if (url.origin === API_ORIGIN) {
+      if (request.method() === 'OPTIONS') {
+        return route.fulfill({ status: 204, headers: CORS_HEADERS });
+      }
+      const { status, body } = resolveApi(url);
+      return route.fulfill({
+        status,
+        contentType: 'application/json',
+        headers: CORS_HEADERS,
+        body: JSON.stringify(body),
+      });
+    }
+    external.push(url.href);
     return route.abort();
   });
+  return external;
 }

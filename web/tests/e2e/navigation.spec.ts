@@ -1,9 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { mockApi } from './mock-api.js';
-
-test.beforeEach(async ({ page }) => {
-  await mockApi(page);
-});
+import { expect, test } from './test.js';
 
 test('a direct link opens the country with the metric from the URL', async ({ page }) => {
   await page.goto('/paises/BRA?metric=deaths');
@@ -44,4 +39,19 @@ test('an unknown route shows the 404 page', async ({ page }) => {
   await page.goto('/nada-aqui');
 
   await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible();
+});
+
+test.describe('on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('the menu opens, navigates and closes', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Alternar menu lateral' }).click();
+    const menu = page.getByRole('dialog', { name: 'Menu' });
+
+    await menu.getByRole('link', { name: 'Sobre' }).click();
+
+    await expect(page).toHaveURL(/\/sobre$/);
+    await expect(menu).toBeHidden();
+  });
 });

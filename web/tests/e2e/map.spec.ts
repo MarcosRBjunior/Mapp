@@ -1,9 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { mockApi } from './mock-api.js';
-
-test.beforeEach(async ({ page }) => {
-  await mockApi(page);
-});
+import { expect, test } from './test.js';
 
 test('opens the map with markers, the data banner and the global card', async ({ page }) => {
   await page.goto('/');
