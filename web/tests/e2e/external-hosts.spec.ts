@@ -1,10 +1,13 @@
-import { test } from './test.js';
+import { expect, test } from '@playwright/test';
+import { mockApi } from './mock-api.js';
 
-test('fails when the page calls an external host', async ({ page }) => {
-  // The fixture's check runs after the body; this test passes only if that check fails.
-  test.fail();
+// Uses Playwright's own `test` (not the auto fixture) to check the guard itself.
+test('the guard records and aborts calls to external hosts', async ({ page, baseURL }) => {
+  if (!baseURL) throw new Error('baseURL is required');
+  const external = await mockApi(page, new URL(baseURL).origin);
   await page.goto('/sobre');
   await page.evaluate(async () => {
     await fetch('https://example.com/').catch(() => undefined);
   });
+  expect(external).toEqual(['https://example.com/']);
 });

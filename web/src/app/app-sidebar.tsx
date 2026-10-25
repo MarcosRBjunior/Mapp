@@ -29,40 +29,42 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        <aside aria-label="Menu lateral" className="flex items-center gap-2 p-1.5">
-          <MapIcon className="size-5" aria-hidden="true" />
-          <span className="text-base font-semibold">Mapp</span>
-          <span className="text-xs text-muted-foreground">COVID-19</span>
-        </aside>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <nav aria-label="Principal">
-              <SidebarMenu>
-                {NAV_ITEMS.map((item) => {
-                  const active = item.isActive(pathname);
-                  return (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton asChild isActive={active}>
-                        <Link
-                          to={item.to}
-                          aria-current={active ? 'page' : undefined}
-                          onClick={() => setOpenMobile(false)}
-                        >
-                          <item.icon aria-hidden="true" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </nav>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+      <aside aria-label="Menu lateral" className="flex min-h-0 flex-1 flex-col">
+        <SidebarHeader>
+          <div className="flex items-center gap-2 p-1.5">
+            <MapIcon className="size-5" aria-hidden="true" />
+            <span className="text-base font-semibold">Mapp</span>
+            <span className="text-xs text-muted-foreground">COVID-19</span>
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <nav aria-label="Principal">
+                <SidebarMenu>
+                  {NAV_ITEMS.map((item) => {
+                    const active = item.isActive(pathname);
+                    return (
+                      <SidebarMenuItem key={item.to}>
+                        <SidebarMenuButton asChild isActive={active}>
+                          <Link
+                            to={item.to}
+                            aria-current={active ? 'page' : undefined}
+                            onClick={() => setOpenMobile(false)}
+                          >
+                            <item.icon aria-hidden="true" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </nav>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </aside>
     </Sidebar>
   );
 }

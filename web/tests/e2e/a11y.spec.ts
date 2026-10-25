@@ -5,38 +5,17 @@ import { expect, test } from './test.js';
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 async function expectNoViolations(page: Page) {
-  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+  // `region` is a best-practice rule: enable it explicitly so every page is also checked for
+  // content outside landmarks.
+  const results = await new AxeBuilder({ page })
+    .options({ runOnly: { type: 'tag', values: WCAG_TAGS }, rules: { region: { enabled: true } } })
+    .analyze();
   const violations = results.violations.map((violation) => ({
     rule: violation.id,
     targets: violation.nodes.map((node) => node.target.join(' ')),
   }));
   expect(violations).toEqual([]);
 }
-
-test('every page content sits inside a landmark', async ({ page }) => {
-  async function expectNoRegionViolations() {
-    const results = await new AxeBuilder({ page }).withRules(['region']).analyze();
-    const violations = results.violations.map((violation) => ({
-      rule: violation.id,
-      targets: violation.nodes.map((node) => node.target.join(' ')),
-    }));
-    expect(violations).toEqual([]);
-  }
-
-  await page.goto('/');
-  await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
-    'Casos acumulados de',
-  );
-  await expect(page.getByRole('button', { name: /^Brasil:/ })).toBeVisible();
-  await expectNoRegionViolations();
-
-  await page.goto('/paises/BRA');
-  await expect(page.getByRole('region', { name: 'Novos por dia' })).toContainText(
-    'Novos casos (Brasil)',
-  );
-  await expect(page.getByRole('region', { name: 'Brasil' })).toContainText('300.000');
-  await expectNoRegionViolations();
-});
 
 test('the world view', async ({ page }) => {
   await page.goto('/');
