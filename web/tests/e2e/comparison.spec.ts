@@ -1,9 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { mockApi } from './mock-api.js';
-
-test.beforeEach(async ({ page }) => {
-  await mockApi(page);
-});
+import { expect, test } from './test.js';
 
 test('clicking a ranking item opens the country with its rank and share', async ({ page }) => {
   await page.goto('/');

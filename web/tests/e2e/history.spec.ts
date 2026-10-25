@@ -1,9 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { mockApi } from './mock-api.js';
-
-test.beforeEach(async ({ page }) => {
-  await mockApi(page);
-});
+import { expect, test } from './test.js';
 
 test('a country shows its history and the period updates the charts', async ({ page }) => {
   await page.goto('/paises/BRA');

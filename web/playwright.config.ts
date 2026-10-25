@@ -7,8 +7,9 @@ export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: isCI,
-  retries: isCI ? 2 : 0,
-  reporter: 'list',
+  // One retry in CI: a test that only passes on the second try shows up as flaky in the report.
+  retries: isCI ? 1 : 0,
+  reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',

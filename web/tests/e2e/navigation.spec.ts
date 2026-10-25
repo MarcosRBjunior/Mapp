@@ -1,9 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { mockApi } from './mock-api.js';
-
-test.beforeEach(async ({ page }) => {
-  await mockApi(page);
-});
+import { expect, test } from './test.js';
 
 test('a direct link opens the country with the metric from the URL', async ({ page }) => {
   await page.goto('/paises/BRA?metric=deaths');
