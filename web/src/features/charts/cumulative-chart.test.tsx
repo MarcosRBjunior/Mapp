@@ -1,0 +1,129 @@
+import { fireEvent, screen, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import { describe, expect, it } from 'vitest';
+import { metaFixture } from '../../test/fixtures';
+import { API, errorBody } from '../../test/handlers';
+import { renderWithProviders } from '../../test/render';
+import { server } from '../../test/server';
+import { CumulativeChart } from './cumulative-chart';
+
+function chart() {
+  return screen.getByRole('region', { name: 'Crescimento acumulado' });
+}
+
+describe('CumulativeChart', () => {
+  it('summarizes the world growth in the period', async () => {
+    renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
+
+    expect(
+      await within(chart()).findByText(
+        'Casos acumulados de 08/02/2023 a 09/03/2023 — Mundo: de 1.336.800 para 1.371.600.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('compares the country with the world', async () => {
+    renderWithProviders(<CumulativeChart code="BRA" metric="deaths" period="7d" />);
+
+    expect(
+      await within(chart()).findByText(
+        'Mortes acumuladas de 03/03/2023 a 09/03/2023 — Brasil: de 3.411 para 3.429; Mundo: de 22.740 para 22.860.',
+      ),
+    ).toBeInTheDocument();
+    expect(within(chart()).getByText('Brasil × Mundo')).toBeInTheDocument();
+  });
+
+  it('asks for daily points from 6 days before the period', async () => {
+    let requested: URL | undefined;
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, ({ request }) => {
+        requested = new URL(request.url);
+        return HttpResponse.json({
+          metric: 'cases',
+          granularity: 'day',
+          from: '2023-02-02',
+          to: '2023-03-09',
+          points: [{ date: '2023-03-09', total: 5, new: 1 }],
+        });
+      }),
+    );
+    renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
+
+    await within(chart()).findByText(/Casos acumulados de 08\/02\/2023/);
+    expect(requested?.searchParams.get('granularity')).toBe('day');
+    expect(requested?.searchParams.get('from')).toBe('2023-02-02');
+    expect(requested?.searchParams.get('to')).toBe('2023-03-09');
+  });
+
+  it('warns when the period starts before the coverage', async () => {
+    server.use(
+      http.get(`${API}/api/v1/meta`, () =>
+        HttpResponse.json({
+          ...metaFixture,
+          coverage: { ...metaFixture.coverage, from: '2023-03-01' },
+        }),
+      ),
+    );
+    renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
+
+    expect(await within(chart()).findByText('Dados a partir de 01/03/2023')).toBeInTheDocument();
+  });
+
+  it('switches between the linear and log scales', async () => {
+    renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
+
+    const log = await within(chart()).findByRole('radio', { name: 'Log' });
+    expect(within(chart()).getByRole('radio', { name: 'Linear' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    fireEvent.click(log);
+    expect(log).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('shows the empty state for a country without data', async () => {
+    renderWithProviders(<CumulativeChart code="ZWE" metric="cases" period="30d" />);
+
+    expect(await within(chart()).findByText('Sem dados no período')).toBeInTheDocument();
+  });
+
+  it('says the data is not loaded on DATA_NOT_READY', async () => {
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, () =>
+        HttpResponse.json(errorBody('DATA_NOT_READY', 'no data'), { status: 503 }),
+      ),
+    );
+    renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
+
+    expect(await within(chart()).findByText('Dados ainda não carregados')).toBeInTheDocument();
+  });
+
+  it('retries after an error', async () => {
+    let calls = 0;
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, () => {
+        calls += 1;
+        return calls === 1
+          ? HttpResponse.json(errorBody('INTERNAL_ERROR', 'boom'), { status: 500 })
+          : HttpResponse.json({
+              metric: 'cases',
+              granularity: 'day',
+              from: '2023-02-02',
+              to: '2023-03-09',
+              points: [
+                { date: '2023-03-08', total: 4, new: 1 },
+                { date: '2023-03-09', total: 5, new: 1 },
+              ],
+            });
+      }),
+    );
+    renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
+
+    fireEvent.click(await within(chart()).findByRole('button', { name: 'Tentar de novo' }));
+    expect(
+      await within(chart()).findByText(
+        'Casos acumulados de 08/02/2023 a 09/03/2023 — Mundo: de 4 para 5.',
+      ),
+    ).toBeInTheDocument();
+  });
+});

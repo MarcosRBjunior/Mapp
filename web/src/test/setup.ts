@@ -34,3 +34,13 @@ if (typeof window !== 'undefined') {
     }),
   });
 }
+
+// jsdom has no ResizeObserver; Recharts' ResponsiveContainer needs one (charts stay 0×0 in tests).
+if (typeof window !== 'undefined' && !('ResizeObserver' in window)) {
+  class ResizeObserverStub {
+    observe = () => undefined;
+    unobserve = () => undefined;
+    disconnect = () => undefined;
+  }
+  Object.defineProperty(window, 'ResizeObserver', { writable: true, value: ResizeObserverStub });
+}
