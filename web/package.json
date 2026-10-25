@@ -12,10 +12,14 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "geo:build": "tsx scripts/build-geo.ts",
-    "api:types": "tsx scripts/write-api-types.ts"
+    "api:types": "tsx scripts/write-api-types.ts",
+    "build:lighthouse": "VITE_API_URL=http://localhost:5181 VITE_TILES_URL='http://localhost:5181/tiles/{z}/{x}/{y}.png' VITE_TILES_ATTRIBUTION='&copy; Tiles de teste' vite build --outDir dist-lighthouse",
+    "serve:lighthouse": "concurrently -k -n mock,web \"tsx scripts/mock-api-server.ts\" \"vite preview --outDir dist-lighthouse --port 4173 --strictPort\"",
+    "lighthouse": "npm run build:lighthouse && lhci autorun"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/dom": "^10.4.2",

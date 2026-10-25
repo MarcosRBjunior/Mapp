@@ -10,6 +10,8 @@ export default defineConfig([
   globalIgnores([
     '**/dist',
     '**/coverage',
+    '**/dist-lighthouse',
+    'web/.lighthouseci',
     'web/playwright-report',
     'web/test-results',
     'web/blob-report',

@@ -4,6 +4,8 @@ node_modules/
 # Build e cobertura
 dist/
 coverage/
+dist-lighthouse/
+web/.lighthouseci/
 *.tsbuildinfo
 api/src/generated/
 
