@@ -29,6 +29,9 @@ export function RankingTable({ metric, selectedCode }: RankingTableProps) {
   const ranking = useRankings(metric, RANKING_LIMIT);
   const location = useLocation();
   const noun = METRIC_LABELS[metric].noun;
+  const title = ranking.data
+    ? `Top ${RANKING_LIMIT} — ${noun} em ${formatDate(ranking.data.date)}`
+    : `Top ${RANKING_LIMIT} — ${noun}`;
 
   let content: ReactNode;
   if (ranking.isPending) {
@@ -47,6 +50,7 @@ export function RankingTable({ metric, selectedCode }: RankingTableProps) {
   } else {
     content = (
       <Table>
+        <caption className="sr-only">{title}</caption>
         <TableHeader>
           <TableRow>
             <TableHead className="w-16">Posição</TableHead>
@@ -84,9 +88,6 @@ export function RankingTable({ metric, selectedCode }: RankingTableProps) {
     );
   }
 
-  const title = ranking.data
-    ? `Top ${RANKING_LIMIT} — ${noun} em ${formatDate(ranking.data.date)}`
-    : `Top ${RANKING_LIMIT} — ${noun}`;
   return (
     <SectionCard titleId={TITLE_ID} title={title}>
       {content}

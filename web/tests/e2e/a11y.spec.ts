@@ -13,6 +13,31 @@ async function expectNoViolations(page: Page) {
   expect(violations).toEqual([]);
 }
 
+test('every page content sits inside a landmark', async ({ page }) => {
+  async function expectNoRegionViolations() {
+    const results = await new AxeBuilder({ page }).withRules(['region']).analyze();
+    const violations = results.violations.map((violation) => ({
+      rule: violation.id,
+      targets: violation.nodes.map((node) => node.target.join(' ')),
+    }));
+    expect(violations).toEqual([]);
+  }
+
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
+    'Casos acumulados de',
+  );
+  await expect(page.getByRole('button', { name: /^Brasil:/ })).toBeVisible();
+  await expectNoRegionViolations();
+
+  await page.goto('/paises/BRA');
+  await expect(page.getByRole('region', { name: 'Novos por dia' })).toContainText(
+    'Novos casos (Brasil)',
+  );
+  await expect(page.getByRole('region', { name: 'Brasil' })).toContainText('300.000');
+  await expectNoRegionViolations();
+});
+
 test('the world view', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
@@ -64,6 +89,9 @@ test.describe('on a phone', () => {
 
   test('the open menu', async ({ page }) => {
     await page.goto('/');
+    await expect(
+      page.getByText('Dados históricos até 09/03/2023 · Fonte: API Ninjas'),
+    ).toBeVisible();
     await page.getByRole('button', { name: 'Alternar menu lateral' }).click();
     await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible();
     await expectNoViolations(page);

@@ -30,11 +30,11 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <div className="flex items-center gap-2 p-1.5">
+        <aside aria-label="Menu lateral" className="flex items-center gap-2 p-1.5">
           <MapIcon className="size-5" aria-hidden="true" />
           <span className="text-base font-semibold">Mapp</span>
           <span className="text-xs text-muted-foreground">COVID-19</span>
-        </div>
+        </aside>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

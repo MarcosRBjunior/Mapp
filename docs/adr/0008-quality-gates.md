@@ -11,7 +11,7 @@ A F8 do roteiro pede "metas verdes no CI". Até a F7 o E2E só rodava localmente
 - **Job `quality`:** inclui o teste de bundle (`npm run check:bundle -w web`), que procura `api-ninjas.com`, `API_NINJAS_KEY` e `X-Api-Key` no build do `web`.
 - **Job `e2e`:**
   - Playwright com 1 retry no CI, reporter `github` + `html`, trace no retry e o relatório como artefato na falha;
-  - axe com as tags WCAG 2.1 A/AA e zero violações em todas as páginas, com o popup aberto e com o menu do celular;
+  - axe com as regras WCAG 2.1 A/AA e a regra `region` (landmarks), sem violações em todas as páginas, com o popup aberto e com o menu do celular;
   - guarda de hosts externos, como fixture automática em `web/tests/e2e/test.ts`.
 - **Lighthouse (`@lhci/cli`):**
   - roda no build de produção servido pelo `vite preview`, com a API e os tiles vindos de um mock Node que lê as fixtures do E2E (`web/tests/e2e/api-routes.ts`);
