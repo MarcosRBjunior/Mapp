@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "check:bundle": "tsx scripts/check-bundle.ts dist",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
