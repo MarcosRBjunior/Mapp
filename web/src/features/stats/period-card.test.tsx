@@ -78,19 +78,30 @@ describe('PeriodCard', () => {
     expect(within(card()).getByText('Dados a partir de 20/02/2023')).toBeInTheDocument();
   });
 
-  it('keeps the skeleton for an unknown country', async () => {
-    let asked = false;
-    server.use(
-      http.get(`${API}/api/v1/countries/:code/timeseries`, () => {
-        asked = true;
-        return HttpResponse.json(errorBody('COUNTRY_NOT_FOUND', 'x'), { status: 404 });
-      }),
-    );
+  it('shows the empty state for a country without data', async () => {
     renderWithProviders(<PeriodCard code="ZWE" metric="cases" period="30d" />);
 
-    await waitFor(() => expect(asked).toBe(true));
-    expect(await within(card()).findByRole('status')).toBeInTheDocument();
+    expect(await within(card()).findByText('Sem dados no período')).toBeInTheDocument();
+  });
+
+  it('keeps the skeleton for an unknown country', async () => {
+    let answered = false;
+    const onResponse = ({ request }: { request: Request }) => {
+      if (request.url.includes('/countries/XYZ/timeseries')) answered = true;
+    };
+    server.events.on('response:mocked', onResponse);
+    try {
+      renderWithProviders(<PeriodCard code="XYZ" metric="cases" period="30d" />);
+      await waitFor(() => expect(answered).toBe(true));
+      // Let the query settle on the 404 before asserting.
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    } finally {
+      server.events.removeListener('response:mocked', onResponse);
+    }
+
+    expect(within(card()).getByRole('status')).toBeInTheDocument();
     expect(within(card()).queryByText('Sem dados no período')).not.toBeInTheDocument();
+    expect(within(card()).queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('says when no data was loaded yet', async () => {
