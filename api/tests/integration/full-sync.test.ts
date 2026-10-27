@@ -239,7 +239,9 @@ describe('runSync in full mode', () => {
       await rows("SELECT 1 FROM global_daily_stat WHERE stat_date = '2020-01-01'"),
     ).toHaveLength(0);
 
-    await runSync(deps(fullSource().fetch, 1));
+    // The source rejects the key: the recovering run writes nothing, so only the orphan-time
+    // refresh can put the orphan's row in the view.
+    await runSync(deps(fullSource(() => ({ status: 401, body: '{}' })).fetch, 1));
 
     expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
       { status: 'partial' },

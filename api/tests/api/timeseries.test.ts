@@ -9,7 +9,9 @@ import { FAKE_FROM, FAKE_REFERENCE } from '../helpers/fake-repositories.js';
 import { createTestApp } from '../helpers/test-app.js';
 
 describe('series upper bound', () => {
-  const nextDay = '2023-03-10';
+  const nextDay = new Date(Date.parse(`${FAKE_REFERENCE}T00:00:00Z`) + 86_400_000)
+    .toISOString()
+    .slice(0, 10);
 
   it.each(['/api/v1/global/timeseries', '/api/v1/countries/BRA/timeseries'])(
     'rejects a "to" after the reference date on %s',
