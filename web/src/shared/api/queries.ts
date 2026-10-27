@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { apiClient, unwrap } from './client';
+import type { ChartRanges } from '../period/period';
 import { useMetric } from '../url/use-metric';
 import type { Granularity, Metric } from './types';
 
@@ -71,6 +72,47 @@ export function useTimeseries(
               params: { path: { code }, query },
             }),
           );
+    },
+  });
+}
+
+// Daily series of the charts: it also returns the visible range of the request, so the chart can
+// keep drawing the previous period (placeholder) with the range that produced it. The extra 6
+// days before `visible` feed the 7-day average. The key has `visible.from` too: periods near the
+// start of the coverage can share the same fetch range.
+export function useChartSeries(code: string | null, metric: Metric, ranges: ChartRanges | null) {
+  const place = code ?? 'world';
+  return useQuery({
+    queryKey: [
+      'chart-series',
+      place,
+      metric,
+      ranges?.fetch.from,
+      ranges?.fetch.to,
+      ranges?.visible.from,
+    ],
+    enabled: ranges !== null,
+    // Only a period change keeps the old chart: another country or metric would be mislabelled.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[1] === place && previousQuery.queryKey[2] === metric
+        ? previous
+        : undefined,
+    queryFn: async () => {
+      if (ranges === null) throw new Error('The chart series is disabled without ranges');
+      const query = {
+        metric,
+        from: ranges.fetch.from,
+        to: ranges.fetch.to,
+        granularity: 'day' as const,
+      };
+      const response = await (code === null
+        ? unwrap(apiClient().GET('/api/v1/global/timeseries', { params: { query } }))
+        : unwrap(
+            apiClient().GET('/api/v1/countries/{code}/timeseries', {
+              params: { path: { code }, query },
+            }),
+          ));
+      return { ...response, visible: ranges.visible };
     },
   });
 }

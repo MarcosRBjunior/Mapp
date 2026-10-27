@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { Area, AreaChart } from 'recharts';
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart';
@@ -22,6 +23,11 @@ export function CountrySparkline({ code, name, metric, onLayoutChange }: Country
   const coverage = meta.data?.coverage ?? null;
   const range = coverage ? { from: coverage.from, to: coverage.to } : null;
   const series = useTimeseries(code, metric, range, 'week');
+  const queryClient = useQueryClient();
+  const retry = () => {
+    // A stale coverage would ask for dates out of range: refresh it, then the active series.
+    void meta.refetch().then(() => queryClient.invalidateQueries({ queryKey: ['timeseries'] }));
+  };
 
   const pointCount = series.data?.points.length ?? 0;
   useEffect(() => {
@@ -30,6 +36,7 @@ export function CountrySparkline({ code, name, metric, onLayoutChange }: Country
 
   const fallback = seriesFallback({
     meta,
+    onRetry: retry,
     ready: range !== null,
     series: [series],
     loadingLabel: 'Carregando a série do país',

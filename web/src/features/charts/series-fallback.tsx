@@ -11,11 +11,12 @@ interface QueryState {
   isPending: boolean;
   isError: boolean;
   error: unknown;
-  refetch: () => Promise<unknown>;
 }
 
 interface SeriesFallbackOptions {
   meta: QueryState;
+  // Refreshes the coverage and then the series; also used by the error of the meta itself.
+  onRetry: () => void;
   ready: boolean;
   // Only enabled queries: a disabled one stays pending forever.
   series: readonly QueryState[];
@@ -28,6 +29,7 @@ interface SeriesFallbackOptions {
 // series has loaded.
 export function seriesFallback({
   meta,
+  onRetry,
   ready,
   series,
   loadingLabel,
@@ -36,24 +38,14 @@ export function seriesFallback({
 }: SeriesFallbackOptions): ReactNode {
   const loading = <Skeleton label={loadingLabel} height={height} />;
   if (meta.isPending) return loading;
-  if (meta.isError) {
-    return <ErrorState message={errorMessage} onRetry={() => void meta.refetch()} />;
-  }
+  if (meta.isError) return <ErrorState message={errorMessage} onRetry={onRetry} />;
   if (!ready) return <EmptyState message={NOT_LOADED} />;
   const failed = series.find((query) => query.isError);
   if (failed) {
     if (isApiError(failed.error, 'DATA_NOT_READY')) return <EmptyState message={NOT_LOADED} />;
     // The page swaps an unknown country for the world view right after, so keep the skeleton.
     if (isApiError(failed.error, 'COUNTRY_NOT_FOUND')) return loading;
-    return (
-      <ErrorState
-        message={errorMessage}
-        onRetry={() => {
-          // A stale coverage would ask for dates out of range: refresh it first.
-          void meta.refetch().then(() => Promise.all(series.map((query) => query.refetch())));
-        }}
-      />
-    );
+    return <ErrorState message={errorMessage} onRetry={onRetry} />;
   }
   if (series.some((query) => query.isPending)) return loading;
   return null;

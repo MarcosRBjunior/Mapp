@@ -1,10 +1,12 @@
-import { screen } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { fireEvent, screen } from '@testing-library/react';
+import { delay, http, HttpResponse } from 'msw';
+import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
+import type { ChartRanges } from '../period/period';
 import { API } from '../../test/handlers';
 import { renderWithProviders } from '../../test/render';
 import { server } from '../../test/server';
-import { useTimeseries, type SeriesRange } from './queries';
+import { useChartSeries, useTimeseries, type SeriesRange } from './queries';
 import type { Granularity } from './types';
 
 function Probe({
@@ -61,5 +63,57 @@ describe('useTimeseries', () => {
     renderWithProviders(<Probe code={null} range={null} granularity="day" />);
 
     expect(screen.getByText('idle')).toBeInTheDocument();
+  });
+});
+
+const RANGES: Record<'30d' | '7d', ChartRanges> = {
+  '30d': {
+    visible: { from: '2023-02-08', to: '2023-03-09', clamped: false },
+    fetch: { from: '2023-02-02', to: '2023-03-09' },
+  },
+  '7d': {
+    visible: { from: '2023-03-03', to: '2023-03-09', clamped: false },
+    fetch: { from: '2023-02-25', to: '2023-03-09' },
+  },
+};
+
+function ChartProbe() {
+  const [period, setPeriod] = useState<'30d' | '7d'>('30d');
+  const series = useChartSeries(null, 'cases', RANGES[period]);
+  return (
+    <>
+      <button onClick={() => setPeriod('7d')}>trocar</button>
+      <output data-testid="state">
+        {series.data
+          ? `${series.data.visible.from}|${series.data.points.length}|${String(series.isPlaceholderData)}`
+          : series.fetchStatus}
+      </output>
+    </>
+  );
+}
+
+describe('useChartSeries', () => {
+  it('returns the visible range with the points and keeps them while the next period loads', async () => {
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, async ({ request }) => {
+        const from = new URL(request.url).searchParams.get('from');
+        if (from === '2023-02-25') await delay(100);
+        return HttpResponse.json({
+          metric: 'cases',
+          granularity: 'day',
+          from: from ?? '',
+          to: '2023-03-09',
+          points: [{ date: '2023-03-09', total: 2, new: 1 }].concat(
+            from === '2023-02-25' ? [{ date: '2023-03-08', total: 1, new: 1 }] : [],
+          ),
+        });
+      }),
+    );
+    renderWithProviders(<ChartProbe />);
+
+    expect(await screen.findByText('2023-02-08|1|false')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'trocar' }));
+    expect(await screen.findByText('2023-02-08|1|true')).toBeInTheDocument();
+    expect(await screen.findByText('2023-03-03|2|false')).toBeInTheDocument();
   });
 });

@@ -24,6 +24,11 @@ export interface DateRange {
   clamped: boolean;
 }
 
+export interface ChartRanges {
+  visible: DateRange;
+  fetch: { from: string; to: string };
+}
+
 // UTC arithmetic on YYYY-MM-DD strings, so the day never shifts with the local time zone.
 export function addDays(isoDate: string, days: number): string {
   const date = new Date(`${isoDate}T00:00:00Z`);

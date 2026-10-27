@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useCountryName, useMeta, useTimeseries } from '../../shared/api/queries';
 import type { Metric } from '../../shared/api/types';
@@ -21,8 +22,14 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
   // gives the total of the complete days of the period (RN-11).
   const series = useTimeseries(code, metric, range, 'month');
   const countryName = useCountryName(code);
+  const queryClient = useQueryClient();
+  const retry = () => {
+    // A stale coverage would ask for dates out of range: refresh it, then the active series.
+    void meta.refetch().then(() => queryClient.invalidateQueries({ queryKey: ['timeseries'] }));
+  };
   let content: ReactNode = seriesFallback({
     meta,
+    onRetry: retry,
     ready: range !== null,
     series: [series],
     loadingLabel: 'Carregando novos no período',

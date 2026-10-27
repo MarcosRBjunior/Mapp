@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ApiError } from '../../shared/api/client';
 import { seriesFallback } from './series-fallback';
 
-const ready = { isPending: false, isError: false, error: null, refetch: () => Promise.resolve() };
+const ready = { isPending: false, isError: false, error: null };
 
 describe('seriesFallback', () => {
   it('keeps the skeleton for COUNTRY_NOT_FOUND, the page swaps in the world view', () => {
@@ -15,6 +15,7 @@ describe('seriesFallback', () => {
     render(
       seriesFallback({
         meta: ready,
+        onRetry: () => undefined,
         ready: true,
         series: [failed],
         loadingLabel: 'Carregando',
