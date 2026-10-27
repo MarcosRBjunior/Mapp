@@ -114,9 +114,13 @@ export function createFakeRepositories(options: FakeOptions = {}): ReadRepositor
           ? Promise.reject(new Error('connection refused'))
           : Promise.resolve(ready ? FAKE_DATA_VERSION : null),
       findCoverage: () =>
-        Promise.resolve({ from: FAKE_FROM, referenceDate: FAKE_REFERENCE, countries: 3 }),
-      // FAKE_FROM and FAKE_REFERENCE are consecutive days, both complete.
-      findIncompleteDates: () => Promise.resolve([]),
+        // FAKE_FROM and FAKE_REFERENCE are consecutive days, both complete.
+        Promise.resolve({
+          from: FAKE_FROM,
+          referenceDate: FAKE_REFERENCE,
+          countries: 3,
+          incompleteDates: [],
+        }),
     },
     meta: {
       findLastFinishedSync: () => Promise.resolve(ready ? FAKE_LAST_SYNC : null),

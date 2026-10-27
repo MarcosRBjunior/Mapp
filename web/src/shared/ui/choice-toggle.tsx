@@ -35,7 +35,12 @@ export function ChoiceToggle<T extends string>({
       className={className}
       // Capture phase: the flag must be set before Radix RovingFocus handles the key and moves focus.
       onKeyDownCapture={(event) => {
-        arrowKey.current = ARROW_KEYS.has(event.key);
+        // Tab leaves the group: never let it count as a keyboard selection.
+        arrowKey.current = event.key !== 'Tab' && ARROW_KEYS.has(event.key);
+      }}
+      // Leaving the group drops a flag that no focus consumed (e.g. Home on the first item).
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) arrowKey.current = false;
       }}
       onPointerDown={() => {
         arrowKey.current = false;

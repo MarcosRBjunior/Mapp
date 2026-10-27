@@ -57,6 +57,18 @@ describe('DashboardPage', () => {
     expect(screen.getByTestId('world-map')).toHaveAttribute('data-selected', '');
   });
 
+  it('keeps only the dashboard params in the link back to the world view', async () => {
+    renderWithProviders(<DashboardPage />, {
+      route: '/paises/XYZ?metric=deaths&period=7d&x=1',
+      path: PATHS,
+    });
+
+    expect(await screen.findByRole('link', { name: 'Voltar à visão mundial' })).toHaveAttribute(
+      'href',
+      '/?metric=deaths&period=7d',
+    );
+  });
+
   it('does not call the API for a code with an invalid format', async () => {
     const calls: string[] = [];
     server.use(

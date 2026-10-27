@@ -11,11 +11,15 @@ export function useMetric(): [Metric, (metric: Metric) => void] {
   const metric = parseMetric(params.get('metric'));
   const setMetric = useCallback(
     (next: Metric) => {
-      setParams((previous) => {
-        const updated = new URLSearchParams(previous);
-        updated.set('metric', next);
-        return updated;
-      });
+      // A filter never creates a history step: only page/country navigation does.
+      setParams(
+        (previous) => {
+          const updated = new URLSearchParams(previous);
+          updated.set('metric', next);
+          return updated;
+        },
+        { replace: true },
+      );
     },
     [setParams],
   );

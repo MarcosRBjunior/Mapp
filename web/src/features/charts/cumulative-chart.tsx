@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import {
@@ -9,6 +8,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { useChartSeries, useCountryName, useMeta } from '../../shared/api/queries';
+import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { formatCompact, formatDate, formatNumber } from '../../shared/format/format';
 import type { Period } from '../../shared/period/period';
@@ -45,11 +45,7 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
   const world = useChartSeries(null, metric, ranges);
   const country = useChartSeries(code, metric, code === null ? null : ranges);
   const countryName = useCountryName(code);
-  const queryClient = useQueryClient();
-  const retry = () => {
-    // A stale coverage would ask for dates out of range: refresh it, then the active series.
-    void meta.refetch().then(() => queryClient.invalidateQueries({ queryKey: ['chart-series'] }));
-  };
+  const retry = useSeriesRetry({ queryKey: ['chart-series'] });
 
   // All from the range that produced the data, which may be the previous period's.
   const worldData = world.data;

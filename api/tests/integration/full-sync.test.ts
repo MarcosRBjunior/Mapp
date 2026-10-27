@@ -135,6 +135,7 @@ describe('runSync in full mode', () => {
       from: '2023-03-09',
       referenceDate: '2023-03-09',
       countries: mappedNames,
+      incompleteDates: [],
     });
   });
 

@@ -9,6 +9,7 @@ import { GlobalCard } from '../features/stats/global-card';
 import { WorldMap } from '../features/map/world-map';
 import { isApiError } from '../shared/api/client';
 import { useCountries, useCountry } from '../shared/api/queries';
+import { dashboardSearch } from '../shared/url/dashboard-search';
 import { useMetric } from '../shared/url/use-metric';
 import { selectionKeyOf, selectionState } from '../shared/url/selection';
 import { usePeriod } from '../shared/url/use-period';
@@ -47,14 +48,16 @@ export function DashboardPage() {
 
   // The map has seen the selection key by now (child effects run first): drop it from the entry,
   // so Back/Forward never carries a pending popup reopen.
+  // Wait for the countries: without markers the map has not consumed the key yet.
   const hasSelectionState = selectionKeyOf(location.state) !== '';
+  const markersReady = countries.data !== undefined;
   useEffect(() => {
-    if (!hasSelectionState) return;
+    if (!hasSelectionState || !markersReady) return;
     void navigate(
       { pathname: location.pathname, search: location.search },
       { replace: true, state: null },
     );
-  }, [hasSelectionState, location.key, location.pathname, location.search, navigate]);
+  }, [hasSelectionState, markersReady, location.key, location.pathname, location.search, navigate]);
 
   if (rawCode !== undefined && validCode !== null && rawCode !== validCode) {
     return <Navigate to={{ pathname: `/paises/${validCode}`, search: location.search }} replace />;
@@ -71,7 +74,7 @@ export function DashboardPage() {
             <p>{`País não encontrado: ${rawCode}`}</p>
             <Link
               className="font-medium underline underline-offset-4"
-              to={{ pathname: '/', search: location.search }}
+              to={{ pathname: '/', search: dashboardSearch(location.search) }}
             >
               Voltar à visão mundial
             </Link>

@@ -11,10 +11,12 @@ function stubRepo() {
   return {
     findSource: vi.fn<DataStateRepository['findSource']>().mockResolvedValue(FAKE_SOURCE),
     findDataVersion: vi.fn<DataStateRepository['findDataVersion']>().mockResolvedValue(7),
-    findCoverage: vi
-      .fn<DataStateRepository['findCoverage']>()
-      .mockResolvedValue({ from: '2023-03-01', referenceDate: '2023-03-09', countries: 201 }),
-    findIncompleteDates: vi.fn<DataStateRepository['findIncompleteDates']>().mockResolvedValue([]),
+    findCoverage: vi.fn<DataStateRepository['findCoverage']>().mockResolvedValue({
+      from: '2023-03-01',
+      referenceDate: '2023-03-09',
+      countries: 201,
+      incompleteDates: [],
+    }),
   };
 }
 
@@ -78,7 +80,12 @@ describe('data state service', () => {
 
   it('is not ready without a reference date', async () => {
     const repo = stubRepo();
-    repo.findCoverage.mockResolvedValue({ from: '2023-03-01', referenceDate: null, countries: 3 });
+    repo.findCoverage.mockResolvedValue({
+      from: '2023-03-01',
+      referenceDate: null,
+      countries: 3,
+      incompleteDates: [],
+    });
     const service = createDataStateService(repo, 'api_ninjas');
 
     expect(await service.current()).toBeNull();
@@ -120,7 +127,12 @@ describe('data state service', () => {
 
   it('rejects a date inside the range that is not complete', async () => {
     const repo = stubRepo();
-    repo.findIncompleteDates.mockResolvedValue(['2023-03-05']);
+    repo.findCoverage.mockResolvedValue({
+      from: '2023-03-01',
+      referenceDate: '2023-03-09',
+      countries: 201,
+      incompleteDates: ['2023-03-05'],
+    });
     const service = createDataStateService(repo, 'api_ninjas');
 
     await expect(service.resolveDate('2023-03-05')).rejects.toMatchObject({
@@ -136,7 +148,7 @@ describe('data state service', () => {
     await service.resolveDate('2023-03-05');
     await service.resolveDate('2023-03-06');
 
-    expect(repo.findIncompleteDates).toHaveBeenCalledTimes(1);
+    expect(repo.findCoverage).toHaveBeenCalledTimes(1);
   });
 
   it('reloads the incomplete dates when the data version changes', async () => {
@@ -146,13 +158,18 @@ describe('data state service', () => {
 
     await service.resolveDate('2023-03-05');
     repo.findDataVersion.mockResolvedValue(8);
-    repo.findIncompleteDates.mockResolvedValue(['2023-03-05']);
+    repo.findCoverage.mockResolvedValue({
+      from: '2023-03-01',
+      referenceDate: '2023-03-09',
+      countries: 201,
+      incompleteDates: ['2023-03-05'],
+    });
     clock += 10_000;
 
     await expect(service.resolveDate('2023-03-05')).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',
     });
-    expect(repo.findIncompleteDates).toHaveBeenCalledTimes(2);
+    expect(repo.findCoverage).toHaveBeenCalledTimes(2);
   });
 });
 

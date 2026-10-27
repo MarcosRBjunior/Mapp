@@ -67,10 +67,7 @@ export function createDataStateService(
     if (dataVersion === null) return null;
     if (memo?.dataVersion === dataVersion) return memo;
 
-    const [coverage, incompleteDates] = await Promise.all([
-      repo.findCoverage(sourceId),
-      repo.findIncompleteDates(sourceId),
-    ]);
+    const coverage = await repo.findCoverage(sourceId);
     if (coverage.from === null || coverage.referenceDate === null) return null;
     memo = {
       sourceId,
@@ -78,7 +75,7 @@ export function createDataStateService(
       from: coverage.from,
       referenceDate: coverage.referenceDate,
       countries: coverage.countries,
-      incompleteDates: new Set(incompleteDates),
+      incompleteDates: new Set(coverage.incompleteDates),
     };
     return memo;
   }

@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, type ReactNode } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 import {
@@ -9,6 +8,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { useCountryName, useChartSeries, useMeta } from '../../shared/api/queries';
+import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { NEW_LABELS, formatCompact, formatDate, formatNumber } from '../../shared/format/format';
 import type { Period } from '../../shared/period/period';
@@ -33,11 +33,7 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
   const ranges = coverage ? chartRanges(period, coverage) : null;
   const series = useChartSeries(code, metric, ranges);
   const place = useCountryName(code) ?? 'Mundo';
-  const queryClient = useQueryClient();
-  const retry = () => {
-    // A stale coverage would ask for dates out of range: refresh it, then the active series.
-    void meta.refetch().then(() => queryClient.invalidateQueries({ queryKey: ['chart-series'] }));
-  };
+  const retry = useSeriesRetry({ queryKey: ['chart-series'] });
 
   // All from the range that produced the data, which may be the previous period's.
   const data = series.data;

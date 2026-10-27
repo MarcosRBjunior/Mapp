@@ -44,12 +44,9 @@ describe('data state repository (read-only user)', () => {
       from: D1,
       referenceDate: D1,
       countries: 3,
+      // D2 misses ARG but lies after the last complete date (D1): none inside a one-day coverage.
+      incompleteDates: [],
     });
-  });
-
-  it('lists no incomplete date inside a one-day coverage', async () => {
-    // D2 misses ARG but lies after the last complete date (D1).
-    expect(await repos.dataState.findIncompleteDates(fixture.sourceId)).toEqual([]);
   });
 });
 

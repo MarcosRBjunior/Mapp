@@ -15,19 +15,21 @@ export interface Coverage {
   from: string | null;
   referenceDate: string | null;
   countries: number;
+  // Calendar dates between `from` and `referenceDate` that are not complete.
+  incompleteDates: string[];
 }
 
 export interface DataStateRepository {
   findSource(code: string): Promise<SourceRecord | null>;
   findDataVersion(sourceId: number): Promise<number | null>;
   findCoverage(sourceId: number): Promise<Coverage>;
-  findIncompleteDates(sourceId: number): Promise<string[]>;
 }
 
 interface CoverageRow {
   from: Date | null;
   referenceDate: Date | null;
   countries: number;
+  incompleteDates: Date[];
 }
 
 export function createDataStateRepository(db: Db): DataStateRepository {
@@ -47,36 +49,36 @@ export function createDataStateRepository(db: Db): DataStateRepository {
       return run?.id ?? null;
     },
 
-    // RN-06 from the view only: coverage runs from the first to the last complete date.
+    // RN-06 from the view only: coverage runs from the first to the last complete date; the
+    // incomplete dates are every calendar date in between that is not complete (including dates
+    // the view has no row for). One query, so the complete dates are aggregated once.
     // Rows not yet refreshed are ignored.
     async findCoverage(sourceId) {
       const [row] = await db.$queryRaw<CoverageRow[]>`
-        WITH complete AS (${completeDatesSql(sourceId)})
+        WITH complete AS (${completeDatesSql(sourceId)}),
+        bounds AS (SELECT min(stat_date) AS first, max(stat_date) AS last FROM complete)
         SELECT
-          (SELECT min(stat_date) FROM complete) AS "from",
-          (SELECT max(stat_date) FROM complete) AS "referenceDate",
+          bounds.first AS "from",
+          bounds.last AS "referenceDate",
           coalesce(
             (SELECT max(country_count) FROM global_daily_stat WHERE source_id = ${sourceId}),
             0
-          )::int AS countries`;
+          )::int AS countries,
+          coalesce(
+            (
+              SELECT array_agg(d::date ORDER BY d)
+              FROM generate_series(bounds.first, bounds.last, interval '1 day') AS d
+              WHERE d::date NOT IN (SELECT stat_date FROM complete)
+            ),
+            '{}'::date[]
+          ) AS "incompleteDates"
+        FROM bounds`;
       return {
         from: row?.from ? toIsoDate(row.from) : null,
         referenceDate: row?.referenceDate ? toIsoDate(row.referenceDate) : null,
         countries: row?.countries ?? 0,
+        incompleteDates: (row?.incompleteDates ?? []).map(toIsoDate),
       };
-    },
-
-    // RN-06: every calendar date between the first and last complete date that is not complete,
-    // including dates the view has no row for.
-    async findIncompleteDates(sourceId) {
-      const rows = await db.$queryRaw<{ statDate: Date }[]>`
-        WITH complete AS (${completeDatesSql(sourceId)}),
-        bounds AS (SELECT min(stat_date) AS first, max(stat_date) AS last FROM complete)
-        SELECT d::date AS "statDate"
-        FROM bounds, generate_series(bounds.first, bounds.last, interval '1 day') AS d
-        WHERE d::date NOT IN (SELECT stat_date FROM complete)
-        ORDER BY 1`;
-      return rows.map((row) => toIsoDate(row.statDate));
     },
   };
 }

@@ -37,3 +37,4 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
 
 - Componente novo do shadcn: `npx shadcn@4.22.1 add <nome>` dentro de `web/`, depois `npx prettier --write`.
 - Atualizar o CLI muda o código gerado. Faça isso numa tarefa própria e revise o diff.
+- `web/src/components/ui/sidebar.tsx` tem edições locais (textos em pt-BR, sem o atalho Ctrl+B, `SidebarInset` como `div` e sem o cookie `sidebar_state`). Se o CLI regerar o arquivo, aplique-as de novo.

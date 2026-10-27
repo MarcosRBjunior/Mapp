@@ -33,6 +33,7 @@ test('clicking a marker opens the popup with the country history', async ({ page
   await page.goto('/');
   const marker = page.getByRole('button', { name: /^Brasil:/ });
   await expect(marker).toBeVisible();
+  await page.waitForLoadState('networkidle');
   // The popup content (and its fetch) only exists while the popup is open.
   expect(weekly).toHaveLength(0);
 
@@ -137,8 +138,10 @@ test('Back after closing the popup and switching the metric does not reopen it',
   await page.getByRole('radio', { name: 'Mortes' }).click();
   await expect(page.getByRole('radio', { name: 'Mortes' })).toBeChecked();
 
+  // The metric replaces the entry, so Back leaves the country instead of stepping the metric.
   await page.goBack();
 
+  await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('radio', { name: 'Casos' })).toBeChecked();
   await expect(popup).toHaveCount(0);
 });
