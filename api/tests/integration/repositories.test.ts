@@ -391,6 +391,30 @@ describe('unit write', () => {
   });
 });
 
+describe('unit write rollback', () => {
+  it('does not keep the pending alias when the unit write fails', async () => {
+    const runId = await openRun();
+
+    await expect(
+      writeUnit(prisma, {
+        sourceId,
+        runId,
+        unit: 'full:cases:Nowhere',
+        pendingNames: ['Atlantis'],
+        rows: {
+          kind: 'day',
+          metric: 'cases',
+          statDate: '2023-03-09',
+          values: [{ countryCode: 'ARG', total: 7, new: 0 }],
+        },
+      }),
+    ).rejects.toThrow();
+    expect(
+      (await owner.query("SELECT 1 FROM country_alias WHERE source_name = 'Atlantis'")).rows,
+    ).toEqual([]);
+  });
+});
+
 describe('done units', () => {
   it('lists units done in runs of the same source and mode', async () => {
     const fullRun = await owner.query<{ id: number }>(
