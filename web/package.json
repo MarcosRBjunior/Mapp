@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "geo:build": "tsx scripts/build-geo.ts",
     "api:types": "tsx scripts/write-api-types.ts",
+    "build:e2e": "VITE_API_URL=http://api.test VITE_TILES_URL='http://tiles.test/{z}/{x}/{y}.png' VITE_TILES_ATTRIBUTION='&copy; Tiles de teste' vite build --outDir dist-e2e",
     "build:lighthouse": "VITE_API_URL=http://localhost:5181 VITE_TILES_URL='http://localhost:5181/tiles/{z}/{x}/{y}.png' VITE_TILES_ATTRIBUTION='&copy; Tiles de teste' vite build --outDir dist-lighthouse",
     "serve:lighthouse": "tsx scripts/mock-api-server.ts",
     "lighthouse": "npm run build:lighthouse && lhci autorun"

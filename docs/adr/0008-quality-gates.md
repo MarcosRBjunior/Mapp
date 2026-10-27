@@ -13,6 +13,7 @@ A F8 do roteiro pede "metas verdes no CI". Até a F7 o E2E só rodava localmente
   - Playwright com 1 retry no CI, reporter `github` + `html`, trace no retry e o relatório como artefato sempre que o job não é cancelado (traces de testes que passam no retry);
   - axe com as regras WCAG 2.1 A/AA e a regra `region` (landmarks), sem violações em todas as páginas, com o popup aberto e com o menu do celular;
   - guarda de hosts externos, como fixture automática em `web/tests/e2e/test.ts`.
+  - roda contra o build de produção (`npm run build:e2e` + `vite preview`, com a API e os tiles mockados embutidos no build): a compilação sob demanda do servidor de desenvolvimento deixava a primeira carga instável (testes de período e da Groenlândia).
 - **Lighthouse (`@lhci/cli`):**
   - roda no build de produção servido pelo `vite preview`, com a API e os tiles vindos de um mock Node que lê as fixtures do E2E (`web/tests/e2e/api-routes.ts`);
   - mediana de 3 execuções, preset desktop, nas rotas `/` e `/paises/BRA`;

@@ -33,6 +33,7 @@ test('clicking a marker opens the popup with the country history', async ({ page
   await page.goto('/');
   const marker = page.getByRole('button', { name: /^Brasil:/ });
   await expect(marker).toBeVisible();
+  await page.waitForLoadState('networkidle');
   // The popup content (and its fetch) only exists while the popup is open.
   expect(weekly).toHaveLength(0);
 
@@ -105,4 +106,18 @@ test('a closed popup does not fetch its series again', async ({ page }) => {
 
   await expect(page.locator('.leaflet-popup')).toHaveCount(0);
   expect(weekly).toHaveLength(before);
+});
+
+test('switching to the log scale redraws the cumulative axis', async ({ page }) => {
+  await page.goto('/paises/BRA');
+  const cumulative = page.getByRole('region', { name: 'Crescimento acumulado' });
+  const ticks = cumulative.locator(
+    '.recharts-yAxis-tick-labels .recharts-cartesian-axis-tick-value',
+  );
+  await expect(ticks.first()).toBeVisible();
+  const before = await ticks.allTextContents();
+
+  await cumulative.getByRole('radio', { name: 'Log' }).click();
+
+  await expect.poll(() => ticks.allTextContents()).not.toEqual(before);
 });

@@ -1,12 +1,14 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { API, errorBody } from '../../test/handlers';
 import { renderWithProviders } from '../../test/render';
 import { server } from '../../test/server';
 import { CountrySparkline } from './country-sparkline';
 
 describe('CountrySparkline', () => {
+  afterEach(() => server.events.removeAllListeners());
+
   it('summarizes the whole history by week', async () => {
     let requested: URL | undefined;
     server.events.on('request:start', ({ request }) => {
@@ -23,7 +25,6 @@ describe('CountrySparkline', () => {
     expect(requested?.searchParams.get('granularity')).toBe('week');
     expect(requested?.searchParams.get('from')).toBe('2020-01-22');
     expect(requested?.searchParams.get('to')).toBe('2023-03-09');
-    server.events.removeAllListeners();
   });
 
   it('tells the popup to re-layout once the series loads', async () => {

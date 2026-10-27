@@ -11,6 +11,7 @@ export default defineConfig([
     '**/dist',
     '**/coverage',
     '**/dist-lighthouse',
+    '**/dist-e2e',
     'web/.lighthouseci',
     'web/playwright-report',
     'web/test-results',
