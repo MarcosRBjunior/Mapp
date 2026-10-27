@@ -1,5 +1,5 @@
-import { fireEvent, screen, within } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { metaFixture } from '../../test/fixtures';
 import { API, errorBody } from '../../test/handlers';
@@ -31,6 +31,13 @@ describe('CumulativeChart', () => {
       ),
     ).toBeInTheDocument();
     expect(within(chart()).getByText('Brasil × Mundo')).toBeInTheDocument();
+  });
+
+  it('shows the country name while its detail is loading', async () => {
+    server.use(http.get(`${API}/api/v1/countries/BRA`, () => delay('infinite')));
+    renderWithProviders(<CumulativeChart code="BRA" metric="deaths" period="7d" />);
+
+    expect(await within(chart()).findByText(/— Brasil: de 3\.411/)).toBeInTheDocument();
   });
 
   it('asks for daily points from 6 days before the period', async () => {
@@ -81,10 +88,19 @@ describe('CumulativeChart', () => {
     expect(log).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('shows the empty state for a country without data', async () => {
+  it('keeps the skeleton for an unknown country', async () => {
+    let asked = false;
+    server.use(
+      http.get(`${API}/api/v1/countries/:code/timeseries`, () => {
+        asked = true;
+        return HttpResponse.json(errorBody('COUNTRY_NOT_FOUND', 'x'), { status: 404 });
+      }),
+    );
     renderWithProviders(<CumulativeChart code="ZWE" metric="cases" period="30d" />);
 
-    expect(await within(chart()).findByText('Sem dados no período')).toBeInTheDocument();
+    await waitFor(() => expect(asked).toBe(true));
+    expect(await within(chart()).findByRole('status')).toBeInTheDocument();
+    expect(within(chart()).queryByText('Sem dados no período')).not.toBeInTheDocument();
   });
 
   it('says the data is not loaded on DATA_NOT_READY', async () => {

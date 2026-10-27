@@ -7,7 +7,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useCountry, useMeta, useTimeseries } from '../../shared/api/queries';
+import { useCountryName, useMeta, useTimeseries } from '../../shared/api/queries';
 import type { Metric } from '../../shared/api/types';
 import { formatCompact, formatDate, formatNumber } from '../../shared/format/format';
 import type { Period } from '../../shared/period/period';
@@ -46,8 +46,7 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
     code === null ? null : (ranges?.fetch ?? null),
     'day',
   );
-  const detail = useCountry(code);
-  const countryName = code === null ? null : (detail.data?.country.name ?? code);
+  const countryName = useCountryName(code);
 
   let content: ReactNode = seriesFallback({
     meta,

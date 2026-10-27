@@ -7,7 +7,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useCountry, useMeta, useTimeseries } from '../../shared/api/queries';
+import { useCountryName, useMeta, useTimeseries } from '../../shared/api/queries';
 import type { Metric } from '../../shared/api/types';
 import { NEW_LABELS, formatCompact, formatDate, formatNumber } from '../../shared/format/format';
 import type { Period } from '../../shared/period/period';
@@ -30,8 +30,7 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
   const coverage = meta.data?.coverage ?? null;
   const ranges = coverage ? chartRanges(period, coverage) : null;
   const series = useTimeseries(code, metric, ranges?.fetch ?? null, 'day');
-  const detail = useCountry(code);
-  const place = code === null ? 'Mundo' : (detail.data?.country.name ?? code);
+  const place = useCountryName(code) ?? 'Mundo';
 
   let content: ReactNode = seriesFallback({
     meta,

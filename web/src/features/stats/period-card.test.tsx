@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { metaFixture } from '../../test/fixtures';
@@ -78,10 +78,19 @@ describe('PeriodCard', () => {
     expect(within(card()).getByText('Dados a partir de 20/02/2023')).toBeInTheDocument();
   });
 
-  it('says when the country has no data in the period', async () => {
+  it('keeps the skeleton for an unknown country', async () => {
+    let asked = false;
+    server.use(
+      http.get(`${API}/api/v1/countries/:code/timeseries`, () => {
+        asked = true;
+        return HttpResponse.json(errorBody('COUNTRY_NOT_FOUND', 'x'), { status: 404 });
+      }),
+    );
     renderWithProviders(<PeriodCard code="ZWE" metric="cases" period="30d" />);
 
-    expect(await within(card()).findByText('Sem dados no período')).toBeInTheDocument();
+    await waitFor(() => expect(asked).toBe(true));
+    expect(await within(card()).findByRole('status')).toBeInTheDocument();
+    expect(within(card()).queryByText('Sem dados no período')).not.toBeInTheDocument();
   });
 
   it('says when no data was loaded yet', async () => {

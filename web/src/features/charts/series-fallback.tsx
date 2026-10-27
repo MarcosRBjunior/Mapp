@@ -43,8 +43,8 @@ export function seriesFallback({
   const failed = series.find((query) => query.isError);
   if (failed) {
     if (isApiError(failed.error, 'DATA_NOT_READY')) return <EmptyState message={NOT_LOADED} />;
-    // The page drops an unknown country and the chart falls back to the world.
-    if (isApiError(failed.error, 'COUNTRY_NOT_FOUND')) return <EmptyState message={NO_DATA} />;
+    // The page swaps an unknown country for the world view right after, so keep the skeleton.
+    if (isApiError(failed.error, 'COUNTRY_NOT_FOUND')) return loading;
     return (
       <ErrorState
         message={errorMessage}

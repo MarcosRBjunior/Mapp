@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { apiClient, unwrap } from './client';
+import { useMetric } from '../url/use-metric';
 import type { Granularity, Metric } from './types';
 
 export function useMeta() {
@@ -33,6 +34,17 @@ export function useCountry(code: string | null) {
       ),
     enabled: code !== null,
   });
+}
+
+// Detail name, or the list's while the detail loads (any cached metric works), else the code.
+export function useCountryName(code: string | null): string | null {
+  const [metric] = useMetric();
+  const detail = useCountry(code);
+  const list = useCountries(metric);
+  if (code === null) return null;
+  return (
+    detail.data?.country.name ?? list.data?.countries.find((c) => c.code === code)?.name ?? code
+  );
 }
 
 export interface SeriesRange {

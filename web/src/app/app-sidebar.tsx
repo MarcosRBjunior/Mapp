@@ -1,6 +1,7 @@
 import { InfoIcon, MapIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { Link, useLocation } from 'react-router';
+import { dashboardSearch } from '../shared/url/dashboard-search';
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +25,7 @@ const NAV_ITEMS = [
 ];
 
 export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { setOpenMobile } = useSidebar();
 
   return (
@@ -48,7 +49,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                       <SidebarMenuItem key={item.to}>
                         <SidebarMenuButton asChild isActive={active}>
                           <Link
-                            to={item.to}
+                            to={{ pathname: item.to, search: dashboardSearch(search) }}
                             aria-current={active ? 'page' : undefined}
                             onClick={() => setOpenMobile(false)}
                           >

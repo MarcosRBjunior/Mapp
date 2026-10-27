@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useCountry, useMeta, useTimeseries } from '../../shared/api/queries';
+import { useCountryName, useMeta, useTimeseries } from '../../shared/api/queries';
 import type { Metric } from '../../shared/api/types';
 import { NEW_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { PERIOD_PHRASES, periodRange, type Period } from '../../shared/period/period';
@@ -20,7 +20,7 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
   // Monthly points keep the payload small (~38 points for the whole history); summing `new`
   // gives the total of the complete days of the period (RN-11).
   const series = useTimeseries(code, metric, range, 'month');
-  const country = useCountry(code);
+  const countryName = useCountryName(code);
   let content: ReactNode = seriesFallback({
     meta,
     ready: range !== null,
@@ -56,7 +56,7 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
     }
   }
 
-  const scope = code === null ? 'Mundo' : country.data?.country.name;
+  const scope = countryName ?? 'Mundo';
   return (
     <SectionCard titleId="period-card-title" title="Por tempo" description={scope}>
       {content}
