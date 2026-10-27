@@ -33,7 +33,6 @@ test('clicking a marker opens the popup with the country history', async ({ page
   await page.goto('/');
   const marker = page.getByRole('button', { name: /^Brasil:/ });
   await expect(marker).toBeVisible();
-  await page.waitForLoadState('networkidle');
   // The popup content (and its fetch) only exists while the popup is open.
   expect(weekly).toHaveLength(0);
 
@@ -102,7 +101,6 @@ test('a closed popup does not fetch its series again', async ({ page }) => {
 
   await page.getByRole('radio', { name: 'Mortes' }).click();
   await expect(page.getByRole('button', { name: /^Brasil:.*mortes/ })).toBeVisible();
-  await page.waitForLoadState('networkidle');
 
   await expect(page.locator('.leaflet-popup')).toHaveCount(0);
   expect(weekly).toHaveLength(before);
@@ -120,4 +118,27 @@ test('switching to the log scale redraws the cumulative axis', async ({ page }) 
   await cumulative.getByRole('radio', { name: 'Log' }).click();
 
   await expect.poll(() => ticks.allTextContents()).not.toEqual(before);
+});
+
+test('Back after closing the popup and switching the metric does not reopen it', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const search = page.getByRole('combobox', { name: 'Buscar país' });
+  await search.fill('brasil');
+  await search.press('Enter');
+  const popup = page.locator('.leaflet-popup');
+  await expect(popup).toContainText('Casos acumulados de 22/01/2020');
+  await expect(page).toHaveURL(/\/paises\/BRA/);
+
+  await page.getByRole('button', { name: /^Brasil:/ }).focus();
+  await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
+  await page.getByRole('radio', { name: 'Mortes' }).click();
+  await expect(page.getByRole('radio', { name: 'Mortes' })).toBeChecked();
+
+  await page.goBack();
+
+  await expect(page.getByRole('radio', { name: 'Casos' })).toBeChecked();
+  await expect(popup).toHaveCount(0);
 });

@@ -33,7 +33,8 @@ export function ChoiceToggle<T extends string>({
       value={value}
       aria-label={label}
       className={className}
-      onKeyDown={(event) => {
+      // Capture phase: the flag must be set before Radix RovingFocus handles the key and moves focus.
+      onKeyDownCapture={(event) => {
         arrowKey.current = ARROW_KEYS.has(event.key);
       }}
       onPointerDown={() => {

@@ -166,10 +166,14 @@ describe('CumulativeChart', () => {
   });
 
   it('keeps the previous summary, dimmed, while the next period loads', async () => {
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     server.use(
       http.get(`${API}/api/v1/global/timeseries`, async ({ request }) => {
         const from = new URL(request.url).searchParams.get('from');
-        if (from === '2023-02-25') await delay(150);
+        if (from === '2023-02-25') await gate;
         return HttpResponse.json({
           metric: 'cases',
           granularity: 'day',
@@ -192,6 +196,7 @@ describe('CumulativeChart', () => {
     await waitFor(() => expect(previous.closest('[aria-busy="true"]')).not.toBeNull());
     expect(within(chart()).queryByRole('status')).not.toBeInTheDocument();
     expect(previous).toBeInTheDocument();
+    release();
 
     expect(await within(chart()).findByText(/de 03\/03\/2023 a 09\/03\/2023/)).toBeInTheDocument();
     expect(chart().querySelector('[aria-busy="true"]')).toBeNull();
@@ -208,13 +213,17 @@ describe('CumulativeChart', () => {
         { date: '2023-03-09', total: total + 1, new: 1 },
       ],
     });
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     server.use(
       http.get(`${API}/api/v1/global/timeseries`, ({ request }) =>
         HttpResponse.json(body(new URL(request.url).searchParams.get('from') ?? '', 100)),
       ),
       http.get(`${API}/api/v1/countries/BRA/timeseries`, async ({ request }) => {
         const from = new URL(request.url).searchParams.get('from') ?? '';
-        if (from === '2023-02-25') await delay(200);
+        if (from === '2023-02-25') await gate;
         return HttpResponse.json(body(from, 10));
       }),
     );
@@ -225,6 +234,7 @@ describe('CumulativeChart', () => {
 
     await within(chart()).findByRole('status');
     expect(within(chart()).queryByText(/Casos acumulados/)).not.toBeInTheDocument();
+    release();
 
     expect(
       await within(chart()).findByText(

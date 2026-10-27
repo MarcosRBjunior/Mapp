@@ -100,7 +100,8 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
   const mixed =
     worldData !== undefined &&
     countryData !== undefined &&
-    countryData.visible.from !== worldData.visible.from;
+    (countryData.visible.from !== worldData.visible.from ||
+      countryData.visible.to !== worldData.visible.to);
   if (content === null && mixed) {
     content = <Skeleton label="Carregando o crescimento acumulado" height="15rem" />;
   }

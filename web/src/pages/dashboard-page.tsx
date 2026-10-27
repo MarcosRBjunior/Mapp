@@ -45,6 +45,17 @@ export function DashboardPage() {
     [navigate, location.search],
   );
 
+  // The map has seen the selection key by now (child effects run first): drop it from the entry,
+  // so Back/Forward never carries a pending popup reopen.
+  const hasSelectionState = selectionKeyOf(location.state) !== '';
+  useEffect(() => {
+    if (!hasSelectionState) return;
+    void navigate(
+      { pathname: location.pathname, search: location.search },
+      { replace: true, state: null },
+    );
+  }, [hasSelectionState, location.key, location.pathname, location.search, navigate]);
+
   if (rawCode !== undefined && validCode !== null && rawCode !== validCode) {
     return <Navigate to={{ pathname: `/paises/${validCode}`, search: location.search }} replace />;
   }

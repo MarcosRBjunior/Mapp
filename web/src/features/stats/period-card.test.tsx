@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { delay, http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { metaFixture } from '../../test/fixtures';
 import { API, errorBody } from '../../test/handlers';
@@ -184,9 +184,13 @@ describe('PeriodCard', () => {
   });
 
   it('shows the country name while the series is still loading', async () => {
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     server.use(
       http.get(`${API}/api/v1/countries/:code/timeseries`, async () => {
-        await delay(200);
+        await gate;
         return HttpResponse.json(errorBody('INTERNAL_ERROR', 'late'), { status: 500 });
       }),
     );
@@ -194,5 +198,6 @@ describe('PeriodCard', () => {
 
     expect(await within(card()).findByText('Brasil')).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Carregando novos no período' })).toBeInTheDocument();
+    release();
   });
 });
