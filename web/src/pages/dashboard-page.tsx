@@ -10,6 +10,7 @@ import { WorldMap } from '../features/map/world-map';
 import { isApiError } from '../shared/api/client';
 import { useCountries, useCountry } from '../shared/api/queries';
 import { useMetric } from '../shared/url/use-metric';
+import { selectionKeyOf, selectionState } from '../shared/url/selection';
 import { usePeriod } from '../shared/url/use-period';
 
 const CODE_PATTERN = /^[A-Za-z]{3}$/;
@@ -36,7 +37,10 @@ export function DashboardPage() {
 
   const onSelect = useCallback(
     (code: string) => {
-      void navigate({ pathname: `/paises/${code}`, search: location.search });
+      void navigate(
+        { pathname: `/paises/${code}`, search: location.search },
+        { state: selectionState() },
+      );
     },
     [navigate, location.search],
   );
@@ -71,6 +75,7 @@ export function DashboardPage() {
           onRetry={() => void countries.refetch()}
           referenceDate={countries.data?.date}
           selectedCode={selectedCode}
+          selectionKey={selectionKeyOf(location.state)}
           onSelect={onSelect}
         />
       </div>

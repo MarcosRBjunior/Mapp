@@ -47,6 +47,8 @@ test('clicking a marker opens the popup with the country history', async ({ page
   await expect(popup.locator('svg.recharts-surface').first()).toBeVisible();
   await expect(popup.locator('svg.recharts-surface[tabindex]')).toHaveCount(0);
 
+  // Wait for the selection to be rendered: it reopens the popup if it lands after the Esc.
+  await expect(marker).toHaveAttribute('stroke', '#111827');
   // Esc from inside the popup closes it and returns the focus to the marker.
   // A key press first, so the script focus counts as keyboard focus (:focus-visible).
   const close = popup.getByRole('button', { name: 'Fechar' });
@@ -61,4 +63,46 @@ test('clicking a marker opens the popup with the country history', async ({ page
   await expect(popup).toContainText('Casos acumulados');
   await popup.getByRole('button', { name: 'Fechar' }).click();
   await expect(popup).toHaveCount(0);
+});
+
+test('selecting the open country again reopens its popup', async ({ page }) => {
+  await page.goto('/');
+  const marker = page.getByRole('button', { name: /^Brasil:/ });
+  await marker.click();
+  const popup = page.locator('.leaflet-popup');
+  await expect(popup).toContainText('Brasil');
+  // Close only after the navigation was rendered, or its new selection reopens the popup.
+  await expect(marker).toHaveAttribute('stroke', '#111827');
+
+  await marker.focus();
+  await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
+
+  const search = page.getByRole('combobox', { name: 'Buscar país' });
+  await search.fill('brasil');
+  await search.press('Enter');
+
+  await expect(popup).toContainText('Casos acumulados de 22/01/2020');
+});
+
+test('a closed popup does not fetch its series again', async ({ page }) => {
+  const weekly: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('granularity=week')) weekly.push(request.url());
+  });
+  await page.goto('/');
+  const marker = page.getByRole('button', { name: /^Brasil:/ });
+  await marker.click();
+  await expect(page.locator('.leaflet-popup')).toContainText('Casos acumulados de 22/01/2020');
+  await expect(marker).toHaveAttribute('stroke', '#111827');
+  await marker.focus();
+  await page.keyboard.press('Escape');
+  const before = weekly.length;
+
+  await page.getByRole('radio', { name: 'Mortes' }).click();
+  await expect(page.getByRole('button', { name: /^Brasil:.*mortes/ })).toBeVisible();
+  await page.waitForLoadState('networkidle');
+
+  await expect(page.locator('.leaflet-popup')).toHaveCount(0);
+  expect(weekly).toHaveLength(before);
 });
