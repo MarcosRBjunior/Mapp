@@ -117,3 +117,27 @@ describe('useChartSeries', () => {
     expect(await screen.findByText('2023-03-03|2|false')).toBeInTheDocument();
   });
 });
+
+function IdentityProbe() {
+  const [code, setCode] = useState<string | null>(null);
+  const series = useChartSeries(code, 'cases', RANGES['30d']);
+  return (
+    <>
+      <button onClick={() => setCode('BRA')}>trocar</button>
+      <output data-testid="state">
+        {series.data ? `data|${String(series.isPlaceholderData)}` : `none|${series.fetchStatus}`}
+      </output>
+    </>
+  );
+}
+
+describe('useChartSeries across places', () => {
+  it('does not keep the previous data when the country changes', async () => {
+    server.use(http.get(`${API}/api/v1/countries/BRA/timeseries`, () => delay('infinite')));
+    renderWithProviders(<IdentityProbe />);
+
+    expect(await screen.findByText('data|false')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'trocar' }));
+    expect(await screen.findByText('none|fetching')).toBeInTheDocument();
+  });
+});

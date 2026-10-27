@@ -14,6 +14,7 @@ import { formatCompact, formatDate, formatNumber } from '../../shared/format/for
 import type { Period } from '../../shared/period/period';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SectionCard } from '../../shared/ui/section-card';
+import { Skeleton } from '../../shared/ui/skeleton';
 import { ChartContent } from './chart-content';
 import { ScaleToggle } from './scale-toggle';
 import {
@@ -94,6 +95,15 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
     loadingLabel: 'Carregando o crescimento acumulado',
     errorMessage: 'Não foi possível carregar o crescimento acumulado',
   });
+
+  // World and country have their own placeholder state: never draw one period with the other's.
+  const mixed =
+    worldData !== undefined &&
+    countryData !== undefined &&
+    countryData.visible.from !== worldData.visible.from;
+  if (content === null && mixed) {
+    content = <Skeleton label="Carregando o crescimento acumulado" height="15rem" />;
+  }
 
   if (content === null && worldData && model) {
     const { visible } = worldData;

@@ -12,12 +12,12 @@ function chart() {
   return screen.getByRole('region', { name: 'Crescimento acumulado' });
 }
 
-function Switcher() {
+function Switcher({ code = null }: { code?: string | null }) {
   const [period, setPeriod] = useState<'30d' | '7d'>('30d');
   return (
     <>
       <button onClick={() => setPeriod('7d')}>trocar</button>
-      <CumulativeChart code={null} metric="cases" period={period} />
+      <CumulativeChart code={code} metric="cases" period={period} />
     </>
   );
 }
@@ -196,5 +196,40 @@ describe('CumulativeChart', () => {
     expect(await within(chart()).findByText(/de 03\/03\/2023 a 09\/03\/2023/)).toBeInTheDocument();
     expect(chart().querySelector('[aria-busy="true"]')).toBeNull();
     expect(within(chart()).queryByText(/de 08\/02\/2023 a 09\/03\/2023/)).not.toBeInTheDocument();
+  });
+  it('never pairs the new world period with the old country points', async () => {
+    const body = (from: string, total: number) => ({
+      metric: 'cases',
+      granularity: 'day',
+      from,
+      to: '2023-03-09',
+      points: [
+        { date: '2023-03-03', total, new: 1 },
+        { date: '2023-03-09', total: total + 1, new: 1 },
+      ],
+    });
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, ({ request }) =>
+        HttpResponse.json(body(new URL(request.url).searchParams.get('from') ?? '', 100)),
+      ),
+      http.get(`${API}/api/v1/countries/BRA/timeseries`, async ({ request }) => {
+        const from = new URL(request.url).searchParams.get('from') ?? '';
+        if (from === '2023-02-25') await delay(200);
+        return HttpResponse.json(body(from, 10));
+      }),
+    );
+    renderWithProviders(<Switcher code="BRA" />);
+
+    await within(chart()).findByText(/de 08\/02\/2023 a 09\/03\/2023/);
+    fireEvent.click(screen.getByRole('button', { name: 'trocar' }));
+
+    await within(chart()).findByRole('status');
+    expect(within(chart()).queryByText(/Casos acumulados/)).not.toBeInTheDocument();
+
+    expect(
+      await within(chart()).findByText(
+        /de 03\/03\/2023 a 09\/03\/2023 — Brasil: de 10 para 11; Mundo: de 100 para 101/,
+      ),
+    ).toBeInTheDocument();
   });
 });
