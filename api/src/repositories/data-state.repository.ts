@@ -21,7 +21,7 @@ export interface DataStateRepository {
   findSource(code: string): Promise<SourceRecord | null>;
   findDataVersion(sourceId: number): Promise<number | null>;
   findCoverage(sourceId: number): Promise<Coverage>;
-  isCompleteDate(sourceId: number, date: string): Promise<boolean>;
+  findIncompleteDates(sourceId: number): Promise<string[]>;
 }
 
 interface CoverageRow {
@@ -66,13 +66,17 @@ export function createDataStateRepository(db: Db): DataStateRepository {
       };
     },
 
-    async isCompleteDate(sourceId, date) {
-      const [row] = await db.$queryRaw<{ complete: boolean }[]>`
-        SELECT EXISTS (
-          SELECT 1 FROM (${completeDatesSql(sourceId)}) complete
-          WHERE complete.stat_date = ${date}::date
-        ) AS complete`;
-      return row?.complete === true;
+    // RN-06: every calendar date between the first and last complete date that is not complete,
+    // including dates the view has no row for.
+    async findIncompleteDates(sourceId) {
+      const rows = await db.$queryRaw<{ statDate: Date }[]>`
+        WITH complete AS (${completeDatesSql(sourceId)}),
+        bounds AS (SELECT min(stat_date) AS first, max(stat_date) AS last FROM complete)
+        SELECT d::date AS "statDate"
+        FROM bounds, generate_series(bounds.first, bounds.last, interval '1 day') AS d
+        WHERE d::date NOT IN (SELECT stat_date FROM complete)
+        ORDER BY 1`;
+      return rows.map((row) => toIsoDate(row.statDate));
     },
   };
 }

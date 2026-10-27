@@ -8,6 +8,8 @@ export interface DataState {
   from: string;
   referenceDate: string;
   countries: number;
+  // RN-06: dates inside the coverage that are not complete.
+  incompleteDates: ReadonlySet<string>;
 }
 
 export interface ResolvedDate {
@@ -65,7 +67,10 @@ export function createDataStateService(
     if (dataVersion === null) return null;
     if (memo?.dataVersion === dataVersion) return memo;
 
-    const coverage = await repo.findCoverage(sourceId);
+    const [coverage, incompleteDates] = await Promise.all([
+      repo.findCoverage(sourceId),
+      repo.findIncompleteDates(sourceId),
+    ]);
     if (coverage.from === null || coverage.referenceDate === null) return null;
     memo = {
       sourceId,
@@ -73,6 +78,7 @@ export function createDataStateService(
       from: coverage.from,
       referenceDate: coverage.referenceDate,
       countries: coverage.countries,
+      incompleteDates: new Set(incompleteDates),
     };
     return memo;
   }
@@ -94,9 +100,7 @@ export function createDataStateService(
     if (date === undefined) return { state, date: state.referenceDate };
 
     const outside =
-      date < state.from ||
-      date > state.referenceDate ||
-      !(await repo.isCompleteDate(state.sourceId, date));
+      date < state.from || date > state.referenceDate || state.incompleteDates.has(date);
     if (outside) {
       throw new AppError('VALIDATION_ERROR', 400, 'date is outside the data coverage', {
         from: state.from,
