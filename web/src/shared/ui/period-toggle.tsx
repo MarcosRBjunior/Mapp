@@ -1,5 +1,5 @@
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PERIODS, PERIOD_LABELS, type Period } from '../period/period';
+import { ChoiceToggle } from './choice-toggle';
 
 interface PeriodToggleProps {
   period: Period;
@@ -8,22 +8,12 @@ interface PeriodToggleProps {
 
 export function PeriodToggle({ period, onChange }: PeriodToggleProps) {
   return (
-    <ToggleGroup
-      type="single"
-      variant="outline"
-      spacing={0}
+    <ChoiceToggle
+      label="Período"
       value={period}
-      aria-label="Período"
-      onValueChange={(value) => {
-        const next = PERIODS.find((item) => item === value);
-        if (next) onChange(next);
-      }}
-    >
-      {PERIODS.map((item) => (
-        <ToggleGroupItem key={item} value={item}>
-          {PERIOD_LABELS[item]}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
+      options={PERIODS}
+      labels={PERIOD_LABELS}
+      onChange={onChange}
+    />
   );
 }
