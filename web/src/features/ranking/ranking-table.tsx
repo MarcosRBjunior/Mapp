@@ -16,6 +16,7 @@ import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
 import { SectionCard } from '../../shared/ui/section-card';
 import { Skeleton } from '../../shared/ui/skeleton';
+import { selectionState } from '../../shared/url/selection';
 
 const RANKING_LIMIT = 10;
 const TITLE_ID = 'ranking-title';
@@ -68,6 +69,7 @@ export function RankingTable({ metric, selectedCode }: RankingTableProps) {
                 <TableCell>
                   <Link
                     to={{ pathname: `/paises/${item.code}`, search: location.search }}
+                    state={selectionState()}
                     aria-current={selected ? 'page' : undefined}
                     className="font-medium underline-offset-4 hover:underline aria-[current=page]:underline"
                   >

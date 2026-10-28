@@ -5,6 +5,7 @@ node_modules/
 dist/
 coverage/
 dist-lighthouse/
+dist-e2e/
 web/.lighthouseci/
 *.tsbuildinfo
 api/src/generated/

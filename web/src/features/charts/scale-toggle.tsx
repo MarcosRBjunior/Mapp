@@ -1,4 +1,4 @@
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ChoiceToggle } from '../../shared/ui/choice-toggle';
 import type { Scale } from './series';
 
 const SCALES: readonly Scale[] = ['linear', 'log'];
@@ -11,25 +11,14 @@ interface ScaleToggleProps {
 
 export function ScaleToggle({ scale, onChange }: ScaleToggleProps) {
   return (
-    <ToggleGroup
-      type="single"
-      variant="outline"
-      size="sm"
-      spacing={0}
+    <ChoiceToggle
+      label="Escala"
       value={scale}
-      aria-label="Escala"
+      options={SCALES}
+      labels={SCALE_LABELS}
+      onChange={onChange}
+      size="sm"
       className="self-end"
-      // Radix sends '' when the active item is clicked again; keep the current scale.
-      onValueChange={(value) => {
-        const next = SCALES.find((item) => item === value);
-        if (next) onChange(next);
-      }}
-    >
-      {SCALES.map((item) => (
-        <ToggleGroupItem key={item} value={item}>
-          {SCALE_LABELS[item]}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
+    />
   );
 }

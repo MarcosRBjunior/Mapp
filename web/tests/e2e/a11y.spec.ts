@@ -23,6 +23,7 @@ test('the world view', async ({ page }) => {
     'Casos acumulados de',
   );
   await expect(page.getByRole('button', { name: /^Brasil:/ })).toBeVisible();
+  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
   await expectNoViolations(page);
 });
 
@@ -32,6 +33,7 @@ test('a country', async ({ page }) => {
     'Novos casos (Brasil)',
   );
   await expect(page.getByRole('region', { name: 'Brasil' })).toContainText('300.000');
+  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
   await expectNoViolations(page);
 });
 
@@ -39,6 +41,7 @@ test('a country with the marker popup open', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /^Brasil:/ }).click();
   await expect(page.locator('.leaflet-popup')).toContainText('Casos acumulados de 22/01/2020');
+  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
   await expectNoViolations(page);
 });
 
@@ -60,6 +63,7 @@ test('an unknown country', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
     'Casos acumulados de',
   );
+  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
   await expectNoViolations(page);
 });
 

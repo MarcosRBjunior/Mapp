@@ -1,5 +1,6 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../../shared/period/period';
 import { API, errorBody } from '../../test/handlers';
@@ -9,6 +10,16 @@ import { DailyNewChart } from './daily-new-chart';
 
 function chart() {
   return screen.getByRole('region', { name: 'Novos por dia' });
+}
+
+function Switcher() {
+  const [period, setPeriod] = useState<'30d' | '7d'>('30d');
+  return (
+    <>
+      <button onClick={() => setPeriod('7d')}>trocar</button>
+      <DailyNewChart code={null} metric="cases" period={period} />
+    </>
+  );
 }
 
 describe('DailyNewChart', () => {
@@ -61,6 +72,26 @@ describe('DailyNewChart', () => {
     expect(await within(chart()).findByText('Sem dados no período')).toBeInTheDocument();
   });
 
+  it('keeps the skeleton for an unknown country', async () => {
+    let answered = false;
+    const onResponse = ({ request }: { request: Request }) => {
+      if (request.url.includes('/countries/XYZ/timeseries')) answered = true;
+    };
+    server.events.on('response:mocked', onResponse);
+    try {
+      renderWithProviders(<DailyNewChart code="XYZ" metric="cases" period="30d" />);
+      await waitFor(() => expect(answered).toBe(true));
+      // Let the query settle on the 404 before asserting.
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    } finally {
+      server.events.removeListener('response:mocked', onResponse);
+    }
+
+    expect(within(chart()).getByRole('status')).toBeInTheDocument();
+    expect(within(chart()).queryByText('Sem dados no período')).not.toBeInTheDocument();
+    expect(within(chart()).queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('retries after an error', async () => {
     let calls = 0;
     server.use(
@@ -85,5 +116,43 @@ describe('DailyNewChart', () => {
         'Novos casos (Mundo) de 08/02/2023 a 09/03/2023: pico de 5 em 09/03/2023; média de 7 dias no último dia: —.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('keeps the previous summary, dimmed, while the next period loads', async () => {
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, async ({ request }) => {
+        const from = new URL(request.url).searchParams.get('from');
+        if (from === '2023-02-25') await gate;
+        return HttpResponse.json({
+          metric: 'cases',
+          granularity: 'day',
+          from: from ?? '',
+          to: '2023-03-09',
+          points: [
+            { date: '2023-03-03', total: 3, new: 1 },
+            { date: '2023-03-09', total: 9, new: 2 },
+          ],
+        });
+      }),
+    );
+    renderWithProviders(<Switcher />);
+
+    const previous = await within(chart()).findByText(
+      /Novos casos \(Mundo\) de 08\/02\/2023 a 09\/03\/2023/,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'trocar' }));
+
+    await waitFor(() => expect(previous.closest('[aria-busy="true"]')).not.toBeNull());
+    expect(within(chart()).queryByRole('status')).not.toBeInTheDocument();
+    expect(previous).toBeInTheDocument();
+    release();
+
+    expect(await within(chart()).findByText(/de 03\/03\/2023 a 09\/03\/2023/)).toBeInTheDocument();
+    expect(chart().querySelector('[aria-busy="true"]')).toBeNull();
+    expect(within(chart()).queryByText(/de 08\/02\/2023 a 09\/03\/2023/)).not.toBeInTheDocument();
   });
 });

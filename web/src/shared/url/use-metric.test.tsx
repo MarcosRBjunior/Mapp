@@ -49,4 +49,13 @@ describe('useMetric', () => {
     expect(screen.getByRole('button')).toHaveTextContent('deaths');
     expect(screen.getByTestId('location')).toHaveTextContent('/paises/BRA?x=1&metric=deaths');
   });
+
+  it('replaces the history entry instead of pushing a new one', () => {
+    renderWithProviders(<MetricProbe />, { route: '/paises/BRA' });
+    expect(screen.getByTestId('navigation-type')).toHaveTextContent('POP');
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(screen.getByTestId('navigation-type')).toHaveTextContent('REPLACE');
+  });
 });

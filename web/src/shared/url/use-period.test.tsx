@@ -45,4 +45,13 @@ describe('usePeriod', () => {
     expect(screen.getByRole('button')).toHaveTextContent('7d');
     expect(screen.getByTestId('location')).toHaveTextContent('/paises/BRA?metric=deaths&period=7d');
   });
+
+  it('replaces the history entry instead of pushing a new one', () => {
+    renderWithProviders(<PeriodProbe />, { route: '/paises/BRA' });
+    expect(screen.getByTestId('navigation-type')).toHaveTextContent('POP');
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(screen.getByTestId('navigation-type')).toHaveTextContent('REPLACE');
+  });
 });

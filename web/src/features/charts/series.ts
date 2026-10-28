@@ -5,16 +5,11 @@ import {
   formatDate,
   formatNumber,
 } from '../../shared/format/format';
-import { addDays, periodRange, type DateRange, type Period } from '../../shared/period/period';
+import { addDays, periodRange, type ChartRanges, type Period } from '../../shared/period/period';
 
 export const AVERAGE_WINDOW = 7;
 
 export type Scale = 'linear' | 'log';
-
-export interface ChartRanges {
-  visible: DateRange;
-  fetch: { from: string; to: string };
-}
 
 // The fetch starts 6 days earlier so the 7-day average is complete on the first visible day.
 export function chartRanges(period: Period, coverage: { from: string; to: string }): ChartRanges {

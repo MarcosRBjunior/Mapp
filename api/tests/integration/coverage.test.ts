@@ -54,6 +54,7 @@ describe('findCoverage (RN-06 from the view, per metric)', () => {
       from: null,
       referenceDate: null,
       countries: 0,
+      incompleteDates: [],
     });
   });
 
@@ -72,6 +73,7 @@ describe('findCoverage (RN-06 from the view, per metric)', () => {
       from: D1,
       referenceDate: D1,
       countries: 2,
+      incompleteDates: [],
     });
   });
 
@@ -83,6 +85,7 @@ describe('findCoverage (RN-06 from the view, per metric)', () => {
       from: null,
       referenceDate: null,
       countries: 1,
+      incompleteDates: [],
     });
   });
 
@@ -114,11 +117,22 @@ describe('findCoverage (RN-06 from the view, per metric)', () => {
       from: D1,
       referenceDate: D3,
       countries: 2,
+      // Only D2 is inside the coverage and incomplete; D0 lies before it.
+      incompleteDates: [D2],
     });
-    expect(await repos.dataState.isCompleteDate(sourceId, D0)).toBe(false);
-    expect(await repos.dataState.isCompleteDate(sourceId, D1)).toBe(true);
-    expect(await repos.dataState.isCompleteDate(sourceId, D2)).toBe(false);
-    expect(await repos.dataState.isCompleteDate(sourceId, D3)).toBe(true);
+  });
+
+  it('lists a calendar date the view has no row for as incomplete', async () => {
+    const D3 = '2023-03-10';
+    await insert([
+      ['BRA', 'cases', D1],
+      ['BRA', 'deaths', D1],
+      ['BRA', 'cases', D3],
+      ['BRA', 'deaths', D3],
+    ]);
+    await refresh();
+
+    expect((await repos.dataState.findCoverage(sourceId)).incompleteDates).toEqual([D2]);
   });
 
   it('ignores rows written after the last refresh', async () => {
@@ -134,6 +148,7 @@ describe('findCoverage (RN-06 from the view, per metric)', () => {
       from: D1,
       referenceDate: D1,
       countries: 1,
+      incompleteDates: [],
     });
   });
 });

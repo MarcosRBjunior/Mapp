@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Area, AreaChart } from 'recharts';
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart';
 import { useMeta, useTimeseries } from '../../shared/api/queries';
+import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { CUMULATIVE_LABELS } from '../../shared/format/format';
 import { EmptyState } from '../../shared/ui/empty-state';
@@ -22,6 +23,10 @@ export function CountrySparkline({ code, name, metric, onLayoutChange }: Country
   const coverage = meta.data?.coverage ?? null;
   const range = coverage ? { from: coverage.from, to: coverage.to } : null;
   const series = useTimeseries(code, metric, range, 'week');
+  const retry = useSeriesRetry({
+    queryKey: ['timeseries', code, metric],
+    predicate: (query) => query.queryKey[5] === 'week',
+  });
 
   const pointCount = series.data?.points.length ?? 0;
   useEffect(() => {
@@ -30,6 +35,7 @@ export function CountrySparkline({ code, name, metric, onLayoutChange }: Country
 
   const fallback = seriesFallback({
     meta,
+    onRetry: retry,
     ready: range !== null,
     series: [series],
     loadingLabel: 'Carregando a série do país',

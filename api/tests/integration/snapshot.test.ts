@@ -276,6 +276,37 @@ describe('runSync in snapshot mode', () => {
     ]);
   });
 
+  it('refreshes the view before closing a data-writing orphan', async () => {
+    const orphan = await rows<{ id: number }>(
+      `INSERT INTO sync_run (source_id, mode, status) VALUES (${SOURCE_ID}, 'snapshot', 'running') RETURNING id`,
+    );
+    const orphanId = orphan[0]?.id ?? 0;
+    await owner.query(
+      `INSERT INTO sync_checkpoint (sync_run_id, unit, status) VALUES ($1, 'snapshot:cases:2020-01-01', 'done')`,
+      [orphanId],
+    );
+    await owner.query(
+      `INSERT INTO daily_stat (country_code, metric, stat_date, source_id, total, new_value)
+       VALUES ('BRA', 'cases', '2020-01-01', ${SOURCE_ID}, 7, 7)`,
+    );
+    expect(
+      await rows("SELECT 1 FROM global_daily_stat WHERE stat_date = '2020-01-01'"),
+    ).toHaveLength(0);
+
+    // The source rejects the key: the recovering run writes nothing, so only the orphan-time
+    // refresh can put the orphan's row in the view.
+    await runSync(deps(fakeSource(() => ({ status: 401, body: '{}' })).fetch));
+
+    expect(await rows(`SELECT status FROM sync_run WHERE id = ${orphanId}`)).toEqual([
+      { status: 'partial' },
+    ]);
+    expect(
+      await rows(
+        "SELECT total::int AS total FROM global_daily_stat WHERE stat_date = '2020-01-01' AND metric = 'cases'",
+      ),
+    ).toEqual([{ total: 7 }]);
+  });
+
   it('refuses to start while another process holds the lock', async () => {
     const holder = new pg.Client({ connectionString: urls.syncUrl });
     await holder.connect();

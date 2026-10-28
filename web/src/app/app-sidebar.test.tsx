@@ -47,4 +47,13 @@ describe('AppSidebar', () => {
     expect(screen.getByRole('link', { name: 'Mapa' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Sobre' })).not.toHaveAttribute('aria-current');
   });
+
+  it('keeps only the dashboard state in the Mapa link', () => {
+    renderWithProviders(<App />, { route: '/paises/BRA?metric=deaths&period=7d&x=1' });
+
+    expect(screen.getByRole('link', { name: 'Mapa' })).toHaveAttribute(
+      'href',
+      '/?metric=deaths&period=7d',
+    );
+  });
 });

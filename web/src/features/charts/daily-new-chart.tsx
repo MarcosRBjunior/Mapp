@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 import {
   ChartContainer,
@@ -7,12 +7,14 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useCountry, useMeta, useTimeseries } from '../../shared/api/queries';
+import { useCountryName, useChartSeries, useMeta } from '../../shared/api/queries';
+import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { NEW_LABELS, formatCompact, formatDate, formatNumber } from '../../shared/format/format';
 import type { Period } from '../../shared/period/period';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SectionCard } from '../../shared/ui/section-card';
+import { ChartContent } from './chart-content';
 import { chartRanges, dailyNewRows, dailyNewSummary } from './series';
 import { NO_DATA, seriesFallback } from './series-fallback';
 import { SeriesTooltip } from './series-tooltip';
@@ -29,32 +31,47 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
   const meta = useMeta();
   const coverage = meta.data?.coverage ?? null;
   const ranges = coverage ? chartRanges(period, coverage) : null;
-  const series = useTimeseries(code, metric, ranges?.fetch ?? null, 'day');
-  const detail = useCountry(code);
-  const place = code === null ? 'Mundo' : (detail.data?.country.name ?? code);
+  const series = useChartSeries(code, metric, ranges);
+  const place = useCountryName(code) ?? 'Mundo';
+  const retry = useSeriesRetry({ queryKey: ['chart-series'] });
+
+  // All from the range that produced the data, which may be the previous period's.
+  const data = series.data;
+  const model = useMemo(() => {
+    if (!data) return null;
+    const rows = dailyNewRows(data.points, data.visible.from);
+    return {
+      rows,
+      byDate: new Map(rows.map((row) => [row.date, row])),
+      summary: dailyNewSummary(metric, place, data.visible, rows),
+    };
+  }, [data, metric, place]);
+  const config = useMemo(
+    () =>
+      ({
+        bar: { label: NEW_LABELS[metric], color: 'var(--chart-2)' },
+        average: { label: AVERAGE_LABEL, color: 'var(--chart-5)' },
+      }) satisfies ChartConfig,
+    [metric],
+  );
 
   let content: ReactNode = seriesFallback({
     meta,
+    onRetry: retry,
     ready: ranges !== null,
     series: [series],
     loadingLabel: 'Carregando os novos por dia',
     errorMessage: 'Não foi possível carregar os novos por dia',
   });
 
-  if (content === null && ranges && series.data) {
-    const { visible } = ranges;
-    const rows = dailyNewRows(series.data.points, visible.from);
+  if (content === null && data && model) {
+    const { visible } = data;
+    const { rows, byDate } = model;
     if (rows.length === 0) {
       content = <EmptyState message={NO_DATA} />;
     } else {
-      const byDate = new Map(rows.map((row) => [row.date, row]));
-      const config = {
-        bar: { label: NEW_LABELS[metric], color: 'var(--chart-2)' },
-        average: { label: AVERAGE_LABEL, color: 'var(--chart-5)' },
-      } satisfies ChartConfig;
-
       content = (
-        <>
+        <ChartContent busy={series.isPlaceholderData}>
           <ChartContainer config={config} className="aspect-auto h-60 w-full" aria-hidden="true">
             <ComposedChart
               accessibilityLayer={false}
@@ -105,15 +122,13 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
               />
             </ComposedChart>
           </ChartContainer>
-          <p className="text-xs text-muted-foreground">
-            {dailyNewSummary(metric, place, visible, rows)}
-          </p>
+          <p className="text-xs text-muted-foreground">{model.summary}</p>
           {visible.clamped && (
             <p className="text-xs text-muted-foreground">
               {`Dados a partir de ${formatDate(visible.from)}`}
             </p>
           )}
-        </>
+        </ChartContent>
       );
     }
   }

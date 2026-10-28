@@ -18,6 +18,7 @@ export interface WorldMapProps {
   onRetry: () => void;
   referenceDate: string | undefined;
   selectedCode: string | null;
+  selectionKey: string;
   onSelect: (code: string) => void;
 }
 
@@ -48,6 +49,7 @@ export function WorldMap({
   onRetry,
   referenceDate,
   selectedCode,
+  selectionKey,
   onSelect,
 }: WorldMapProps) {
   const { tilesUrl, tilesAttribution } = getEnv();
@@ -85,6 +87,7 @@ export function WorldMap({
             metric={metric}
             referenceDate={referenceDate}
             selectedCode={selectedCode}
+            selectionKey={selectionKey}
             onSelect={onSelect}
           />
         )}

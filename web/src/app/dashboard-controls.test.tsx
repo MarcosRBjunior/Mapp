@@ -36,6 +36,18 @@ describe('DashboardControls', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/?metric=deaths&period=90d');
   });
 
+  it('selects the next option with the arrow keys', async () => {
+    renderWithProviders(<DashboardControls />, { route: '/' });
+    const cases = screen.getByRole('radio', { name: 'Casos' });
+
+    cases.focus();
+    fireEvent.keyDown(cases, { key: 'ArrowRight' });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/?metric=deaths'),
+    );
+  });
+
   it('ignores a click on the active option', () => {
     renderWithProviders(<DashboardControls />, { route: '/' });
 
