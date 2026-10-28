@@ -11,6 +11,9 @@ updates:
       # TypeScript stays on 6.x until typescript-eslint supports 7 (ADR 0001).
       - dependency-name: typescript
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # Node types follow the runtime in .nvmrc (24); a newer major would allow APIs Node 24 lacks.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
