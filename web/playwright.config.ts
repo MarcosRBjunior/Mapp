@@ -16,14 +16,11 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    // Own port and env so a dev server pointing to the real API is never reused.
-    command: `npm run dev -- --port ${PORT} --strictPort`,
+    // Production build with the mocked API baked in (the dev server compiles on demand, which made
+    // the first load unstable). Own port so a server pointing to the real API is never reused.
+    command: `npm run build:e2e && npx vite preview --outDir dist-e2e --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: false,
-    env: {
-      VITE_API_URL: 'http://api.test',
-      VITE_TILES_URL: 'http://tiles.test/{z}/{x}/{y}.png',
-      VITE_TILES_ATTRIBUTION: '&copy; Tiles de teste',
-    },
+    timeout: 120_000,
   },
 });

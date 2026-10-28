@@ -5,7 +5,27 @@ import {
   errorResponseSchema,
   globalTimeseriesResponseSchema,
 } from '../../src/routes/schemas.js';
+import { FAKE_FROM, FAKE_REFERENCE } from '../helpers/fake-repositories.js';
 import { createTestApp } from '../helpers/test-app.js';
+
+describe('series upper bound', () => {
+  const nextDay = new Date(Date.parse(`${FAKE_REFERENCE}T00:00:00Z`) + 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+
+  it.each(['/api/v1/global/timeseries', '/api/v1/countries/BRA/timeseries'])(
+    'rejects a "to" after the reference date on %s',
+    async (path) => {
+      const response = await request(createTestApp()).get(`${path}?to=${nextDay}`);
+
+      expect(response.status).toBe(400);
+      expect(response.headers['cache-control']).toBe('no-store');
+      const { error } = errorResponseSchema.parse(response.body);
+      expect(error.code).toBe('VALIDATION_ERROR');
+      expect(error.details).toEqual({ from: FAKE_FROM, to: FAKE_REFERENCE });
+    },
+  );
+});
 
 describe('GET /api/v1/global/timeseries', () => {
   it('returns the whole coverage by day by default', async () => {

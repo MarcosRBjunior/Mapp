@@ -11,11 +11,15 @@ export function usePeriod(): [Period, (period: Period) => void] {
   const period = parsePeriod(params.get('period'));
   const setPeriod = useCallback(
     (next: Period) => {
-      setParams((previous) => {
-        const updated = new URLSearchParams(previous);
-        updated.set('period', next);
-        return updated;
-      });
+      // A filter never creates a history step: only page/country navigation does.
+      setParams(
+        (previous) => {
+          const updated = new URLSearchParams(previous);
+          updated.set('period', next);
+          return updated;
+        },
+        { replace: true },
+      );
     },
     [setParams],
   );

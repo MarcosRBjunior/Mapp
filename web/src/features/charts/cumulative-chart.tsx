@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import {
   ChartContainer,
@@ -7,12 +7,15 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useCountry, useMeta, useTimeseries } from '../../shared/api/queries';
+import { useChartSeries, useCountryName, useMeta } from '../../shared/api/queries';
+import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { formatCompact, formatDate, formatNumber } from '../../shared/format/format';
 import type { Period } from '../../shared/period/period';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SectionCard } from '../../shared/ui/section-card';
+import { Skeleton } from '../../shared/ui/skeleton';
+import { ChartContent } from './chart-content';
 import { ScaleToggle } from './scale-toggle';
 import {
   chartRanges,
@@ -39,53 +42,76 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
   const coverage = meta.data?.coverage ?? null;
   const ranges = coverage ? chartRanges(period, coverage) : null;
   // The daily chart uses the same range, so the world series is fetched once for both.
-  const world = useTimeseries(null, metric, ranges?.fetch ?? null, 'day');
-  const country = useTimeseries(
-    code,
-    metric,
-    code === null ? null : (ranges?.fetch ?? null),
-    'day',
+  const world = useChartSeries(null, metric, ranges);
+  const country = useChartSeries(code, metric, code === null ? null : ranges);
+  const countryName = useCountryName(code);
+  const retry = useSeriesRetry({ queryKey: ['chart-series'] });
+
+  // All from the range that produced the data, which may be the previous period's.
+  const worldData = world.data;
+  const countryData = code === null ? undefined : country.data;
+  const model = useMemo(() => {
+    if (!worldData) return null;
+    const { visible } = worldData;
+    const worldPoints = worldData.points.filter((point) => point.date >= visible.from);
+    const countryPoints =
+      code === null
+        ? null
+        : (countryData?.points ?? []).filter((point) => point.date >= visible.from);
+    if (worldPoints.length === 0 || countryPoints?.length === 0) return { empty: true as const };
+    const ends = [
+      countryName !== null && countryPoints !== null
+        ? seriesEnds(countryName, countryPoints)
+        : null,
+      seriesEnds(WORLD, worldPoints),
+    ].filter((item): item is SeriesEnds => item !== null);
+    return {
+      empty: false as const,
+      hasCountry: countryPoints !== null,
+      rows: cumulativeRows(worldPoints, countryPoints, scale),
+      worldByDate: new Map(worldPoints.map((point) => [point.date, point.total])),
+      countryByDate: new Map((countryPoints ?? []).map((point) => [point.date, point.total])),
+      summary: cumulativeSummary(metric, visible, ends),
+    };
+  }, [worldData, countryData, code, scale, countryName, metric]);
+  const config = useMemo(
+    () =>
+      ({
+        country: { label: countryName ?? 'País', color: 'var(--chart-5)' },
+        world: { label: WORLD, color: 'var(--chart-2)' },
+      }) satisfies ChartConfig,
+    [countryName],
   );
-  const detail = useCountry(code);
-  const countryName = code === null ? null : (detail.data?.country.name ?? code);
 
   let content: ReactNode = seriesFallback({
     meta,
+    onRetry: retry,
     ready: ranges !== null,
     series: code === null ? [world] : [world, country],
     loadingLabel: 'Carregando o crescimento acumulado',
     errorMessage: 'Não foi possível carregar o crescimento acumulado',
   });
 
-  if (content === null && ranges && world.data) {
-    const { visible } = ranges;
-    const worldPoints = world.data.points.filter((point) => point.date >= visible.from);
-    const countryPoints =
-      code === null
-        ? null
-        : (country.data?.points ?? []).filter((point) => point.date >= visible.from);
+  // World and country have their own placeholder state: never draw one period with the other's.
+  const mixed =
+    worldData !== undefined &&
+    countryData !== undefined &&
+    (countryData.visible.from !== worldData.visible.from ||
+      countryData.visible.to !== worldData.visible.to);
+  if (content === null && mixed) {
+    content = <Skeleton label="Carregando o crescimento acumulado" height="15rem" />;
+  }
 
-    if (worldPoints.length === 0 || countryPoints?.length === 0) {
+  if (content === null && worldData && model) {
+    const { visible } = worldData;
+    if (model.empty) {
       content = <EmptyState message={NO_DATA} />;
     } else {
-      const rows = cumulativeRows(worldPoints, countryPoints, scale);
-      const worldByDate = new Map(worldPoints.map((point) => [point.date, point.total]));
-      const countryByDate = new Map(
-        (countryPoints ?? []).map((point) => [point.date, point.total]),
-      );
-      const ends = [
-        countryName !== null && countryPoints !== null
-          ? seriesEnds(countryName, countryPoints)
-          : null,
-        seriesEnds(WORLD, worldPoints),
-      ].filter((item): item is SeriesEnds => item !== null);
-      const config = {
-        country: { label: countryName ?? 'País', color: 'var(--chart-5)' },
-        world: { label: WORLD, color: 'var(--chart-2)' },
-      } satisfies ChartConfig;
-
+      const { rows, worldByDate, countryByDate, hasCountry } = model;
       content = (
-        <>
+        <ChartContent
+          busy={world.isPlaceholderData || (code !== null && country.isPlaceholderData)}
+        >
           <ScaleToggle scale={scale} onChange={setScale} />
           <ChartContainer config={config} className="aspect-auto h-60 w-full" aria-hidden="true">
             <LineChart
@@ -125,7 +151,7 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
                 )}
               />
               <ChartLegend content={<ChartLegendContent />} />
-              {countryPoints !== null && (
+              {hasCountry && (
                 <Line
                   dataKey="country"
                   type="monotone"
@@ -145,15 +171,13 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
               />
             </LineChart>
           </ChartContainer>
-          <p className="text-xs text-muted-foreground">
-            {cumulativeSummary(metric, visible, ends)}
-          </p>
+          <p className="text-xs text-muted-foreground">{model.summary}</p>
           {visible.clamped && (
             <p className="text-xs text-muted-foreground">
               {`Dados a partir de ${formatDate(visible.from)}`}
             </p>
           )}
-        </>
+        </ChartContent>
       );
     }
   }

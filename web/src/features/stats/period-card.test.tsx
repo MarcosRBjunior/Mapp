@@ -1,5 +1,5 @@
-import { fireEvent, screen, within } from '@testing-library/react';
-import { delay, http, HttpResponse } from 'msw';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { metaFixture } from '../../test/fixtures';
 import { API, errorBody } from '../../test/handlers';
@@ -78,10 +78,30 @@ describe('PeriodCard', () => {
     expect(within(card()).getByText('Dados a partir de 20/02/2023')).toBeInTheDocument();
   });
 
-  it('says when the country has no data in the period', async () => {
+  it('shows the empty state for a country without data', async () => {
     renderWithProviders(<PeriodCard code="ZWE" metric="cases" period="30d" />);
 
     expect(await within(card()).findByText('Sem dados no período')).toBeInTheDocument();
+  });
+
+  it('keeps the skeleton for an unknown country', async () => {
+    let answered = false;
+    const onResponse = ({ request }: { request: Request }) => {
+      if (request.url.includes('/countries/XYZ/timeseries')) answered = true;
+    };
+    server.events.on('response:mocked', onResponse);
+    try {
+      renderWithProviders(<PeriodCard code="XYZ" metric="cases" period="30d" />);
+      await waitFor(() => expect(answered).toBe(true));
+      // Let the query settle on the 404 before asserting.
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    } finally {
+      server.events.removeListener('response:mocked', onResponse);
+    }
+
+    expect(within(card()).getByRole('status')).toBeInTheDocument();
+    expect(within(card()).queryByText('Sem dados no período')).not.toBeInTheDocument();
+    expect(within(card()).queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('says when no data was loaded yet', async () => {
@@ -164,9 +184,13 @@ describe('PeriodCard', () => {
   });
 
   it('shows the country name while the series is still loading', async () => {
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     server.use(
       http.get(`${API}/api/v1/countries/:code/timeseries`, async () => {
-        await delay(200);
+        await gate;
         return HttpResponse.json(errorBody('INTERNAL_ERROR', 'late'), { status: 500 });
       }),
     );
@@ -174,5 +198,6 @@ describe('PeriodCard', () => {
 
     expect(await within(card()).findByText('Brasil')).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Carregando novos no período' })).toBeInTheDocument();
+    release();
   });
 });

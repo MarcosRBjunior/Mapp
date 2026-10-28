@@ -5,6 +5,7 @@ import { useCountries } from '../shared/api/queries';
 import { MetricToggle } from '../shared/ui/metric-toggle';
 import { PeriodToggle } from '../shared/ui/period-toggle';
 import { useMetric } from '../shared/url/use-metric';
+import { selectionState } from '../shared/url/selection';
 import { usePeriod } from '../shared/url/use-period';
 
 export function DashboardControls() {
@@ -16,7 +17,10 @@ export function DashboardControls() {
 
   const onSelect = useCallback(
     (code: string) => {
-      void navigate({ pathname: `/paises/${code}`, search: location.search });
+      void navigate(
+        { pathname: `/paises/${code}`, search: location.search },
+        { state: selectionState() },
+      );
     },
     [navigate, location.search],
   );

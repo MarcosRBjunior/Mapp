@@ -1,5 +1,5 @@
 import type { CircleMarker as LeafletCircleMarker } from 'leaflet';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { CountrySparkline } from '../charts/country-sparkline';
@@ -17,6 +17,8 @@ interface CountryMarkersProps {
   metric: Metric;
   referenceDate: string | undefined;
   selectedCode: string | null;
+  // Changes on every selection (not on metric or period changes); '' when none was made.
+  selectionKey: string;
   onSelect: (code: string) => void;
 }
 
@@ -25,6 +27,7 @@ export function CountryMarkers({
   metric,
   referenceDate,
   selectedCode,
+  selectionKey,
   onSelect,
 }: CountryMarkersProps) {
   const max = useMemo(() => maxTotal(countries), [countries]);
@@ -38,12 +41,13 @@ export function CountryMarkers({
     <>
       {visible.map((country) => (
         <CountryMarker
-          key={`${metric}-${country.code}`}
+          key={country.code}
           country={country}
           metric={metric}
           radius={markerRadius(country.total, max)}
           referenceDate={referenceDate}
           selected={country.code === selectedCode}
+          selectionKey={selectionKey}
           onSelect={onSelect}
         />
       ))}
@@ -57,6 +61,7 @@ interface CountryMarkerProps {
   radius: number;
   referenceDate: string | undefined;
   selected: boolean;
+  selectionKey: string;
   onSelect: (code: string) => void;
 }
 
@@ -66,8 +71,10 @@ function CountryMarker({
   radius,
   referenceDate,
   selected,
+  selectionKey,
   onSelect,
 }: CountryMarkerProps) {
+  const [popupOpen, setPopupOpen] = useState(false);
   const markerRef = useRef<LeafletCircleMarker>(null);
   const onSelectRef = useRef(onSelect);
   useEffect(() => {
@@ -128,6 +135,7 @@ function CountryMarker({
       if (next instanceof Node && popup && !popup.contains(next)) focusInside = false;
     };
     const onOpen = () => {
+      setPopupOpen(true);
       focusInside = false;
       const popup = marker.getPopup()?.getElement();
       popup?.querySelector('.leaflet-popup-close-button')?.setAttribute('aria-label', 'Fechar');
@@ -136,6 +144,7 @@ function CountryMarker({
       popup?.addEventListener('focusin', onFocusIn);
     };
     const onClose = () => {
+      setPopupOpen(false);
       const popup = marker.getPopup()?.getElement();
       popup?.removeEventListener('keydown', onPopupKeyDown);
       popup?.removeEventListener('focusin', onFocusIn);
@@ -156,6 +165,11 @@ function CountryMarker({
     if (selected) marker.openPopup();
     else marker.closePopup();
   }, [selected]);
+
+  // Selecting the open country again (new key) reopens a popup that was closed.
+  useEffect(() => {
+    if (selected && selectionKey !== '') markerRef.current?.openPopup();
+  }, [selected, selectionKey]);
 
   const relayoutPopup = useCallback(() => markerRef.current?.getPopup()?.update(), []);
 
@@ -191,12 +205,14 @@ function CountryMarker({
               </>
             )}
           </p>
-          <CountrySparkline
-            code={code}
-            name={country.name}
-            metric={metric}
-            onLayoutChange={relayoutPopup}
-          />
+          {popupOpen && (
+            <CountrySparkline
+              code={code}
+              name={country.name}
+              metric={metric}
+              onLayoutChange={relayoutPopup}
+            />
+          )}
         </div>
       </Popup>
     </CircleMarker>
