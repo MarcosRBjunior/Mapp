@@ -5,10 +5,16 @@ import { ChoiceToggle } from './choice-toggle';
 const OPTIONS = ['a', 'b', 'c'] as const;
 const LABELS = { a: 'A', b: 'B', c: 'C' };
 
-function setup() {
+function setup(value: (typeof OPTIONS)[number] = 'a') {
   const onChange = vi.fn();
   render(
-    <ChoiceToggle label="Letra" value="a" options={OPTIONS} labels={LABELS} onChange={onChange} />,
+    <ChoiceToggle
+      label="Letra"
+      value={value}
+      options={OPTIONS}
+      labels={LABELS}
+      onChange={onChange}
+    />,
   );
   return onChange;
 }
@@ -21,6 +27,33 @@ describe('ChoiceToggle', () => {
     fireEvent.keyDown(first, { key: 'ArrowRight' });
     await waitFor(() => expect(screen.getByRole('radio', { name: 'B' })).toHaveFocus());
     expect(onChange).toHaveBeenCalledWith('b');
+  });
+
+  it('wraps to the last option when ArrowLeft is pressed on the first', async () => {
+    const onChange = setup();
+    const first = screen.getByRole('radio', { name: 'A' });
+    first.focus();
+    fireEvent.keyDown(first, { key: 'ArrowLeft' });
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'C' })).toHaveFocus());
+    expect(onChange).toHaveBeenCalledWith('c');
+  });
+
+  it('selects the first option on Home', async () => {
+    const onChange = setup('b');
+    const current = screen.getByRole('radio', { name: 'B' });
+    current.focus();
+    fireEvent.keyDown(current, { key: 'Home' });
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'A' })).toHaveFocus());
+    expect(onChange).toHaveBeenCalledWith('a');
+  });
+
+  it('selects the last option on End', async () => {
+    const onChange = setup();
+    const first = screen.getByRole('radio', { name: 'A' });
+    first.focus();
+    fireEvent.keyDown(first, { key: 'End' });
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'C' })).toHaveFocus());
+    expect(onChange).toHaveBeenCalledWith('c');
   });
 
   it('drops a stale arrow flag once the focus leaves the group', () => {
