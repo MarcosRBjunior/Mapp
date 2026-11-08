@@ -1,6 +1,7 @@
 import type { SyncEnv } from '../config/sync-env.js';
 import { apiNinjasFactory } from './api-ninjas/api-ninjas.provider.js';
 import type { ProviderFactory } from './covid-provider.js';
+import { jhuCsvFactory } from './jhu-csv/jhu-csv.provider.js';
 
 export function createProviderFactory(
   env: Pick<SyncEnv, 'DATA_PROVIDER' | 'API_NINJAS_KEY'>,
@@ -12,6 +13,7 @@ export function createProviderFactory(
       }
       return apiNinjasFactory(env.API_NINJAS_KEY);
     case 'jhu_csv':
+      return jhuCsvFactory();
     case 'apify':
       throw new Error(`DATA_PROVIDER=${env.DATA_PROVIDER} is not implemented yet`);
   }
