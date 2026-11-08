@@ -32,16 +32,24 @@ describe('migrate + seed from an empty database', () => {
     expect(await count("SELECT count(*) FROM country WHERE kind = 'non_geographic'")).toBe(4);
   });
 
-  it('creates the api_ninjas source with 202 mapped aliases', async () => {
-    expect(await count("SELECT count(*) FROM data_source WHERE code = 'api_ninjas'")).toBe(1);
-    expect(await count("SELECT count(*) FROM country_alias WHERE status = 'mapped'")).toBe(202);
-  });
+  it.each(['jhu_csv', 'api_ninjas'])(
+    'creates the %s source with 202 mapped aliases',
+    async (code) => {
+      expect(await count(`SELECT count(*) FROM data_source WHERE code = '${code}'`)).toBe(1);
+      expect(
+        await count(
+          `SELECT count(*) FROM country_alias a JOIN data_source s ON s.id = a.source_id
+         WHERE s.code = '${code}' AND a.status = 'mapped'`,
+        ),
+      ).toBe(202);
+    },
+  );
 
   it('is idempotent when the seed runs again', async () => {
     execFileSync('npm', ['run', 'db:seed'], { env: scriptEnv(urls), stdio: 'pipe' });
     expect(await count('SELECT count(*) FROM country')).toBe(202);
-    expect(await count('SELECT count(*) FROM country_alias')).toBe(202);
-    expect(await count('SELECT count(*) FROM data_source')).toBe(1);
+    expect(await count('SELECT count(*) FROM country_alias')).toBe(404);
+    expect(await count('SELECT count(*) FROM data_source')).toBe(2);
   });
 });
 

@@ -34,7 +34,8 @@ describe('db:seed with aliases.json', () => {
     const mapped = await owner.query<{ count: string }>(
       "SELECT count(*) FROM country_alias WHERE status = 'mapped'",
     );
-    expect(Number(mapped.rows[0]?.count)).toBe(202);
+    // The curated file is applied to both sources (jhu_csv and api_ninjas).
+    expect(Number(mapped.rows[0]?.count)).toBe(404);
   });
 
   it('restores a curated alias changed directly in the database', async () => {
@@ -46,7 +47,11 @@ describe('db:seed with aliases.json', () => {
       const brazil = await owner.query(
         "SELECT status, country_code FROM country_alias WHERE source_name = 'Brazil'",
       );
-      expect(brazil.rows).toEqual([{ status: 'mapped', country_code: 'BRA' }]);
+      // Changed for both sources, restored for both.
+      expect(brazil.rows).toEqual([
+        { status: 'mapped', country_code: 'BRA' },
+        { status: 'mapped', country_code: 'BRA' },
+      ]);
     } finally {
       await owner.query(
         "UPDATE country_alias SET status = 'mapped', country_code = 'BRA' WHERE source_name = 'Brazil'",

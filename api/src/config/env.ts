@@ -22,7 +22,7 @@ const envSchema = z.object({
   ),
   LOG_LEVEL: z.preprocess(emptyAsUndefined, z.enum(logLevels).default('info')),
   DATABASE_URL: postgresUrl,
-  DATA_PROVIDER: z.preprocess(emptyAsUndefined, z.enum(dataProviders).default('api_ninjas')),
+  DATA_PROVIDER: z.preprocess(emptyAsUndefined, z.enum(dataProviders).default('jhu_csv')),
   WEB_ORIGIN: z
     .string()
     .regex(/^https?:\/\/[^/\s]+$/, 'must be an http(s) origin without a path or trailing slash'),
