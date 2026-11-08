@@ -79,8 +79,10 @@ export function AboutPage() {
           Atribuições
         </h3>
         <ul className="list-disc pl-5">
-          <li>API Ninjas — fonte dos números de casos e mortes.</li>
-          <li>JHU CSSE — tabela de referência de países e coordenadas (CC BY 4.0).</li>
+          <li>
+            JHU CSSE — números de casos e mortes e tabela de referência de países e coordenadas (CC
+            BY 4.0).
+          </li>
           <li>Natural Earth — contornos dos países (domínio público).</li>
           <li>{`Tiles do mapa: ${tiles}`}</li>
         </ul>

@@ -17,9 +17,15 @@ describe('createProviderFactory', () => {
     ).toThrow(/API_NINJAS_KEY/);
   });
 
-  it.each(['jhu_csv', 'apify'] as const)('reports %s as not implemented', (provider) => {
+  it('builds the jhu_csv factory without a key', () => {
+    const factory = createProviderFactory({ DATA_PROVIDER: 'jhu_csv', API_NINJAS_KEY: undefined });
+    expect(factory.sourceCode).toBe('jhu_csv');
+    expect(factory.finalDate).toBe('2023-03-09');
+  });
+
+  it('reports apify as not implemented', () => {
     expect(() =>
-      createProviderFactory({ DATA_PROVIDER: provider, API_NINJAS_KEY: undefined }),
+      createProviderFactory({ DATA_PROVIDER: 'apify', API_NINJAS_KEY: undefined }),
     ).toThrow(/not implemented/);
   });
 });

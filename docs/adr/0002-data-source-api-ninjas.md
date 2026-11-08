@@ -1,6 +1,6 @@
 # ADR 0002 — Fonte de dados: API Ninjas (D-01)
 
-- Status: aceito
+- Status: substituído pela ADR 0009 em 2026-11-07 (a fonte padrão passou a ser o CSV da JHU CSSE; a API Ninjas continua implementada como alternativa)
 - Data: 2026-10-19
 
 ## Contexto
@@ -23,3 +23,4 @@ O Mapp precisa de casos e mortes de COVID-19 por país e por data. As opções e
 ## Atualizações
 
 - Atualização (F2): os nomes foram confirmados com a chamada real de 2026-10-19 e a curadoria passou para `api/prisma/seed/aliases.json` (ADR 0004).
+- Atualização (2026-11-07): o risco de armazenamento levou à troca da fonte padrão para o CSV da JHU CSSE (ADR 0009).

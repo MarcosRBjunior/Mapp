@@ -5,14 +5,25 @@ import { createPrisma } from '../../src/lib/prisma.js';
 import { loadAliasSeeds } from './aliases.js';
 import type { CountrySeed } from './reference.js';
 
-const API_NINJAS_SOURCE = {
-  code: 'api_ninjas',
-  name: 'API Ninjas — COVID-19',
-  url: 'https://api-ninjas.com/api/covid19',
-  license:
-    'Termos de uso da API Ninjas (plano gratuito: exige atribuição; não permite cache nem armazenamento)',
-  attribution: 'Dados: API Ninjas (fonte original: JHU CSSE)',
-};
+// Both sources share the curated aliases: API Ninjas serves the JHU CSSE names unchanged.
+const SOURCES = [
+  {
+    code: 'jhu_csv',
+    name: 'JHU CSSE — COVID-19 Data Repository',
+    url: 'https://github.com/CSSEGISandData/COVID-19',
+    license: 'CC BY 4.0',
+    attribution:
+      'Dados: COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University',
+  },
+  {
+    code: 'api_ninjas',
+    name: 'API Ninjas — COVID-19',
+    url: 'https://api-ninjas.com/api/covid19',
+    license:
+      'Termos de uso da API Ninjas (plano gratuito: exige atribuição; não permite cache nem armazenamento)',
+    attribution: 'Dados: API Ninjas (fonte original: JHU CSSE)',
+  },
+];
 
 const env = loadDbEnv();
 const logger = createLogger('info');
@@ -26,12 +37,6 @@ const prisma = createPrisma(env.DATABASE_URL_SYNC);
 try {
   await prisma.$transaction(
     async (tx) => {
-      const source = await tx.dataSource.upsert({
-        where: { code: API_NINJAS_SOURCE.code },
-        create: API_NINJAS_SOURCE,
-        update: API_NINJAS_SOURCE,
-      });
-
       for (const country of countries) {
         const data = {
           name: country.name,
@@ -47,19 +52,30 @@ try {
         });
       }
 
-      // Only the curated file is applied; aliases outside it (e.g. pending ones) stay untouched.
-      for (const alias of aliases) {
-        await tx.countryAlias.upsert({
-          where: { sourceId_sourceName: { sourceId: source.id, sourceName: alias.sourceName } },
-          create: { sourceId: source.id, ...alias },
-          update: { countryCode: alias.countryCode, status: alias.status },
+      for (const data of SOURCES) {
+        const source = await tx.dataSource.upsert({
+          where: { code: data.code },
+          create: data,
+          update: data,
         });
+        // Only the curated file is applied; aliases outside it (e.g. pending ones) stay untouched.
+        for (const alias of aliases) {
+          await tx.countryAlias.upsert({
+            where: { sourceId_sourceName: { sourceId: source.id, sourceName: alias.sourceName } },
+            create: { sourceId: source.id, ...alias },
+            update: { countryCode: alias.countryCode, status: alias.status },
+          });
+        }
       }
     },
     { timeout: 60_000 },
   );
   logger.info(
-    { countries: countries.length, aliases: aliases.length, source: API_NINJAS_SOURCE.code },
+    {
+      countries: countries.length,
+      aliases: aliases.length,
+      sources: SOURCES.map((source) => source.code),
+    },
     'seed complete',
   );
 } finally {

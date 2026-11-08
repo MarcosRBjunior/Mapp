@@ -13,7 +13,7 @@ describe('loadEnv', () => {
       NODE_ENV: 'development',
       PORT: 3333,
       LOG_LEVEL: 'info',
-      DATA_PROVIDER: 'api_ninjas',
+      DATA_PROVIDER: 'jhu_csv',
     });
   });
 
@@ -25,7 +25,7 @@ describe('loadEnv', () => {
       NODE_ENV: 'development',
       PORT: 3333,
       LOG_LEVEL: 'info',
-      DATA_PROVIDER: 'api_ninjas',
+      DATA_PROVIDER: 'jhu_csv',
     });
   });
 
@@ -36,14 +36,14 @@ describe('loadEnv', () => {
         NODE_ENV: 'production',
         PORT: '8080',
         LOG_LEVEL: 'debug',
-        DATA_PROVIDER: 'jhu_csv',
+        DATA_PROVIDER: 'api_ninjas',
       }),
     ).toEqual({
       ...REQUIRED,
       NODE_ENV: 'production',
       PORT: 8080,
       LOG_LEVEL: 'debug',
-      DATA_PROVIDER: 'jhu_csv',
+      DATA_PROVIDER: 'api_ninjas',
     });
   });
 
