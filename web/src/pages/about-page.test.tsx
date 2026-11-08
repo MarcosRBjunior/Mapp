@@ -18,7 +18,11 @@ describe('AboutPage', () => {
   it('lists every attribution and the territories rule', () => {
     renderWithProviders(<AboutPage />);
 
-    expect(screen.getByText(/^JHU CSSE —/)).toHaveTextContent('CC BY 4.0');
+    // The numbers come from JHU CSSE (directly or through API Ninjas); the Fonte section names the source in use.
+    expect(screen.getByText(/^JHU CSSE —/)).toHaveTextContent(
+      'JHU CSSE — números de casos e mortes e tabela de referência de países e coordenadas (CC BY 4.0).',
+    );
+    expect(screen.queryByText(/^API Ninjas —/)).not.toBeInTheDocument();
     expect(screen.getByText(/^Natural Earth —/)).toHaveTextContent('domínio público');
     expect(screen.getByText('Tiles do mapa: © Tiles de teste')).toBeInTheDocument();
     expect(screen.getByText(/Groenlândia/)).toBeInTheDocument();
