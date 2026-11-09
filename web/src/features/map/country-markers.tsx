@@ -1,10 +1,14 @@
 import type { CircleMarker as LeafletCircleMarker } from 'leaflet';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
-import { CountrySparkline } from '../charts/country-sparkline';
 import { METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
+import { Skeleton } from '../../shared/ui/skeleton';
 import { METRIC_COLORS, markerRadius, maxTotal } from './marker-scale';
+
+const CountrySparkline = lazy(() =>
+  import('../charts/country-sparkline').then((module) => ({ default: module.CountrySparkline })),
+);
 
 type MappableCountry = CountryListItem & { lat: number; lng: number; total: number };
 
@@ -206,12 +210,20 @@ function CountryMarker({
             )}
           </p>
           {popupOpen && (
-            <CountrySparkline
-              code={code}
-              name={country.name}
-              metric={metric}
-              onLayoutChange={relayoutPopup}
-            />
+            <Suspense
+              fallback={
+                <div className="w-56">
+                  <Skeleton label="Carregando a série do país" height="4rem" />
+                </div>
+              }
+            >
+              <CountrySparkline
+                code={code}
+                name={country.name}
+                metric={metric}
+                onLayoutChange={relayoutPopup}
+              />
+            </Suspense>
           )}
         </div>
       </Popup>

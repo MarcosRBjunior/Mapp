@@ -19,7 +19,7 @@ describe('App', () => {
     renderWithProviders(<App />, { route: '/' });
 
     expect(screen.getByRole('heading', { level: 1, name: 'Mapp' })).toBeInTheDocument();
-    expect(screen.getByTestId('world-map')).toBeInTheDocument();
+    expect(await screen.findByTestId('world-map')).toBeInTheDocument();
     expect(await screen.findByText(/Dados históricos até 09\/03\/2023/)).toBeInTheDocument();
   });
 
