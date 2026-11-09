@@ -1,0 +1,21 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "npm run serve:lighthouse",
+      "startServerReadyPattern": "Local",
+      "url": [
+        "http://localhost:4173/",
+        "http://localhost:4173/paises/BRA",
+        "http://localhost:4173/sobre"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "chromeFlags": "--no-sandbox --headless=new"
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}
