@@ -20,6 +20,7 @@
     "openapi": "tsx src/openapi/write.ts"
   },
   "devDependencies": {
+    "@types/compression": "~1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^24.19.2",
@@ -35,6 +36,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "~7.10.1",
     "@prisma/client": "~7.10.1",
+    "compression": "~1.8.2",
     "cors": "^2.8.6",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
