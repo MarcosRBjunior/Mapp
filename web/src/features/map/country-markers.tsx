@@ -1,5 +1,5 @@
 import type { CircleMarker as LeafletCircleMarker } from 'leaflet';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
@@ -35,6 +35,12 @@ export function CountryMarkers({
   onSelect,
 }: CountryMarkersProps) {
   const max = useMemo(() => maxTotal(countries), [countries]);
+  // The parent's onSelect changes on every navigation; a stable wrapper keeps memo effective.
+  const onSelectRef = useRef(onSelect);
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
+  const stableOnSelect = useCallback((code: string) => onSelectRef.current(code), []);
   // Biggest first, so smaller markers are drawn on top and stay clickable.
   const visible = useMemo(
     () => countries.filter(isMappable).sort((a, b) => b.total - a.total),
@@ -43,18 +49,22 @@ export function CountryMarkers({
 
   return (
     <>
-      {visible.map((country) => (
-        <CountryMarker
-          key={country.code}
-          country={country}
-          metric={metric}
-          radius={markerRadius(country.total, max)}
-          referenceDate={referenceDate}
-          selected={country.code === selectedCode}
-          selectionKey={selectionKey}
-          onSelect={onSelect}
-        />
-      ))}
+      {visible.map((country) => {
+        const selected = country.code === selectedCode;
+        return (
+          <CountryMarker
+            key={country.code}
+            country={country}
+            metric={metric}
+            radius={markerRadius(country.total, max)}
+            referenceDate={referenceDate}
+            selected={selected}
+            // Only the selected marker uses the key; the others keep '' so memo skips them.
+            selectionKey={selected ? selectionKey : ''}
+            onSelect={stableOnSelect}
+          />
+        );
+      })}
     </>
   );
 }
@@ -69,7 +79,8 @@ interface CountryMarkerProps {
   onSelect: (code: string) => void;
 }
 
-function CountryMarker({
+// Memoized: a selection re-renders only the markers whose props changed, not all of them.
+const CountryMarker = memo(function CountryMarker({
   country,
   metric,
   radius,
@@ -178,18 +189,22 @@ function CountryMarker({
   const relayoutPopup = useCallback(() => markerRef.current?.getPopup()?.update(), []);
 
   const eventHandlers = useMemo(() => ({ click: () => onSelectRef.current(code) }), [code]);
+  const pathOptions = useMemo(
+    () => ({
+      color: selected ? '#111827' : '#ffffff',
+      weight: selected ? 2 : 1,
+      fillColor: METRIC_COLORS[metric],
+      fillOpacity: selected ? 0.9 : 0.6,
+    }),
+    [selected, metric],
+  );
 
   return (
     <CircleMarker
       ref={markerRef}
       center={[country.lat, country.lng]}
       radius={radius}
-      pathOptions={{
-        color: selected ? '#111827' : '#ffffff',
-        weight: selected ? 2 : 1,
-        fillColor: METRIC_COLORS[metric],
-        fillOpacity: selected ? 0.9 : 0.6,
-      }}
+      pathOptions={pathOptions}
       bubblingMouseEvents={false}
       eventHandlers={eventHandlers}
     >
@@ -229,4 +244,4 @@ function CountryMarker({
       </Popup>
     </CircleMarker>
   );
-}
+});
