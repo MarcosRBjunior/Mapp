@@ -19,3 +19,9 @@ O `CLAUDE.md` exige que a api HTTP só leia (`DATABASE_URL`) e que o job escreva
 - O job tem poder de DDL. Aceito para um projeto de portfólio; se precisar de menor privilégio, separar um dono (`DATABASE_URL_MIGRATE`) e dar ao sync só DML + `MAINTAIN` na view.
 - Em hospedagem (F9), o usuário do `DATABASE_URL_SYNC` precisa de `CREATEROLE` para o `db:roles`, ou o leitor é criado pelo painel do provedor.
 - O `db:roles` envia a senha do leitor em `ALTER ROLE ... PASSWORD` a cada `db:migrate`; em Postgres gerenciado com `log_statement=ddl`, ela pode ir para o log do servidor. Rever na F9 (por exemplo, só alterar a senha quando o login do leitor falhar).
+
+## Atualização (2026-11-11, F9)
+
+- Em produção (Neon, ADR 0010) o dono `mapp` é criado pelo Neon e é membro de `neon_superuser`, que tem `CREATEROLE`; o `db:roles` roda nele sem ajuste.
+- O leitor continua criado pelo `db:roles` (usuários criados pelo Neon entram em `neon_superuser` e o script os recusa como leitor).
+- O `CREATE/ALTER ROLE` agora leva o verificador SCRAM-SHA-256 calculado no cliente, não a senha: um log de DDL no servidor não expõe a senha do leitor.
