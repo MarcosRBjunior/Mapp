@@ -8,6 +8,7 @@ import {
   parseConnectionUrl,
   type RoleAttributes,
 } from './roles-sql.js';
+import { scramSha256Verifier } from './scram.js';
 
 const env = loadDbEnv();
 const logger = createLogger('info');
@@ -29,7 +30,8 @@ try {
   const statements = buildReaderRoleSql({
     owner: owner.user,
     reader: reader.user,
-    password: reader.password,
+    // Only the SCRAM verifier reaches the server (and any statement log), never the password.
+    password: scramSha256Verifier(reader.password),
     database: reader.database,
     readerExists: attributes !== undefined,
   });
