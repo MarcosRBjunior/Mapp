@@ -6,8 +6,7 @@ import { renderWithProviders } from '../../test/render';
 import { server } from '../../test/server';
 import { SiteFooter } from './site-footer';
 
-const FALLBACK =
-  'Fonte: COVID-19 Data Repository by CSSE at Johns Hopkins University (CC BY 4.0)';
+const FALLBACK = 'Fonte: COVID-19 Data Repository by CSSE at Johns Hopkins University (CC BY 4.0)';
 
 describe('SiteFooter', () => {
   it('shows the source, its license and the map attributions', async () => {
