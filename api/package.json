@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "db:generate": "prisma generate",
+    "db:check": "tsx --env-file-if-exists=.env prisma/check.ts",
     "db:roles": "tsx --env-file-if-exists=.env prisma/roles.ts",
     "db:migrate": "prisma migrate deploy && npm run db:roles",
     "seed:build": "tsx prisma/seed/build-countries.ts",

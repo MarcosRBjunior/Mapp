@@ -22,6 +22,12 @@ async function count(sql: string): Promise<number> {
 const SOURCE_ID = "(SELECT id FROM data_source WHERE code = 'api_ninjas')";
 
 describe('migrate + seed from an empty database', () => {
+  it('passes db:check on the test database', () => {
+    expect(() =>
+      execFileSync('npm', ['run', 'db:check'], { env: scriptEnv(urls), stdio: 'pipe' }),
+    ).not.toThrow();
+  });
+
   it('creates the reader with a SCRAM verifier that accepts the original password', async () => {
     const stored = await owner.query<{ rolpassword: string }>(
       "SELECT rolpassword FROM pg_authid WHERE rolname = 'mapp_api'",

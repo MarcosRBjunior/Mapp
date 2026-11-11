@@ -1,0 +1,45 @@
+name: Database
+
+# Manual only: checks the production database, then applies migrations, the reader role and the seed.
+# All steps are idempotent. Needs the production environment secrets (F9, ADR 0010).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Turns off the telemetry of @scarf/scarf (a dependency of swagger-ui-express).
+  SCARF_ANALYTICS: 'false'
+
+concurrency:
+  group: database
+  cancel-in-progress: false
+
+jobs:
+  database:
+    name: Check, migrate and seed
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Secrets live only in the steps that use them, so install scripts never see them.
+      - run: npm run db:check -w api
+        env:
+          DATABASE_URL_SYNC: ${{ secrets.DATABASE_URL_SYNC }}
+      - run: npm run db:migrate -w api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_SYNC: ${{ secrets.DATABASE_URL_SYNC }}
+      - run: npm run db:seed -w api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_SYNC: ${{ secrets.DATABASE_URL_SYNC }}
