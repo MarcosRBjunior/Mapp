@@ -35,7 +35,7 @@ describe('db:seed with aliases.json', () => {
       "SELECT count(*) FROM country_alias WHERE status = 'mapped'",
     );
     // The curated file is applied to both sources (jhu_csv and api_ninjas).
-    expect(Number(mapped.rows[0]?.count)).toBe(404);
+    expect(Number(mapped.rows[0]?.count)).toBe(402);
   });
 
   it('restores a curated alias changed directly in the database', async () => {

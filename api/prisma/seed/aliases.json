@@ -986,8 +986,8 @@
   },
   {
     "sourceName": "Western Sahara",
-    "countryCode": "ESH",
-    "status": "mapped"
+    "countryCode": null,
+    "status": "ignored"
   },
   {
     "sourceName": "Winter Olympics 2022",

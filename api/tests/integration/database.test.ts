@@ -33,7 +33,7 @@ describe('migrate + seed from an empty database', () => {
   });
 
   it.each(['jhu_csv', 'api_ninjas'])(
-    'creates the %s source with 202 mapped aliases',
+    'creates the %s source with 201 mapped aliases and Western Sahara ignored',
     async (code) => {
       expect(await count(`SELECT count(*) FROM data_source WHERE code = '${code}'`)).toBe(1);
       expect(
@@ -41,7 +41,14 @@ describe('migrate + seed from an empty database', () => {
           `SELECT count(*) FROM country_alias a JOIN data_source s ON s.id = a.source_id
          WHERE s.code = '${code}' AND a.status = 'mapped'`,
         ),
-      ).toBe(202);
+      ).toBe(201);
+      expect(
+        await count(
+          `SELECT count(*) FROM country_alias a JOIN data_source s ON s.id = a.source_id
+         WHERE s.code = '${code}' AND a.status = 'ignored' AND a.source_name = 'Western Sahara'
+           AND a.country_code IS NULL`,
+        ),
+      ).toBe(1);
     },
   );
 
