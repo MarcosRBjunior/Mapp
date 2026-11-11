@@ -37,20 +37,21 @@ const prisma = createPrisma(env.DATABASE_URL_SYNC);
 try {
   await prisma.$transaction(
     async (tx) => {
-      for (const country of countries) {
-        const data = {
-          name: country.name,
-          kind: country.kind,
-          lat: country.lat,
-          lng: country.lng,
-          population: country.population === null ? null : BigInt(country.population),
-        };
-        await tx.country.upsert({
-          where: { code: country.code },
-          create: { code: country.code, ...data },
-          update: data,
-        });
-      }
+      // One statement per table instead of one upsert per row: the seed also runs far from the
+      // database (db.yml on GitHub, the database in São Paulo).
+      await tx.$executeRaw`
+        INSERT INTO country (code, name, kind, lat, lng, population)
+        SELECT * FROM unnest(
+          ${countries.map((c) => c.code)}::text[],
+          ${countries.map((c) => c.name)}::text[],
+          ${countries.map((c) => c.kind)}::text[]::country_kind[],
+          ${countries.map((c) => c.lat)}::float8[],
+          ${countries.map((c) => c.lng)}::float8[],
+          ${countries.map((c) => (c.population === null ? null : String(c.population)))}::bigint[]
+        )
+        ON CONFLICT (code) DO UPDATE SET
+          name = EXCLUDED.name, kind = EXCLUDED.kind, lat = EXCLUDED.lat,
+          lng = EXCLUDED.lng, population = EXCLUDED.population`;
 
       for (const data of SOURCES) {
         const source = await tx.dataSource.upsert({
@@ -59,13 +60,16 @@ try {
           update: data,
         });
         // Only the curated file is applied; aliases outside it (e.g. pending ones) stay untouched.
-        for (const alias of aliases) {
-          await tx.countryAlias.upsert({
-            where: { sourceId_sourceName: { sourceId: source.id, sourceName: alias.sourceName } },
-            create: { sourceId: source.id, ...alias },
-            update: { countryCode: alias.countryCode, status: alias.status },
-          });
-        }
+        await tx.$executeRaw`
+          INSERT INTO country_alias (source_id, source_name, country_code, status)
+          SELECT ${source.id}, t.name, t.code, t.status::alias_status
+          FROM unnest(
+            ${aliases.map((a) => a.sourceName)}::text[],
+            ${aliases.map((a) => a.countryCode)}::text[],
+            ${aliases.map((a) => a.status)}::text[]
+          ) AS t(name, code, status)
+          ON CONFLICT (source_id, source_name) DO UPDATE SET
+            country_code = EXCLUDED.country_code, status = EXCLUDED.status`;
       }
     },
     { timeout: 60_000 },
