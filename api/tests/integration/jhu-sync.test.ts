@@ -72,11 +72,11 @@ describe('runSync with the JHU CSV source', () => {
       'time_series_covid19_confirmed_global.csv',
       'time_series_covid19_deaths_global.csv',
     ]);
-    // 202 mapped names per metric; only the four names in the cropped files have rows.
+    // 201 mapped names per metric (Western Sahara is ignored); only the four names in the cropped files have rows.
     expect(result).toMatchObject({
       status: 'partial',
       callsUsed: 2,
-      unitsPlanned: 404,
+      unitsPlanned: 402,
       unitsDone: 8,
     });
     expect(
