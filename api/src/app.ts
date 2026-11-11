@@ -1,3 +1,4 @@
+import compression from 'compression';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
@@ -32,6 +33,8 @@ export function createApp(deps: AppDeps): Express {
       exposedHeaders: ['X-Request-Id'],
     }),
   );
+  // Brotli or gzip as the client accepts; bodies under 1 kB and 304s go out as they are.
+  app.use(compression());
 
   app.use(createHealthRouter(deps.services.dataState));
 
