@@ -328,6 +328,7 @@ describe('runSync in full mode', () => {
       services: createServices(createReadRepositories(reader), 'api_ninjas'),
       logger: createLogger('silent'),
       webOrigin: 'http://localhost:5173',
+      trustProxy: 0,
     });
     const ready = await request(app).get('/ready');
     expect(ready.status).toBe(200);

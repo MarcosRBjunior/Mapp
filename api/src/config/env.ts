@@ -25,7 +25,19 @@ const envSchema = z.object({
   DATA_PROVIDER: z.preprocess(emptyAsUndefined, z.enum(dataProviders).default('jhu_csv')),
   WEB_ORIGIN: z
     .string()
-    .regex(/^https?:\/\/[^/\s]+$/, 'must be an http(s) origin without a path or trailing slash'),
+    .regex(/^https?:\/\/[^/\s]+$/, 'must be an http(s) origin without a path or trailing slash')
+    .refine((value) => {
+      try {
+        return new URL(value).origin === value;
+      } catch {
+        return false;
+      }
+    }, 'must be a normalized origin, exactly as browsers send it (lowercase, no default port)'),
+  // Proxies in front of the api (Vercel: 1), so req.ip and the rate limit see the client.
+  TRUST_PROXY: z.preprocess(
+    emptyAsUndefined,
+    z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().min(0).max(10)).default(0),
+  ),
 });
 
 export type LogLevel = (typeof logLevels)[number];

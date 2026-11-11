@@ -14,18 +14,27 @@ describe('loadEnv', () => {
       PORT: 3333,
       LOG_LEVEL: 'info',
       DATA_PROVIDER: 'jhu_csv',
+      TRUST_PROXY: 0,
     });
   });
 
   it('treats empty optional values as missing', () => {
     expect(
-      loadEnv({ ...REQUIRED, NODE_ENV: '', PORT: '', LOG_LEVEL: '', DATA_PROVIDER: '' }),
+      loadEnv({
+        ...REQUIRED,
+        NODE_ENV: '',
+        PORT: '',
+        LOG_LEVEL: '',
+        DATA_PROVIDER: '',
+        TRUST_PROXY: '',
+      }),
     ).toEqual({
       ...REQUIRED,
       NODE_ENV: 'development',
       PORT: 3333,
       LOG_LEVEL: 'info',
       DATA_PROVIDER: 'jhu_csv',
+      TRUST_PROXY: 0,
     });
   });
 
@@ -44,6 +53,7 @@ describe('loadEnv', () => {
       PORT: 8080,
       LOG_LEVEL: 'debug',
       DATA_PROVIDER: 'api_ninjas',
+      TRUST_PROXY: 0,
     });
   });
 
@@ -77,6 +87,23 @@ describe('loadEnv', () => {
       expect(() => loadEnv({ ...REQUIRED, WEB_ORIGIN: origin })).toThrow(/WEB_ORIGIN/);
     },
   );
+
+  it.each([
+    'HTTPS://Mapp.vercel.app',
+    'https://mapp.vercel.app:443',
+    'http://localhost:80',
+    'http://localhost:99999',
+  ])('rejects a non-normalized WEB_ORIGIN=%s', (origin) => {
+    expect(() => loadEnv({ ...REQUIRED, WEB_ORIGIN: origin })).toThrow(/WEB_ORIGIN/);
+  });
+
+  it('reads TRUST_PROXY as a hop count', () => {
+    expect(loadEnv({ ...REQUIRED, TRUST_PROXY: '1' }).TRUST_PROXY).toBe(1);
+  });
+
+  it.each(['-1', 'yes', '1.5', '11'])('rejects TRUST_PROXY=%s', (value) => {
+    expect(() => loadEnv({ ...REQUIRED, TRUST_PROXY: value })).toThrow(/TRUST_PROXY/);
+  });
 
   it('accepts an https origin with a port', () => {
     expect(loadEnv({ ...REQUIRED, WEB_ORIGIN: 'https://mapp.dev:8443' }).WEB_ORIGIN).toBe(

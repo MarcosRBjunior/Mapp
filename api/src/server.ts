@@ -13,7 +13,12 @@ function main(): void {
   const prisma = createPrisma(env.DATABASE_URL);
   const services = createServices(createReadRepositories(prisma), env.DATA_PROVIDER);
 
-  const server = createApp({ services, logger, webOrigin: env.WEB_ORIGIN }).listen(env.PORT);
+  const server = createApp({
+    services,
+    logger,
+    webOrigin: env.WEB_ORIGIN,
+    trustProxy: env.TRUST_PROXY,
+  }).listen(env.PORT);
 
   server.on('listening', () => {
     logger.info({ port: env.PORT }, 'api listening');

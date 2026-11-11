@@ -6,10 +6,12 @@ import { createFakeRepositories, type FakeOptions } from './fake-repositories.js
 
 export const TEST_WEB_ORIGIN = 'http://localhost:5173';
 
-export function createTestApp(options: FakeOptions = {}): Express {
+export function createTestApp(options: FakeOptions & { trustProxy?: number } = {}): Express {
+  const { trustProxy = 0, ...fakeOptions } = options;
   return createApp({
-    services: createServices(createFakeRepositories(options), 'api_ninjas'),
+    services: createServices(createFakeRepositories(fakeOptions), 'api_ninjas'),
     logger: createLogger('silent'),
     webOrigin: TEST_WEB_ORIGIN,
+    trustProxy,
   });
 }

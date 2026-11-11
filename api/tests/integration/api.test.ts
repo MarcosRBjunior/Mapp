@@ -17,6 +17,7 @@ const app = createApp({
   services: createServices(createReadRepositories(reader), 'api_ninjas'),
   logger: createLogger('silent'),
   webOrigin: 'http://localhost:5173',
+  trustProxy: 0,
 });
 let fixture: ReadFixture;
 
