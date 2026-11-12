@@ -5,21 +5,32 @@ import { BrowserRouter } from 'react-router';
 import { App } from './app/app';
 import { createQueryClient } from './app/query-client';
 import './app/styles.css';
-import { getEnv } from './config/env';
-
-getEnv();
+import { getEnv, InvalidEnvError } from './config/env';
+import { showEnvError } from './config/env-error';
 
 const root = document.getElementById('root');
 if (!root) {
   throw new Error('Root element #root not found');
 }
 
-createRoot(root).render(
-  <StrictMode>
-    <QueryClientProvider client={createQueryClient()}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </QueryClientProvider>
-  </StrictMode>,
-);
+let envError: InvalidEnvError | null = null;
+try {
+  getEnv();
+} catch (error) {
+  if (!(error instanceof InvalidEnvError)) throw error;
+  envError = error;
+}
+
+if (envError) {
+  showEnvError(root, envError);
+} else {
+  createRoot(root).render(
+    <StrictMode>
+      <QueryClientProvider client={createQueryClient()}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </StrictMode>,
+  );
+}

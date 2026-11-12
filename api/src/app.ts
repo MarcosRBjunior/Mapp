@@ -17,6 +17,8 @@ export interface AppDeps {
   services: Services;
   logger: Logger;
   webOrigin: string;
+  // Proxy hops trusted for req.ip (TRUST_PROXY); 0 ignores X-Forwarded-For.
+  trustProxy: number;
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -24,6 +26,7 @@ export function createApp(deps: AppDeps): Express {
   app.disable('x-powered-by');
   // ETags come from dataVersion (middlewares/cache.ts), not from a body hash.
   app.set('etag', false);
+  app.set('trust proxy', deps.trustProxy);
   app.use(createHttpLogger(deps.logger));
   app.use(helmet());
   app.use(

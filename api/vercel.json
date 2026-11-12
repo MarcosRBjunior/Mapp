@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "regions": ["gru1"],
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "../node_modules/swagger-ui-dist/**"
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../package-lock.json"
+}

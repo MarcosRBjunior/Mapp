@@ -4,6 +4,16 @@ export interface WebEnv {
   tilesAttribution: string;
 }
 
+export class InvalidEnvError extends Error {
+  readonly names: string[];
+
+  constructor(names: string[]) {
+    super(`Invalid web environment: ${names.join(', ')}`);
+    this.name = 'InvalidEnvError';
+    this.names = names;
+  }
+}
+
 const API_URL_PATTERN = /^https?:\/\/[^/\s]+$/;
 
 function text(value: unknown): string {
@@ -22,7 +32,7 @@ export function parseEnv(source: Record<string, unknown>): WebEnv {
   }
   if (tilesAttribution === '') invalid.push('VITE_TILES_ATTRIBUTION');
   if (invalid.length > 0) {
-    throw new Error(`Invalid web environment: ${invalid.join(', ')}`);
+    throw new InvalidEnvError(invalid);
   }
 
   return { apiUrl, tilesUrl, tilesAttribution };

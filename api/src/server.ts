@@ -1,19 +1,14 @@
-import { createApp } from './app.js';
+import { createRuntime } from './bootstrap.js';
 import { loadEnv } from './config/env.js';
 import { createLogger } from './lib/logger.js';
-import { createPrisma } from './lib/prisma.js';
-import { createReadRepositories } from './repositories/read-repositories.js';
-import { createServices } from './services/create-services.js';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
+// Local server and `npm start`; in production the api runs as a Vercel function (api/index.ts).
 function main(): void {
   const env = loadEnv();
-  const logger = createLogger(env.LOG_LEVEL);
-  const prisma = createPrisma(env.DATABASE_URL);
-  const services = createServices(createReadRepositories(prisma), env.DATA_PROVIDER);
-
-  const server = createApp({ services, logger, webOrigin: env.WEB_ORIGIN }).listen(env.PORT);
+  const { app, prisma, logger } = createRuntime(env);
+  const server = app.listen(env.PORT);
 
   server.on('listening', () => {
     logger.info({ port: env.PORT }, 'api listening');

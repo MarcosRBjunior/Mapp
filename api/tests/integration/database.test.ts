@@ -22,6 +22,26 @@ async function count(sql: string): Promise<number> {
 const SOURCE_ID = "(SELECT id FROM data_source WHERE code = 'api_ninjas')";
 
 describe('migrate + seed from an empty database', () => {
+  it('passes db:check on the test database', () => {
+    expect(() =>
+      execFileSync('npm', ['run', 'db:check'], { env: scriptEnv(urls), stdio: 'pipe' }),
+    ).not.toThrow();
+  });
+
+  it('creates the reader with a SCRAM verifier that accepts the original password', async () => {
+    const stored = await owner.query<{ rolpassword: string }>(
+      "SELECT rolpassword FROM pg_authid WHERE rolname = 'mapp_api'",
+    );
+    expect(stored.rows[0]?.rolpassword).toMatch(/^SCRAM-SHA-256\$4096:/);
+    const reader = new pg.Client({ connectionString: urls.readerUrl });
+    await reader.connect();
+    try {
+      expect((await reader.query('SELECT 1 AS ok')).rows).toEqual([{ ok: 1 }]);
+    } finally {
+      await reader.end();
+    }
+  });
+
   it('creates 202 entities: 198 countries with coordinates and 4 non-geographic', async () => {
     expect(await count('SELECT count(*) FROM country')).toBe(202);
     expect(

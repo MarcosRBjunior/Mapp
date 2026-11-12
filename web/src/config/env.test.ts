@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEnv } from './env';
+import { InvalidEnvError, parseEnv } from './env';
 
 const valid = {
   VITE_API_URL: 'http://localhost:3333',
@@ -22,6 +22,17 @@ describe('parseEnv', () => {
       expect(() => parseEnv({ ...valid, [name]: undefined })).toThrow(name);
     },
   );
+
+  it('throws an InvalidEnvError with the invalid names', () => {
+    let caught: unknown;
+    try {
+      parseEnv({ ...valid, VITE_API_URL: undefined });
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(InvalidEnvError);
+    expect((caught as InvalidEnvError).names).toEqual(['VITE_API_URL']);
+  });
 
   it('rejects an API URL with a trailing slash or a path', () => {
     expect(() => parseEnv({ ...valid, VITE_API_URL: 'http://localhost:3333/' })).toThrow(

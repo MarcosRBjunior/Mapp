@@ -16,6 +16,9 @@ web/test-results/
 web/blob-report/
 web/playwright/.cache/
 
+# Vercel
+.vercel/
+
 # Variáveis de ambiente (nunca commitar)
 .env
 .env.*

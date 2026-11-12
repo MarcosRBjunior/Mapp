@@ -8,6 +8,7 @@
   },
   "include": [
     "src",
+    "api",
     "tests",
     "prisma",
     "vitest.config.ts",
