@@ -2,7 +2,10 @@
 
 Dashboard histórico de COVID-19: mapa-múndi clicável, cards de estatística, gráficos e ranking, alimentados por uma API REST própria. Projeto 08 do Portfólio Boost Program.
 
-Links públicos: em breve.
+Links públicos:
+
+- Site: https://mapp-covid.vercel.app
+- API: https://mapp-covid-api.vercel.app (documentação em [`/api/docs`](https://mapp-covid-api.vercel.app/api/docs))
 
 ## Funcionalidades
 
@@ -66,7 +69,7 @@ Com a integração Git da Vercel, o `main` vai para produção e cada PR gera pr
 
 - Casos e mortes: [COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University](https://github.com/CSSEGISandData/COVID-19), licença CC BY 4.0. Série de 22/01/2020 a 09/03/2023 (a coleta foi encerrada).
 - Contornos dos países: Natural Earth (domínio público).
-- Tiles: © OpenStreetMap contributors © CARTO.
+- Tiles: © OpenStreetMap contributors (servidor padrão do OpenStreetMap, sem chave). Os tiles gratuitos da CARTO passaram a exigir chave em 2026-11.
 
 ## Limitações
 
