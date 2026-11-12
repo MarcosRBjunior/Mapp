@@ -24,4 +24,4 @@ O `CLAUDE.md` exige que a api HTTP só leia (`DATABASE_URL`) e que o job escreva
 
 - Em produção (Neon, ADR 0010) o dono `mapp` é criado pelo Neon e é membro de `neon_superuser`, que tem `CREATEROLE`; o `db:roles` roda nele sem ajuste.
 - O leitor continua criado pelo `db:roles` (usuários criados pelo Neon entram em `neon_superuser` e o script os recusa como leitor).
-- O `CREATE/ALTER ROLE` agora leva o verificador SCRAM-SHA-256 calculado no cliente, não a senha: um log de DDL no servidor não expõe a senha do leitor.
+- O `CREATE/ALTER ROLE` continua levando a senha em texto (pela conexão TLS). Um verificador SCRAM calculado no cliente foi tentado e recusado pelo Neon (2026-11-12: "Neon only supports being given plaintext passwords"), que repassa o DDL de usuários ao painel dele. O Postgres guarda só o hash SCRAM-SHA-256. O risco do log de DDL acima continua aceito.
