@@ -28,7 +28,7 @@ describe('migrate + seed from an empty database', () => {
     ).not.toThrow();
   });
 
-  it('creates the reader with a SCRAM verifier that accepts the original password', async () => {
+  it('stores the reader password as a SCRAM hash that accepts the original password', async () => {
     const stored = await owner.query<{ rolpassword: string }>(
       "SELECT rolpassword FROM pg_authid WHERE rolname = 'mapp_api'",
     );
