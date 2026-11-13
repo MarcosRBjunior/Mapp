@@ -113,10 +113,15 @@ test('switching to the log scale redraws the cumulative axis', async ({ page }) 
   const ticks = cumulative.locator(
     '.recharts-yAxis-tick-labels .recharts-cartesian-axis-tick-value',
   );
+  // Capture the ticks only once both series are drawn: earlier ones could belong to a partial chart.
+  await expect(cumulative).toContainText(
+    'Casos acumulados de 08/02/2023 a 09/03/2023 — Brasil: de 133.680 para 137.160; Mundo: de 1.336.800 para 1.371.600.',
+  );
   await expect(ticks.first()).toBeVisible();
   const before = await ticks.allTextContents();
 
   await cumulative.getByRole('radio', { name: 'Log' }).click();
+  await expect(cumulative.getByRole('radio', { name: 'Log' })).toBeChecked();
 
   await expect.poll(() => ticks.allTextContents()).not.toEqual(before);
 });
