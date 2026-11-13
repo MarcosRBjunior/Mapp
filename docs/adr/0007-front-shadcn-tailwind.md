@@ -34,9 +34,10 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
 - **Testes:** o `jsdom` não tem `matchMedia`, e o setup dos testes o simula.
 - **Tema (2026-11-13):** claro e escuro, pela classe `dark` em `<html>` e os tokens `.dark` do shadcn.
   - Abre seguindo o sistema (`prefers-color-scheme`); o botão do cabeçalho alterna e a escolha fica em `localStorage['mapp-theme']` (`light` | `dark`), lida com `try/catch`.
-  - Um script inline no `index.html` aplica o tema antes do bundle, para não piscar; `web/src/shared/theme/theme.ts` repete a mesma regra.
+  - Um script inline no `index.html` aplica o tema antes do bundle, para não piscar; `web/src/shared/theme/theme.ts` repete a mesma regra e um teste confere que os dois usam a mesma chave e os mesmos valores.
+  - Um único `ThemeProvider` (em `main.tsx`) é dono do tema: acompanha o sistema enquanto não há escolha salva e recebe a escolha feita em outra aba pelo evento `storage`.
   - Gráficos: `--chart-2` e `--chart-5` do escuro com valores claros (contraste sobre `--card`).
-  - Mapa: o Leaflet recebe cores como atributos SVG, que não acompanham variáveis CSS; a paleta clara/escura vive em `features/map/map-colors.ts` e o hook `useIsDark` observa a classe de `<html>`.
+  - Mapa: o Leaflet recebe cores como atributos SVG, que não acompanham variáveis CSS; a paleta clara/escura vive em `features/map/map-colors.ts` e lê o tema do `ThemeProvider`.
   - Tiles: o OpenStreetMap só tem tiles claros; no escuro, filtro CSS (`invert` + `hue-rotate`) só no `.leaflet-tile-pane`. Popup, tooltip e controles do Leaflet pelos tokens.
   - axe roda em todas as páginas nos dois temas; o Lighthouse continua no claro.
 

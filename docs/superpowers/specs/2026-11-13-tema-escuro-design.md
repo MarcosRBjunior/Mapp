@@ -11,7 +11,7 @@ Data: 2026-11-13 · Muda a ADR 0007 (antes: só tema claro).
 
 - Script inline no `web/index.html`, antes do bundle, põe a classe `dark` em `<html>` quando `localStorage['mapp-theme'] === 'dark'`, ou quando não há valor salvo e `prefers-color-scheme: dark`. Evita o flash do tema errado. O site não manda CSP, então o script inline roda.
 - `web/src/shared/theme/theme.ts`: funções puras `readStoredTheme()`, `storeTheme(theme)`, `systemTheme()`, `resolveTheme(stored, system)` e `applyTheme(theme)` (classe `dark` e `color-scheme` em `<html>`). Toda leitura e escrita no `localStorage` com `try/catch`: sem armazenamento, segue o sistema.
-- `web/src/shared/theme/use-theme.ts`: hook `useTheme()` → `{ theme, toggle }`. Sem escolha salva, acompanha a mudança do sistema (`matchMedia(...).addEventListener('change')`); depois de alternar, a escolha salva vence.
+- `web/src/shared/theme/theme-provider.tsx` + `use-theme.ts`: contexto com `{ theme, toggle }`, lido por `useTheme()`. Sem escolha salva, acompanha a mudança do sistema (`matchMedia(...).addEventListener('change')`); depois de alternar, a escolha salva vence.
 - Valores salvos: só `light` ou `dark`; qualquer outro valor é ignorado.
 
 ## 2. Botão
