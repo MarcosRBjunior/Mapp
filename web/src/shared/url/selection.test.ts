@@ -17,3 +17,11 @@ describe('selectionKeyOf', () => {
     expect(selectionKeyOf(selectionState())).toMatch(/^\d+$/);
   });
 });
+
+describe('selectionState', () => {
+  it('gives a new key to each selection, even in the same millisecond', () => {
+    const keys = Array.from({ length: 3 }, () => selectionKeyOf(selectionState()));
+
+    expect(new Set(keys).size).toBe(3);
+  });
+});
