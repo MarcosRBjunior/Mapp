@@ -34,6 +34,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+        env:
+          # check:bundle fails if this name reaches the bundle: only the VITE_* keys the app reads may ship.
+          VITE_BUNDLE_PROBE: 'must-not-ship'
       - run: npm run check:bundle -w web
 
   integration:

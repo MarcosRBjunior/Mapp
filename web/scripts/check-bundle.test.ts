@@ -41,4 +41,10 @@ describe('findForbidden', () => {
       { file: 'env.txt', text: 'API_NINJAS_KEY' },
     ]);
   });
+
+  it('finds a VITE_* variable the app does not read', async () => {
+    await writeFile(path.join(dir, 'app.js'), 'const env={VITE_BUNDLE_PROBE:"must-not-ship"}');
+
+    expect(await findForbidden(dir)).toEqual([{ file: 'app.js', text: 'VITE_BUNDLE_PROBE' }]);
+  });
 });

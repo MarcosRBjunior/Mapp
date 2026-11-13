@@ -2,8 +2,14 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-// The web bundle must never carry the data source's host or key (CLAUDE.md: only the sync job talks to the source).
-export const FORBIDDEN: readonly string[] = ['api-ninjas.com', 'API_NINJAS_KEY', 'X-Api-Key'];
+// The web bundle must never carry the data source's host or key (CLAUDE.md: only the sync job talks to the source),
+// nor VITE_* variables the app does not read (the CI build sets VITE_BUNDLE_PROBE to catch that).
+export const FORBIDDEN: readonly string[] = [
+  'api-ninjas.com',
+  'API_NINJAS_KEY',
+  'X-Api-Key',
+  'VITE_BUNDLE_PROBE',
+];
 
 export async function findForbidden(dir: string): Promise<{ file: string; text: string }[]> {
   const entries = await readdir(dir, { recursive: true, withFileTypes: true });

@@ -41,6 +41,12 @@ export function parseEnv(source: Record<string, unknown>): WebEnv {
 let cached: WebEnv | undefined;
 
 export function getEnv(): WebEnv {
-  cached ??= parseEnv(import.meta.env);
+  // Read each key on its own: passing `import.meta.env` whole makes Vite inline every VITE_* variable
+  // of the build (on Vercel, VITE_VERCEL_* with commit and author data) into the bundle.
+  cached ??= parseEnv({
+    VITE_API_URL: import.meta.env.VITE_API_URL,
+    VITE_TILES_URL: import.meta.env.VITE_TILES_URL,
+    VITE_TILES_ATTRIBUTION: import.meta.env.VITE_TILES_ATTRIBUTION,
+  });
   return cached;
 }
