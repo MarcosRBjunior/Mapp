@@ -6,6 +6,7 @@ import { addDays } from '../../shared/period/period';
 import { API, errorBody } from '../../test/handlers';
 import { renderWithProviders } from '../../test/render';
 import { server } from '../../test/server';
+import { waitForFailedQueries } from '../../test/settle';
 import { DailyNewChart } from './daily-new-chart';
 
 function chart() {
@@ -73,19 +74,11 @@ describe('DailyNewChart', () => {
   });
 
   it('keeps the skeleton for an unknown country', async () => {
-    let answered = false;
-    const onResponse = ({ request }: { request: Request }) => {
-      if (request.url.includes('/countries/XYZ/timeseries')) answered = true;
-    };
-    server.events.on('response:mocked', onResponse);
-    try {
-      renderWithProviders(<DailyNewChart code="XYZ" metric="cases" period="30d" />);
-      await waitFor(() => expect(answered).toBe(true));
-      // Let the query settle on the 404 before asserting.
-      await new Promise((resolve) => setTimeout(resolve, 20));
-    } finally {
-      server.events.removeListener('response:mocked', onResponse);
-    }
+    const { queryClient } = renderWithProviders(
+      <DailyNewChart code="XYZ" metric="cases" period="30d" />,
+    );
+    // The series and the detail of XYZ both settle on COUNTRY_NOT_FOUND.
+    await waitForFailedQueries(queryClient, 2);
 
     expect(within(chart()).getByRole('status')).toBeInTheDocument();
     expect(within(chart()).queryByText('Sem dados no período')).not.toBeInTheDocument();

@@ -11,7 +11,7 @@ const notFound = {
   error: new ApiError(404, 'COUNTRY_NOT_FOUND', 'x', null),
 };
 
-function renderFallback(countryDetail?: typeof ready) {
+function renderFallback(countryDetail?: { isPending: boolean; isError: boolean; error: unknown }) {
   render(
     seriesFallback({
       meta: ready,
