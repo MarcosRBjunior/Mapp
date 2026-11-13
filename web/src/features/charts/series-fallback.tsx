@@ -23,6 +23,14 @@ interface SeriesFallbackOptions {
   loadingLabel: string;
   errorMessage: string;
   height?: string;
+  // Detail query of the same country. The page swaps an unknown country for the world view once
+  // the detail also answers COUNTRY_NOT_FOUND; without that answer a 404 series is an error.
+  countryDetail?: QueryState;
+}
+
+function swapComing(detail: QueryState | undefined): boolean {
+  if (detail === undefined) return false;
+  return detail.isPending || isApiError(detail.error, 'COUNTRY_NOT_FOUND');
 }
 
 // Loading, empty and error states of the charts, with the time card's rules; null once every
@@ -35,6 +43,7 @@ export function seriesFallback({
   loadingLabel,
   errorMessage,
   height = '15rem',
+  countryDetail,
 }: SeriesFallbackOptions): ReactNode {
   const loading = <Skeleton label={loadingLabel} height={height} />;
   if (meta.isPending) return loading;
@@ -43,8 +52,7 @@ export function seriesFallback({
   const failed = series.find((query) => query.isError);
   if (failed) {
     if (isApiError(failed.error, 'DATA_NOT_READY')) return <EmptyState message={NOT_LOADED} />;
-    // The page swaps an unknown country for the world view right after, so keep the skeleton.
-    if (isApiError(failed.error, 'COUNTRY_NOT_FOUND')) return loading;
+    if (isApiError(failed.error, 'COUNTRY_NOT_FOUND') && swapComing(countryDetail)) return loading;
     return <ErrorState message={errorMessage} onRetry={onRetry} />;
   }
   if (series.some((query) => query.isPending)) return loading;

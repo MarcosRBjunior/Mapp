@@ -48,6 +48,15 @@ describe('data state repository (read-only user)', () => {
       incompleteDates: [],
     });
   });
+
+  it('has no coverage for a source without rows in the view', async () => {
+    expect(await repos.dataState.findCoverage(fixture.sourceId + 999)).toEqual({
+      from: null,
+      referenceDate: null,
+      countries: 0,
+      incompleteDates: [],
+    });
+  });
 });
 
 describe('meta repository (read-only user)', () => {

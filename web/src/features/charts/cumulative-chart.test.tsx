@@ -6,6 +6,7 @@ import { metaFixture } from '../../test/fixtures';
 import { API, errorBody } from '../../test/handlers';
 import { renderWithProviders } from '../../test/render';
 import { server } from '../../test/server';
+import { waitForFailedQueries } from '../../test/settle';
 import { CumulativeChart } from './cumulative-chart';
 
 function chart() {
@@ -18,6 +19,16 @@ function Switcher({ code = null }: { code?: string | null }) {
     <>
       <button onClick={() => setPeriod('7d')}>trocar</button>
       <CumulativeChart code={code} metric="cases" period={period} />
+    </>
+  );
+}
+
+function MetricSwitcher() {
+  const [metric, setMetric] = useState<'cases' | 'deaths'>('cases');
+  return (
+    <>
+      <button onClick={() => setMetric('deaths')}>mortes</button>
+      <CumulativeChart code={null} metric={metric} period="30d" />
     </>
   );
 }
@@ -106,23 +117,28 @@ describe('CumulativeChart', () => {
   });
 
   it('keeps the skeleton for an unknown country', async () => {
-    let answered = false;
-    const onResponse = ({ request }: { request: Request }) => {
-      if (request.url.includes('/countries/XYZ/timeseries')) answered = true;
-    };
-    server.events.on('response:mocked', onResponse);
-    try {
-      renderWithProviders(<CumulativeChart code="XYZ" metric="cases" period="30d" />);
-      await waitFor(() => expect(answered).toBe(true));
-      // Let the query settle on the 404 before asserting.
-      await new Promise((resolve) => setTimeout(resolve, 20));
-    } finally {
-      server.events.removeListener('response:mocked', onResponse);
-    }
+    const { queryClient } = renderWithProviders(
+      <CumulativeChart code="XYZ" metric="cases" period="30d" />,
+    );
+    // The series and the detail of XYZ both settle on COUNTRY_NOT_FOUND.
+    await waitForFailedQueries(queryClient, 2);
 
     expect(within(chart()).getByRole('status')).toBeInTheDocument();
     expect(within(chart()).queryByText('Sem dados no período')).not.toBeInTheDocument();
     expect(within(chart()).queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows the error when the series is 404 but the detail failed with 5xx', async () => {
+    server.use(
+      http.get(`${API}/api/v1/countries/XYZ`, () =>
+        HttpResponse.json(errorBody('INTERNAL_ERROR', 'boom'), { status: 500 }),
+      ),
+    );
+    renderWithProviders(<CumulativeChart code="XYZ" metric="cases" period="30d" />);
+
+    expect(await within(chart()).findByRole('alert')).toHaveTextContent(
+      'Não foi possível carregar o crescimento acumulado',
+    );
   });
 
   it('says the data is not loaded on DATA_NOT_READY', async () => {
@@ -134,6 +150,30 @@ describe('CumulativeChart', () => {
     renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
 
     expect(await within(chart()).findByText('Dados ainda não carregados')).toBeInTheDocument();
+  });
+
+  it('retries only the failed series, not the world series that loaded', async () => {
+    let worldCalls = 0;
+    let countryCalls = 0;
+    server.events.on('request:start', ({ request }) => {
+      if (request.url.includes('/global/timeseries')) worldCalls += 1;
+    });
+    server.use(
+      http.get(`${API}/api/v1/countries/BRA/timeseries`, () => {
+        countryCalls += 1;
+        return HttpResponse.json(errorBody('INTERNAL_ERROR', 'boom'), { status: 500 });
+      }),
+    );
+    try {
+      renderWithProviders(<CumulativeChart code="BRA" metric="cases" period="30d" />);
+      fireEvent.click(await within(chart()).findByRole('button', { name: 'Tentar de novo' }));
+      await waitFor(() => expect(countryCalls).toBe(2));
+      await within(chart()).findByRole('button', { name: 'Tentar de novo' });
+    } finally {
+      server.events.removeAllListeners('request:start');
+    }
+
+    expect(worldCalls).toBe(1);
   });
 
   it('retries after an error', async () => {
@@ -194,6 +234,7 @@ describe('CumulativeChart', () => {
     fireEvent.click(screen.getByRole('button', { name: 'trocar' }));
 
     await waitFor(() => expect(previous.closest('[aria-busy="true"]')).not.toBeNull());
+    expect(previous.closest('[aria-busy="true"]')).toHaveClass('opacity-60');
     expect(within(chart()).queryByRole('status')).not.toBeInTheDocument();
     expect(previous).toBeInTheDocument();
     release();
@@ -202,6 +243,41 @@ describe('CumulativeChart', () => {
     expect(chart().querySelector('[aria-busy="true"]')).toBeNull();
     expect(within(chart()).queryByText(/de 08\/02\/2023 a 09\/03\/2023/)).not.toBeInTheDocument();
   });
+  it('shows the skeleton, not the previous metric, while another metric loads', async () => {
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, async ({ request }) => {
+        const metric = new URL(request.url).searchParams.get('metric') ?? 'cases';
+        if (metric === 'deaths') await gate;
+        return HttpResponse.json({
+          metric,
+          granularity: 'day',
+          from: '2023-02-02',
+          to: '2023-03-09',
+          points: [
+            { date: '2023-03-03', total: 3, new: 1 },
+            { date: '2023-03-09', total: 9, new: 2 },
+          ],
+        });
+      }),
+    );
+    renderWithProviders(<MetricSwitcher />);
+
+    await within(chart()).findByText(/^Casos acumulados/);
+    fireEvent.click(screen.getByRole('button', { name: 'mortes' }));
+
+    expect(
+      await within(chart()).findByRole('status', { name: 'Carregando o crescimento acumulado' }),
+    ).toBeInTheDocument();
+    expect(within(chart()).queryByText(/^Casos acumulados/)).not.toBeInTheDocument();
+    release();
+
+    expect(await within(chart()).findByText(/^Mortes acumuladas/)).toBeInTheDocument();
+  });
+
   it('never pairs the new world period with the old country points', async () => {
     const body = (from: string, total: number) => ({
       metric: 'cases',

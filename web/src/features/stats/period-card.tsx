@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useCountryName, useMeta, useTimeseries } from '../../shared/api/queries';
+import { useCountry, useCountryName, useMeta, useTimeseries } from '../../shared/api/queries';
 import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { NEW_LABELS, formatDate, formatNumber } from '../../shared/format/format';
@@ -26,6 +26,7 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
     queryKey: ['timeseries', code ?? 'world', metric],
     predicate: (query) => query.queryKey[5] === 'month',
   });
+  const countryDetail = useCountry(code);
   let content: ReactNode = seriesFallback({
     meta,
     onRetry: retry,
@@ -34,6 +35,7 @@ export function PeriodCard({ code, metric, period }: PeriodCardProps) {
     loadingLabel: 'Carregando novos no período',
     errorMessage: 'Não foi possível carregar os novos no período',
     height: '6rem',
+    countryDetail,
   });
 
   if (content === null && range !== null && series.data) {

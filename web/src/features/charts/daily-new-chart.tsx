@@ -7,7 +7,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useCountryName, useChartSeries, useMeta } from '../../shared/api/queries';
+import { useChartSeries, useCountry, useCountryName, useMeta } from '../../shared/api/queries';
 import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { NEW_LABELS, formatCompact, formatDate, formatNumber } from '../../shared/format/format';
@@ -55,6 +55,7 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
     [metric],
   );
 
+  const countryDetail = useCountry(code);
   let content: ReactNode = seriesFallback({
     meta,
     onRetry: retry,
@@ -62,6 +63,7 @@ export function DailyNewChart({ code, metric, period }: DailyNewChartProps) {
     series: [series],
     loadingLabel: 'Carregando os novos por dia',
     errorMessage: 'Não foi possível carregar os novos por dia',
+    countryDetail,
   });
 
   if (content === null && data && model) {
