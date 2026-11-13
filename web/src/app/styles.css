@@ -99,8 +99,27 @@
   color: #93c5fd;
 }
 
-.dark .leaflet-popup-close-button {
+/* Leaflet's own rules are `.leaflet-container a.leaflet-popup-close-button` and its :hover/:focus. */
+.dark .leaflet-container a.leaflet-popup-close-button {
   color: var(--muted-foreground);
+}
+
+.dark .leaflet-container a.leaflet-popup-close-button:hover,
+.dark .leaflet-container a.leaflet-popup-close-button:focus {
+  color: var(--popover-foreground);
+}
+
+/* Zoom buttons keep a visible hover/focus and a dimmed disabled state. */
+.dark .leaflet-container .leaflet-bar a:hover,
+.dark .leaflet-container .leaflet-bar a:focus {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.dark .leaflet-container .leaflet-bar a.leaflet-disabled {
+  background: var(--popover);
+  color: var(--muted-foreground);
+  opacity: 0.6;
 }
 
 @theme inline {

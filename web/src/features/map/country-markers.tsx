@@ -4,7 +4,7 @@ import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { Skeleton } from '../../shared/ui/skeleton';
-import { useMapColors } from './map-colors';
+import { useMapColors, type MapColors } from './map-colors';
 import { markerRadius, maxTotal } from './marker-scale';
 
 const CountrySparkline = lazy(() =>
@@ -35,6 +35,7 @@ export function CountryMarkers({
   selectionKey,
   onSelect,
 }: CountryMarkersProps) {
+  const colors = useMapColors();
   const max = useMemo(() => maxTotal(countries), [countries]);
   // The parent's onSelect changes on every navigation; a stable wrapper keeps memo effective.
   const onSelectRef = useRef(onSelect);
@@ -57,6 +58,7 @@ export function CountryMarkers({
             key={country.code}
             country={country}
             metric={metric}
+            colors={colors}
             radius={markerRadius(country.total, max)}
             referenceDate={referenceDate}
             selected={selected}
@@ -73,6 +75,7 @@ export function CountryMarkers({
 interface CountryMarkerProps {
   country: MappableCountry;
   metric: Metric;
+  colors: MapColors;
   radius: number;
   referenceDate: string | undefined;
   selected: boolean;
@@ -84,6 +87,7 @@ interface CountryMarkerProps {
 const CountryMarker = memo(function CountryMarker({
   country,
   metric,
+  colors,
   radius,
   referenceDate,
   selected,
@@ -190,7 +194,6 @@ const CountryMarker = memo(function CountryMarker({
   const relayoutPopup = useCallback(() => markerRef.current?.getPopup()?.update(), []);
 
   const eventHandlers = useMemo(() => ({ click: () => onSelectRef.current(code) }), [code]);
-  const colors = useMapColors();
   const pathOptions = useMemo(
     () => ({
       color: selected ? colors.markerOutlineSelected : colors.markerOutline,

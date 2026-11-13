@@ -1,5 +1,13 @@
+import indexHtml from '../../../index.html?raw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { THEME_KEY, applyTheme, readStoredTheme, resolveTheme, storeTheme } from './theme';
+import {
+  DARK_QUERY,
+  THEME_KEY,
+  applyTheme,
+  readStoredTheme,
+  resolveTheme,
+  storeTheme,
+} from './theme';
 
 describe('theme', () => {
   beforeEach(() => window.localStorage.clear());
@@ -38,5 +46,13 @@ describe('theme', () => {
     applyTheme('light');
     expect(document.documentElement).not.toHaveClass('dark');
     expect(document.documentElement.style.colorScheme).toBe('light');
+  });
+});
+
+describe('the inline script in index.html', () => {
+  it('uses the same key, values and system query as theme.ts', () => {
+    expect(indexHtml).toContain(`localStorage.getItem('${THEME_KEY}')`);
+    expect(indexHtml).toContain(`matchMedia('${DARK_QUERY}')`);
+    expect(indexHtml).toContain("theme !== 'light' && theme !== 'dark'");
   });
 });

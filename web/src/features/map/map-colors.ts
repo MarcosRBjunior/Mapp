@@ -1,5 +1,5 @@
 import type { Metric } from '../../shared/api/types';
-import { useIsDark } from '../../shared/theme/use-is-dark';
+import { useTheme } from '../../shared/theme/use-theme';
 
 export interface MapColors {
   metric: Record<Metric, string>;
@@ -30,5 +30,5 @@ export const DARK_MAP_COLORS: MapColors = {
 };
 
 export function useMapColors(): MapColors {
-  return useIsDark() ? DARK_MAP_COLORS : LIGHT_MAP_COLORS;
+  return useTheme().theme === 'dark' ? DARK_MAP_COLORS : LIGHT_MAP_COLORS;
 }

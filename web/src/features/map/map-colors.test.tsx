@@ -1,25 +1,32 @@
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import type { ReactNode } from 'react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { ThemeProvider } from '../../shared/theme/theme-provider';
+import { useTheme } from '../../shared/theme/use-theme';
 import { DARK_MAP_COLORS, LIGHT_MAP_COLORS, useMapColors } from './map-colors';
 
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <ThemeProvider>{children}</ThemeProvider>
+);
+
 describe('useMapColors', () => {
-  afterEach(() => document.documentElement.classList.remove('dark'));
+  beforeEach(() => window.localStorage.clear());
+  afterEach(() => {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.colorScheme = '';
+  });
 
-  it('follows the dark class on the root, live', async () => {
-    const { result } = renderHook(() => useMapColors());
-    expect(result.current).toBe(LIGHT_MAP_COLORS);
+  it('is light without the provider', () => {
+    expect(renderHook(() => useMapColors()).result.current).toBe(LIGHT_MAP_COLORS);
+  });
 
-    // The MutationObserver reports on a microtask.
-    await act(async () => {
-      document.documentElement.classList.add('dark');
-      await Promise.resolve();
+  it('follows the theme of the provider', () => {
+    const { result } = renderHook(() => ({ colors: useMapColors(), theme: useTheme() }), {
+      wrapper,
     });
-    expect(result.current).toBe(DARK_MAP_COLORS);
+    expect(result.current.colors).toBe(LIGHT_MAP_COLORS);
 
-    await act(async () => {
-      document.documentElement.classList.remove('dark');
-      await Promise.resolve();
-    });
-    expect(result.current).toBe(LIGHT_MAP_COLORS);
+    act(() => result.current.theme.toggle());
+    expect(result.current.colors).toBe(DARK_MAP_COLORS);
   });
 });
