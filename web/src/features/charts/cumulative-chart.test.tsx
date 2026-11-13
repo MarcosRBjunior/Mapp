@@ -125,6 +125,19 @@ describe('CumulativeChart', () => {
     expect(within(chart()).queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('shows the error when the series is 404 but the detail failed with 5xx', async () => {
+    server.use(
+      http.get(`${API}/api/v1/countries/XYZ`, () =>
+        HttpResponse.json(errorBody('INTERNAL_ERROR', 'boom'), { status: 500 }),
+      ),
+    );
+    renderWithProviders(<CumulativeChart code="XYZ" metric="cases" period="30d" />);
+
+    expect(await within(chart()).findByRole('alert')).toHaveTextContent(
+      'Não foi possível carregar o crescimento acumulado',
+    );
+  });
+
   it('says the data is not loaded on DATA_NOT_READY', async () => {
     server.use(
       http.get(`${API}/api/v1/global/timeseries`, () =>

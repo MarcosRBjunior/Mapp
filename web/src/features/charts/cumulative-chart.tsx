@@ -7,7 +7,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useChartSeries, useCountryName, useMeta } from '../../shared/api/queries';
+import { useChartSeries, useCountry, useCountryName, useMeta } from '../../shared/api/queries';
 import { useSeriesRetry } from '../../shared/api/use-series-retry';
 import type { Metric } from '../../shared/api/types';
 import { formatCompact, formatDate, formatNumber } from '../../shared/format/format';
@@ -83,6 +83,7 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
     [countryName],
   );
 
+  const countryDetail = useCountry(code);
   let content: ReactNode = seriesFallback({
     meta,
     onRetry: retry,
@@ -90,6 +91,7 @@ export function CumulativeChart({ code, metric, period }: CumulativeChartProps) 
     series: code === null ? [world] : [world, country],
     loadingLabel: 'Carregando o crescimento acumulado',
     errorMessage: 'Não foi possível carregar o crescimento acumulado',
+    countryDetail,
   });
 
   // World and country have their own placeholder state: never draw one period with the other's.
