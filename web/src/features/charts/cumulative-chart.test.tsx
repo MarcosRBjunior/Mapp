@@ -23,6 +23,16 @@ function Switcher({ code = null }: { code?: string | null }) {
   );
 }
 
+function MetricSwitcher() {
+  const [metric, setMetric] = useState<'cases' | 'deaths'>('cases');
+  return (
+    <>
+      <button onClick={() => setMetric('deaths')}>mortes</button>
+      <CumulativeChart code={null} metric={metric} period="30d" />
+    </>
+  );
+}
+
 describe('CumulativeChart', () => {
   it('summarizes the world growth in the period', async () => {
     renderWithProviders(<CumulativeChart code={null} metric="cases" period="30d" />);
@@ -224,6 +234,7 @@ describe('CumulativeChart', () => {
     fireEvent.click(screen.getByRole('button', { name: 'trocar' }));
 
     await waitFor(() => expect(previous.closest('[aria-busy="true"]')).not.toBeNull());
+    expect(previous.closest('[aria-busy="true"]')).toHaveClass('opacity-60');
     expect(within(chart()).queryByRole('status')).not.toBeInTheDocument();
     expect(previous).toBeInTheDocument();
     release();
@@ -232,6 +243,41 @@ describe('CumulativeChart', () => {
     expect(chart().querySelector('[aria-busy="true"]')).toBeNull();
     expect(within(chart()).queryByText(/de 08\/02\/2023 a 09\/03\/2023/)).not.toBeInTheDocument();
   });
+  it('shows the skeleton, not the previous metric, while another metric loads', async () => {
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.get(`${API}/api/v1/global/timeseries`, async ({ request }) => {
+        const metric = new URL(request.url).searchParams.get('metric') ?? 'cases';
+        if (metric === 'deaths') await gate;
+        return HttpResponse.json({
+          metric,
+          granularity: 'day',
+          from: '2023-02-02',
+          to: '2023-03-09',
+          points: [
+            { date: '2023-03-03', total: 3, new: 1 },
+            { date: '2023-03-09', total: 9, new: 2 },
+          ],
+        });
+      }),
+    );
+    renderWithProviders(<MetricSwitcher />);
+
+    await within(chart()).findByText(/^Casos acumulados/);
+    fireEvent.click(screen.getByRole('button', { name: 'mortes' }));
+
+    expect(
+      await within(chart()).findByRole('status', { name: 'Carregando o crescimento acumulado' }),
+    ).toBeInTheDocument();
+    expect(within(chart()).queryByText(/^Casos acumulados/)).not.toBeInTheDocument();
+    release();
+
+    expect(await within(chart()).findByText(/^Mortes acumuladas/)).toBeInTheDocument();
+  });
+
   it('never pairs the new world period with the old country points', async () => {
     const body = (from: string, total: number) => ({
       metric: 'cases',
