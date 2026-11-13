@@ -1,10 +1,10 @@
 # ADR 0007 — Front: shadcn/ui e Tailwind v4
 
-Data: 2026-10-23 · Status: aceita
+Data: 2026-10-23 · Status: aceita · Atualizada em 2026-11-13 (tema escuro)
 
 ## Contexto
 
-O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do shadcn/ui, no tema claro padrão. A F6 acrescenta o card Por tempo e o ranking, e o CSS escrito à mão da F4 não escalava.
+O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do shadcn/ui, no tema claro padrão (o escuro entrou em 2026-11-13). A F6 acrescenta o card Por tempo e o ranking, e o CSS escrito à mão da F4 não escalava.
 
 ## Decisão
 
@@ -32,6 +32,13 @@ O usuário decide o visual do dashboard e escolheu o bloco `dashboard-01` do sha
 - **Controles:** métrica e período são `ToggleGroup` de seleção única com `role="radiogroup"` e itens `role="radio"`/`aria-checked`. Um segundo clique no item ativo é ignorado.
 - **Gráficos:** componente `chart` do shadcn sobre o Recharts, com as cores `--chart-*` do tema; o SVG fica com `aria-hidden` e cada gráfico tem um resumo textual. O tooltip é próprio, para mostrar os valores em pt-BR e o `new` real da fonte. No `jsdom` o `ResizeObserver` é simulado e os gráficos ficam com tamanho 0: os testes de componente conferem o resumo; o desenho é conferido no E2E.
 - **Testes:** o `jsdom` não tem `matchMedia`, e o setup dos testes o simula.
+- **Tema (2026-11-13):** claro e escuro, pela classe `dark` em `<html>` e os tokens `.dark` do shadcn.
+  - Abre seguindo o sistema (`prefers-color-scheme`); o botão do cabeçalho alterna e a escolha fica em `localStorage['mapp-theme']` (`light` | `dark`), lida com `try/catch`.
+  - Um script inline no `index.html` aplica o tema antes do bundle, para não piscar; `web/src/shared/theme/theme.ts` repete a mesma regra.
+  - Gráficos: `--chart-2` e `--chart-5` do escuro com valores claros (contraste sobre `--card`).
+  - Mapa: o Leaflet recebe cores como atributos SVG, que não acompanham variáveis CSS; a paleta clara/escura vive em `features/map/map-colors.ts` e o hook `useIsDark` observa a classe de `<html>`.
+  - Tiles: o OpenStreetMap só tem tiles claros; no escuro, filtro CSS (`invert` + `hue-rotate`) só no `.leaflet-tile-pane`. Popup, tooltip e controles do Leaflet pelos tokens.
+  - axe roda em todas as páginas nos dois temas; o Lighthouse continua no claro.
 
 ## Consequências
 
