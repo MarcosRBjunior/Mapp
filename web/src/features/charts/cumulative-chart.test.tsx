@@ -149,6 +149,30 @@ describe('CumulativeChart', () => {
     expect(await within(chart()).findByText('Dados ainda não carregados')).toBeInTheDocument();
   });
 
+  it('retries only the failed series, not the world series that loaded', async () => {
+    let worldCalls = 0;
+    let countryCalls = 0;
+    server.events.on('request:start', ({ request }) => {
+      if (request.url.includes('/global/timeseries')) worldCalls += 1;
+    });
+    server.use(
+      http.get(`${API}/api/v1/countries/BRA/timeseries`, () => {
+        countryCalls += 1;
+        return HttpResponse.json(errorBody('INTERNAL_ERROR', 'boom'), { status: 500 });
+      }),
+    );
+    try {
+      renderWithProviders(<CumulativeChart code="BRA" metric="cases" period="30d" />);
+      fireEvent.click(await within(chart()).findByRole('button', { name: 'Tentar de novo' }));
+      await waitFor(() => expect(countryCalls).toBe(2));
+      await within(chart()).findByRole('button', { name: 'Tentar de novo' });
+    } finally {
+      server.events.removeAllListeners('request:start');
+    }
+
+    expect(worldCalls).toBe(1);
+  });
+
   it('retries after an error', async () => {
     let calls = 0;
     server.use(
