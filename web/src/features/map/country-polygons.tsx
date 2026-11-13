@@ -2,16 +2,18 @@ import type { Feature, Geometry } from 'geojson';
 import type { Layer, Path, PathOptions } from 'leaflet';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { GeoJSON } from 'react-leaflet';
+import { useMapColors, type MapColors } from './map-colors';
 import { resolvePolygonCode } from './polygon-links';
 import type { CountryGeo, GeoProperties } from './use-geo';
 
-const BASE_STYLE: PathOptions = {
-  color: '#9ca3af',
-  weight: 0.5,
-  fillColor: '#e5e7eb',
-  fillOpacity: 0.3,
-};
-const SELECTED_STYLE: PathOptions = { ...BASE_STYLE, color: '#1f2937', weight: 1.5 };
+function polygonStyle(colors: MapColors, selected: boolean): PathOptions {
+  return {
+    color: selected ? colors.countrySelected : colors.countryStroke,
+    weight: selected ? 1.5 : 0.5,
+    fillColor: colors.countryFill,
+    fillOpacity: 0.3,
+  };
+}
 
 interface CountryPolygonsProps {
   geo: CountryGeo;
@@ -26,12 +28,13 @@ export function CountryPolygons({ geo, knownCodes, selectedCode, onSelect }: Cou
     onSelectRef.current = onSelect;
   }, [onSelect]);
 
+  const colors = useMapColors();
   const style = useCallback(
     (feature?: Feature<Geometry, GeoProperties>) => {
       const code = feature ? resolvePolygonCode(feature.properties.iso3, knownCodes) : null;
-      return code !== null && code === selectedCode ? SELECTED_STYLE : BASE_STYLE;
+      return polygonStyle(colors, code !== null && code === selectedCode);
     },
-    [knownCodes, selectedCode],
+    [knownCodes, selectedCode, colors],
   );
 
   // onEachFeature only runs when the layer is created, so the layer is remounted (key) when

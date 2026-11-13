@@ -54,6 +54,55 @@
   outline-offset: 2px;
 }
 
+/* Dark theme: the OpenStreetMap tiles only come light, so the tile pane alone is darkened
+   (markers, polygons and popups live in other panes). */
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
+
+.dark .leaflet-container {
+  background: var(--muted);
+}
+
+.dark .leaflet-container :focus-visible {
+  outline-color: #60a5fa;
+}
+
+/* Same specificity as Leaflet's own `.leaflet-container .x` rules, plus the theme class. */
+.dark .leaflet-container .leaflet-popup-content-wrapper,
+.dark .leaflet-container .leaflet-popup-tip,
+.dark .leaflet-container .leaflet-tooltip,
+.dark .leaflet-container .leaflet-bar a,
+.dark .leaflet-container .leaflet-control-attribution {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border-color: var(--border);
+}
+
+.dark .leaflet-tooltip-top::before {
+  border-top-color: var(--popover);
+}
+
+.dark .leaflet-tooltip-bottom::before {
+  border-bottom-color: var(--popover);
+}
+
+.dark .leaflet-tooltip-left::before {
+  border-left-color: var(--popover);
+}
+
+.dark .leaflet-tooltip-right::before {
+  border-right-color: var(--popover);
+}
+
+.dark .leaflet-container a {
+  color: #93c5fd;
+}
+
+.dark .leaflet-popup-close-button {
+  color: var(--muted-foreground);
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
@@ -116,11 +165,12 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  /* The charts use --chart-2 (world) and --chart-5 (country): light enough over --card. */
   --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
+  --chart-2: oklch(0.6 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --chart-5: oklch(0.922 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);

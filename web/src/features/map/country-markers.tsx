@@ -4,7 +4,8 @@ import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { Skeleton } from '../../shared/ui/skeleton';
-import { METRIC_COLORS, markerRadius, maxTotal } from './marker-scale';
+import { useMapColors } from './map-colors';
+import { markerRadius, maxTotal } from './marker-scale';
 
 const CountrySparkline = lazy(() =>
   import('../charts/country-sparkline').then((module) => ({ default: module.CountrySparkline })),
@@ -189,14 +190,15 @@ const CountryMarker = memo(function CountryMarker({
   const relayoutPopup = useCallback(() => markerRef.current?.getPopup()?.update(), []);
 
   const eventHandlers = useMemo(() => ({ click: () => onSelectRef.current(code) }), [code]);
+  const colors = useMapColors();
   const pathOptions = useMemo(
     () => ({
-      color: selected ? '#111827' : '#ffffff',
+      color: selected ? colors.markerOutlineSelected : colors.markerOutline,
       weight: selected ? 2 : 1,
-      fillColor: METRIC_COLORS[metric],
+      fillColor: colors.metric[metric],
       fillOpacity: selected ? 0.9 : 0.6,
     }),
-    [selected, metric],
+    [selected, metric, colors],
   );
 
   return (
