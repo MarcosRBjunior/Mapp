@@ -4,7 +4,8 @@ import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { METRIC_LABELS, formatDate, formatNumber } from '../../shared/format/format';
 import { Skeleton } from '../../shared/ui/skeleton';
-import { METRIC_COLORS, markerRadius, maxTotal } from './marker-scale';
+import { useMapColors, type MapColors } from './map-colors';
+import { markerRadius, maxTotal } from './marker-scale';
 
 const CountrySparkline = lazy(() =>
   import('../charts/country-sparkline').then((module) => ({ default: module.CountrySparkline })),
@@ -34,6 +35,7 @@ export function CountryMarkers({
   selectionKey,
   onSelect,
 }: CountryMarkersProps) {
+  const colors = useMapColors();
   const max = useMemo(() => maxTotal(countries), [countries]);
   // The parent's onSelect changes on every navigation; a stable wrapper keeps memo effective.
   const onSelectRef = useRef(onSelect);
@@ -56,6 +58,7 @@ export function CountryMarkers({
             key={country.code}
             country={country}
             metric={metric}
+            colors={colors}
             radius={markerRadius(country.total, max)}
             referenceDate={referenceDate}
             selected={selected}
@@ -72,6 +75,7 @@ export function CountryMarkers({
 interface CountryMarkerProps {
   country: MappableCountry;
   metric: Metric;
+  colors: MapColors;
   radius: number;
   referenceDate: string | undefined;
   selected: boolean;
@@ -83,6 +87,7 @@ interface CountryMarkerProps {
 const CountryMarker = memo(function CountryMarker({
   country,
   metric,
+  colors,
   radius,
   referenceDate,
   selected,
@@ -191,12 +196,12 @@ const CountryMarker = memo(function CountryMarker({
   const eventHandlers = useMemo(() => ({ click: () => onSelectRef.current(code) }), [code]);
   const pathOptions = useMemo(
     () => ({
-      color: selected ? '#111827' : '#ffffff',
+      color: selected ? colors.markerOutlineSelected : colors.markerOutline,
       weight: selected ? 2 : 1,
-      fillColor: METRIC_COLORS[metric],
+      fillColor: colors.metric[metric],
       fillOpacity: selected ? 0.9 : 0.6,
     }),
-    [selected, metric],
+    [selected, metric, colors],
   );
 
   return (

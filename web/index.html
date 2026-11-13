@@ -9,6 +9,21 @@
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Mapp — COVID-19</title>
+    <script>
+      // Applies the theme before the bundle loads, so the page never flashes the wrong one.
+      // Same key and rule as web/src/shared/theme/theme.ts.
+      (function () {
+        var theme = null;
+        try {
+          theme = localStorage.getItem('mapp-theme');
+        } catch (error) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

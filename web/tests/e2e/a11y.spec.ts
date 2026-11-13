@@ -17,66 +17,73 @@ async function expectNoViolations(page: Page) {
   expect(violations).toEqual([]);
 }
 
-test('the world view', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
-    'Casos acumulados de',
-  );
-  await expect(page.getByRole('button', { name: /^Brasil:/ })).toBeVisible();
-  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
-  await expectNoViolations(page);
-});
+// Every page in both themes: the dark one has its own colors to keep at AA contrast.
+for (const colorScheme of ['light', 'dark'] as const) {
+  test.describe(`${colorScheme} theme`, () => {
+    test.use({ colorScheme });
 
-test('a country', async ({ page }) => {
-  await page.goto('/paises/BRA');
-  await expect(page.getByRole('region', { name: 'Novos por dia' })).toContainText(
-    'Novos casos (Brasil)',
-  );
-  await expect(page.getByRole('region', { name: 'Brasil' })).toContainText('300.000');
-  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
-  await expectNoViolations(page);
-});
+    test('the world view', async ({ page }) => {
+      await page.goto('/');
+      await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
+        'Casos acumulados de',
+      );
+      await expect(page.getByRole('button', { name: /^Brasil:/ })).toBeVisible();
+      await expect(page.locator('path[data-iso3]').first()).toBeAttached();
+      await expectNoViolations(page);
+    });
 
-test('a country with the marker popup open', async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('button', { name: /^Brasil:/ }).click();
-  await expect(page.locator('.leaflet-popup')).toContainText('Casos acumulados de 22/01/2020');
-  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
-  await expectNoViolations(page);
-});
+    test('a country', async ({ page }) => {
+      await page.goto('/paises/BRA');
+      await expect(page.getByRole('region', { name: 'Novos por dia' })).toContainText(
+        'Novos casos (Brasil)',
+      );
+      await expect(page.getByRole('region', { name: 'Brasil' })).toContainText('300.000');
+      await expect(page.locator('path[data-iso3]').first()).toBeAttached();
+      await expectNoViolations(page);
+    });
 
-test('the about page', async ({ page }) => {
-  await page.goto('/sobre');
-  await expect(page.getByText(/Natural Earth — contornos/)).toBeVisible();
-  await expectNoViolations(page);
-});
+    test('a country with the marker popup open', async ({ page }) => {
+      await page.goto('/');
+      await page.getByRole('button', { name: /^Brasil:/ }).click();
+      await expect(page.locator('.leaflet-popup')).toContainText('Casos acumulados de 22/01/2020');
+      await expect(page.locator('path[data-iso3]').first()).toBeAttached();
+      await expectNoViolations(page);
+    });
 
-test('the 404 page', async ({ page }) => {
-  await page.goto('/nada-aqui');
-  await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible();
-  await expectNoViolations(page);
-});
+    test('the about page', async ({ page }) => {
+      await page.goto('/sobre');
+      await expect(page.getByText(/Natural Earth — contornos/)).toBeVisible();
+      await expectNoViolations(page);
+    });
 
-test('an unknown country', async ({ page }) => {
-  await page.goto('/paises/XYZ');
-  await expect(page.getByText('País não encontrado: XYZ')).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
-    'Casos acumulados de',
-  );
-  await expect(page.locator('path[data-iso3]').first()).toBeAttached();
-  await expectNoViolations(page);
-});
+    test('the 404 page', async ({ page }) => {
+      await page.goto('/nada-aqui');
+      await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible();
+      await expectNoViolations(page);
+    });
 
-test.describe('on a phone', () => {
-  test.use({ viewport: { width: 390, height: 844 } });
+    test('an unknown country', async ({ page }) => {
+      await page.goto('/paises/XYZ');
+      await expect(page.getByText('País não encontrado: XYZ')).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Crescimento acumulado' })).toContainText(
+        'Casos acumulados de',
+      );
+      await expect(page.locator('path[data-iso3]').first()).toBeAttached();
+      await expectNoViolations(page);
+    });
 
-  test('the open menu', async ({ page }) => {
-    await page.goto('/');
-    await expect(
-      page.getByText('Dados históricos até 09/03/2023 · Fonte: API Ninjas'),
-    ).toBeVisible();
-    await page.getByRole('button', { name: 'Alternar menu lateral' }).click();
-    await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible();
-    await expectNoViolations(page);
+    test.describe('on a phone', () => {
+      test.use({ viewport: { width: 390, height: 844 } });
+
+      test('the open menu', async ({ page }) => {
+        await page.goto('/');
+        await expect(
+          page.getByText('Dados históricos até 09/03/2023 · Fonte: API Ninjas'),
+        ).toBeVisible();
+        await page.getByRole('button', { name: 'Alternar menu lateral' }).click();
+        await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible();
+        await expectNoViolations(page);
+      });
+    });
   });
-});
+}

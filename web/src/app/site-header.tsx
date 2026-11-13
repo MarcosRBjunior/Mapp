@@ -3,6 +3,7 @@ import { dashboardSearch } from '../shared/url/dashboard-search';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { DashboardControls } from './dashboard-controls';
+import { ThemeToggle } from './theme-toggle';
 
 export function SiteHeader() {
   const { search } = useLocation();
@@ -17,6 +18,10 @@ export function SiteHeader() {
         <Link to={{ pathname: '/', search: dashboardSearch(search) }}>Mapp</Link>
       </h1>
       {(onWorld || onCountry) && <DashboardControls />}
+      {/* The controls already push themselves to the right; alone, the toggle does it. */}
+      <div className={onWorld || onCountry ? undefined : 'ml-auto'}>
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

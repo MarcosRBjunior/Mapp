@@ -1,6 +1,7 @@
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { METRIC_LABELS, formatNumber } from '../../shared/format/format';
-import { METRIC_COLORS, legendSteps, maxTotal } from './marker-scale';
+import { useMapColors } from './map-colors';
+import { legendSteps, maxTotal } from './marker-scale';
 
 interface MapLegendProps {
   countries: readonly CountryListItem[];
@@ -8,6 +9,7 @@ interface MapLegendProps {
 }
 
 export function MapLegend({ countries, metric }: MapLegendProps) {
+  const colors = useMapColors();
   const steps = legendSteps(maxTotal(countries));
   if (steps.length === 0) return null;
   const title = `Total de ${METRIC_LABELS[metric].noun}`;
@@ -27,9 +29,9 @@ export function MapLegend({ countries, metric }: MapLegendProps) {
                 cx={step.radius + 1}
                 cy={step.radius + 1}
                 r={step.radius}
-                fill={METRIC_COLORS[metric]}
+                fill={colors.metric[metric]}
                 fillOpacity={0.6}
-                stroke="#ffffff"
+                stroke={colors.markerOutline}
               />
             </svg>
             <span>{formatNumber(step.value)}</span>

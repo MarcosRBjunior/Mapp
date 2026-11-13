@@ -1,12 +1,5 @@
-import type { Metric } from '../../shared/api/types';
-
 export const MIN_RADIUS = 3;
 export const MAX_RADIUS = 40;
-
-export const METRIC_COLORS: Record<Metric, string> = {
-  cases: '#dc2626',
-  deaths: '#7c3aed',
-};
 
 // Area grows with the value: the radius follows the square root.
 export function markerRadius(value: number | null, max: number): number {

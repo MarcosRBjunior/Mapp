@@ -7,6 +7,7 @@ import { createQueryClient } from './app/query-client';
 import './app/styles.css';
 import { getEnv, InvalidEnvError } from './config/env';
 import { showEnvError } from './config/env-error';
+import { ThemeProvider } from './shared/theme/theme-provider';
 
 const root = document.getElementById('root');
 if (!root) {
@@ -26,11 +27,13 @@ if (envError) {
 } else {
   createRoot(root).render(
     <StrictMode>
-      <QueryClientProvider client={createQueryClient()}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={createQueryClient()}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </QueryClientProvider>
+      </ThemeProvider>
     </StrictMode>,
   );
 }
