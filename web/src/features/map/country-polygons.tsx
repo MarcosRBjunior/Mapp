@@ -6,12 +6,12 @@ import { useMapColors, type MapColors } from './map-colors';
 import { resolvePolygonCode } from './polygon-links';
 import type { CountryGeo, GeoProperties } from './use-geo';
 
-function polygonStyle(colors: MapColors, selected: boolean): PathOptions {
+function polygonStyle(colors: MapColors, selected: boolean, fill: string | undefined): PathOptions {
   return {
     color: selected ? colors.countrySelected : colors.countryStroke,
     weight: selected ? 1.5 : 0.5,
-    fillColor: colors.countryFill,
-    fillOpacity: 0.3,
+    fillColor: fill ?? colors.countryFill,
+    fillOpacity: fill === undefined ? 0.3 : 0.8,
   };
 }
 
@@ -19,10 +19,18 @@ interface CountryPolygonsProps {
   geo: CountryGeo;
   knownCodes: ReadonlySet<string>;
   selectedCode: string | null;
+  // Choropleth fills by country code; null in the markers view.
+  fills: ReadonlyMap<string, string> | null;
   onSelect: (code: string) => void;
 }
 
-export function CountryPolygons({ geo, knownCodes, selectedCode, onSelect }: CountryPolygonsProps) {
+export function CountryPolygons({
+  geo,
+  knownCodes,
+  selectedCode,
+  fills,
+  onSelect,
+}: CountryPolygonsProps) {
   const onSelectRef = useRef(onSelect);
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -32,9 +40,10 @@ export function CountryPolygons({ geo, knownCodes, selectedCode, onSelect }: Cou
   const style = useCallback(
     (feature?: Feature<Geometry, GeoProperties>) => {
       const code = feature ? resolvePolygonCode(feature.properties.iso3, knownCodes) : null;
-      return polygonStyle(colors, code !== null && code === selectedCode);
+      const fill = code === null ? undefined : fills?.get(code);
+      return polygonStyle(colors, code !== null && code === selectedCode, fill);
     },
-    [knownCodes, selectedCode, colors],
+    [knownCodes, selectedCode, colors, fills],
   );
 
   // onEachFeature only runs when the layer is created, so the layer is remounted (key) when

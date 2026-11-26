@@ -8,6 +8,7 @@ import { WorldMap } from '../features/map/world-map';
 import { isApiError } from '../shared/api/client';
 import { useCountries, useCountry } from '../shared/api/queries';
 import { dashboardSearch } from '../shared/url/dashboard-search';
+import { useMapView } from '../shared/url/use-map-view';
 import { useMetric } from '../shared/url/use-metric';
 import { selectionKeyOf, selectionState } from '../shared/url/selection';
 import { usePeriod } from '../shared/url/use-period';
@@ -35,6 +36,7 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const [metric] = useMetric();
   const [period] = usePeriod();
+  const [mapView, setMapView] = useMapView();
 
   const validCode =
     rawCode !== undefined && CODE_PATTERN.test(rawCode) ? rawCode.toUpperCase() : null;
@@ -104,6 +106,8 @@ export function DashboardPage() {
           selectedCode={selectedCode}
           selectionKey={selectionKeyOf(location.state)}
           onSelect={onSelect}
+          view={mapView}
+          onViewChange={setMapView}
         />
       </div>
       <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">

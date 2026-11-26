@@ -6,9 +6,13 @@ import { getEnv } from '../../config/env';
 import type { CountryListItem, Metric } from '../../shared/api/types';
 import { ErrorState } from '../../shared/ui/error-state';
 import { Skeleton } from '../../shared/ui/skeleton';
+import type { MapView } from '../../shared/url/use-map-view';
+import { choroplethFills } from './choropleth-fills';
 import { CountryMarkers } from './country-markers';
 import { CountryPolygons } from './country-polygons';
+import { useMapColors } from './map-colors';
 import { MapLegend } from './map-legend';
+import { MapViewToggle } from './map-view-toggle';
 import { useGeo } from './use-geo';
 
 export interface WorldMapProps {
@@ -20,6 +24,8 @@ export interface WorldMapProps {
   selectedCode: string | null;
   selectionKey: string;
   onSelect: (code: string) => void;
+  view: MapView;
+  onViewChange: (view: MapView) => void;
 }
 
 function SelectionFocus({
@@ -51,12 +57,19 @@ export function WorldMap({
   selectedCode,
   selectionKey,
   onSelect,
+  view,
+  onViewChange,
 }: WorldMapProps) {
   const { tilesUrl, tilesAttribution } = getEnv();
   const geo = useGeo();
   const knownCodes = useMemo(
     () => new Set((countries ?? []).map((country) => country.code)),
     [countries],
+  );
+  const colors = useMapColors();
+  const fills = useMemo(
+    () => (view === 'choropleth' && countries ? choroplethFills(countries, metric, colors) : null),
+    [view, countries, metric, colors],
   );
 
   return (
@@ -77,6 +90,7 @@ export function WorldMap({
               geo={geo.data}
               knownCodes={knownCodes}
               selectedCode={selectedCode}
+              fills={fills}
               onSelect={onSelect}
             />
           )}
@@ -88,12 +102,16 @@ export function WorldMap({
             referenceDate={referenceDate}
             selectedCode={selectedCode}
             selectionKey={selectionKey}
+            dots={view === 'choropleth'}
             onSelect={onSelect}
           />
         )}
         <SelectionFocus countries={countries} selectedCode={selectedCode} />
       </MapContainer>
-      {countries && <MapLegend countries={countries} metric={metric} />}
+      <div className="absolute top-2 right-2 z-[900]">
+        <MapViewToggle view={view} onChange={onViewChange} />
+      </div>
+      {countries && <MapLegend countries={countries} metric={metric} view={view} />}
       {countriesStatus === 'pending' && (
         <div className="absolute inset-0 z-[900] flex items-center justify-center bg-background/60 p-4">
           <Skeleton label="Carregando países" height="100%" className="pointer-events-none" />
@@ -105,7 +123,7 @@ export function WorldMap({
         </div>
       )}
       {geo.isError && (
-        <p className="absolute top-2 right-2 z-[900] m-0 rounded bg-background px-2 py-1 text-xs">
+        <p className="absolute top-12 right-2 z-[900] m-0 rounded bg-background px-2 py-1 text-xs">
           Contornos indisponíveis
         </p>
       )}

@@ -24,8 +24,13 @@ interface CountryMarkersProps {
   selectedCode: string | null;
   // Changes on every selection (not on metric or period changes); '' when none was made.
   selectionKey: string;
+  // In the choropleth the color carries the value: markers become fixed dots (still focusable).
+  dots: boolean;
   onSelect: (code: string) => void;
 }
+
+const DOT_RADIUS = 4;
+const SELECTED_DOT_RADIUS = 6;
 
 export function CountryMarkers({
   countries,
@@ -33,6 +38,7 @@ export function CountryMarkers({
   referenceDate,
   selectedCode,
   selectionKey,
+  dots,
   onSelect,
 }: CountryMarkersProps) {
   const colors = useMapColors();
@@ -59,7 +65,14 @@ export function CountryMarkers({
             country={country}
             metric={metric}
             colors={colors}
-            radius={markerRadius(country.total, max)}
+            dot={dots}
+            radius={
+              dots
+                ? selected
+                  ? SELECTED_DOT_RADIUS
+                  : DOT_RADIUS
+                : markerRadius(country.total, max)
+            }
             referenceDate={referenceDate}
             selected={selected}
             // Only the selected marker uses the key; the others keep '' so memo skips them.
@@ -76,6 +89,7 @@ interface CountryMarkerProps {
   country: MappableCountry;
   metric: Metric;
   colors: MapColors;
+  dot: boolean;
   radius: number;
   referenceDate: string | undefined;
   selected: boolean;
@@ -88,6 +102,7 @@ const CountryMarker = memo(function CountryMarker({
   country,
   metric,
   colors,
+  dot,
   radius,
   referenceDate,
   selected,
@@ -198,10 +213,10 @@ const CountryMarker = memo(function CountryMarker({
     () => ({
       color: selected ? colors.markerOutlineSelected : colors.markerOutline,
       weight: selected ? 2 : 1,
-      fillColor: colors.metric[metric],
-      fillOpacity: selected ? 0.9 : 0.6,
+      fillColor: dot ? colors.dot : colors.metric[metric],
+      fillOpacity: dot ? 1 : selected ? 0.9 : 0.6,
     }),
-    [selected, metric, colors],
+    [selected, metric, colors, dot],
   );
 
   return (
