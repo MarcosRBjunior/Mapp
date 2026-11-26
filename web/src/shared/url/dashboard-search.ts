@@ -2,7 +2,7 @@
 export function dashboardSearch(search: string): string {
   const current = new URLSearchParams(search);
   const next = new URLSearchParams();
-  for (const key of ['metric', 'period']) {
+  for (const key of ['metric', 'period', 'view']) {
     const value = current.get(key);
     if (value !== null) next.set(key, value);
   }
