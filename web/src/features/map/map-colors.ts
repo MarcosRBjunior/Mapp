@@ -42,7 +42,8 @@ export const DARK_MAP_COLORS: MapColors = {
     cases: ['#450a0a', '#7f1d1d', '#b91c1c', '#ef4444', '#fca5a5'],
     deaths: ['#2e1065', '#4c1d95', '#6d28d9', '#8b5cf6', '#c4b5fd'],
   },
-  noData: '#374151',
+  // Lighter than the darkest classes, so "Sem dados" never reads as "few".
+  noData: '#6b7280',
   dot: '#f3f4f6',
 };
 

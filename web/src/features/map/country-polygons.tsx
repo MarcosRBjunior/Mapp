@@ -40,7 +40,11 @@ export function CountryPolygons({
   const style = useCallback(
     (feature?: Feature<Geometry, GeoProperties>) => {
       const code = feature ? resolvePolygonCode(feature.properties.iso3, knownCodes) : null;
-      const fill = code === null ? undefined : fills?.get(code);
+      // In the choropleth, polygons outside the base (TKM, Antarctica) have no data either.
+      const fill =
+        fills === null
+          ? undefined
+          : ((code !== null ? fills.get(code) : undefined) ?? colors.noData);
       return polygonStyle(colors, code !== null && code === selectedCode, fill);
     },
     [knownCodes, selectedCode, colors, fills],

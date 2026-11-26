@@ -28,8 +28,8 @@ export function MapLegend({ countries, metric, view }: MapLegendProps) {
       <div className={BOX} role="group" aria-label={`Legenda: ${title}`}>
         <p className="mb-1 font-semibold">{title}</p>
         <ul className="flex flex-col gap-0.5">
-          {items.map((item) => (
-            <li key={item.label} className="flex items-center gap-2">
+          {items.map((item, index) => (
+            <li key={index} className="flex items-center gap-2">
               <span
                 aria-hidden="true"
                 className="inline-block size-3 rounded-sm border border-border"

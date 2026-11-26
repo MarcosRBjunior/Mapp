@@ -66,10 +66,13 @@ export function WorldMap({
     () => new Set((countries ?? []).map((country) => country.code)),
     [countries],
   );
+  // Without outlines there is nothing to paint: fall back to the sized markers and their legend.
+  const shownView: MapView = geo.isError ? 'markers' : view;
   const colors = useMapColors();
   const fills = useMemo(
-    () => (view === 'choropleth' && countries ? choroplethFills(countries, metric, colors) : null),
-    [view, countries, metric, colors],
+    () =>
+      shownView === 'choropleth' && countries ? choroplethFills(countries, metric, colors) : null,
+    [shownView, countries, metric, colors],
   );
 
   return (
@@ -102,7 +105,7 @@ export function WorldMap({
             referenceDate={referenceDate}
             selectedCode={selectedCode}
             selectionKey={selectionKey}
-            dots={view === 'choropleth'}
+            dots={shownView === 'choropleth'}
             onSelect={onSelect}
           />
         )}
@@ -111,7 +114,7 @@ export function WorldMap({
       <div className="absolute top-2 right-2 z-[900]">
         <MapViewToggle view={view} onChange={onViewChange} />
       </div>
-      {countries && <MapLegend countries={countries} metric={metric} view={view} />}
+      {countries && <MapLegend countries={countries} metric={metric} view={shownView} />}
       {countriesStatus === 'pending' && (
         <div className="absolute inset-0 z-[900] flex items-center justify-center bg-background/60 p-4">
           <Skeleton label="Carregando países" height="100%" className="pointer-events-none" />

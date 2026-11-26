@@ -18,8 +18,10 @@ describe('choroplethBreaks', () => {
     expect(choroplethClass(1_000_000, breaks)).toBe(CHOROPLETH_CLASSES - 1);
   });
 
-  it('still gives a scale when every value is zero', () => {
-    expect(choroplethBreaks(0)).toEqual([0.001, 0.01, 0.1, 1]);
+  it('keeps whole-number limits for small or zero maximums', () => {
+    expect(choroplethBreaks(0)).toEqual([1, 10, 100, 1_000]);
+    expect(choroplethBreaks(5)).toEqual([1, 10, 100, 1_000]);
+    expect(new Set(choroplethLabels(choroplethBreaks(5))).size).toBe(CHOROPLETH_CLASSES);
   });
 });
 

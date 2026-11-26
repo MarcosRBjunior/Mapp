@@ -13,8 +13,11 @@ const CountrySparkline = lazy(() =>
 
 type MappableCountry = CountryListItem & { lat: number; lng: number; total: number };
 
-function isMappable(country: CountryListItem): country is MappableCountry {
-  return country.lat !== null && country.lng !== null && (country.total ?? 0) > 0;
+// Sized markers need a positive total; dots (choropleth) only need data, 0 included, so every
+// painted country stays reachable by keyboard.
+function isMappable(country: CountryListItem, dots: boolean): country is MappableCountry {
+  if (country.lat === null || country.lng === null || country.total === null) return false;
+  return dots || country.total > 0;
 }
 
 interface CountryMarkersProps {
@@ -51,8 +54,11 @@ export function CountryMarkers({
   const stableOnSelect = useCallback((code: string) => onSelectRef.current(code), []);
   // Biggest first, so smaller markers are drawn on top and stay clickable.
   const visible = useMemo(
-    () => countries.filter(isMappable).sort((a, b) => b.total - a.total),
-    [countries],
+    () =>
+      countries
+        .filter((country): country is MappableCountry => isMappable(country, dots))
+        .sort((a, b) => b.total - a.total),
+    [countries, dots],
   );
 
   return (
