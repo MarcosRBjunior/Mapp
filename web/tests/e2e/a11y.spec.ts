@@ -32,6 +32,16 @@ for (const colorScheme of ['light', 'dark'] as const) {
       await expectNoViolations(page);
     });
 
+    test('the choropleth view', async ({ page }) => {
+      await page.goto('/?view=choropleth');
+      await expect(page.getByRole('group', { name: 'Legenda: Total de casos' })).toContainText(
+        'Sem dados',
+      );
+      await expect(page.getByRole('button', { name: /^Brasil:/ })).toBeVisible();
+      await expect(page.locator('path[data-iso3]').first()).toBeAttached();
+      await expectNoViolations(page);
+    });
+
     test('a country', async ({ page }) => {
       await page.goto('/paises/BRA');
       await expect(page.getByRole('region', { name: 'Novos por dia' })).toContainText(

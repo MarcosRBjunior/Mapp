@@ -23,6 +23,7 @@ A F4 cria o primeiro front do Mapp. Ele precisa falar com a API da F3 com tipos 
   - centro inicial `[30, 10]` no zoom 2, para a Groenlândia caber inteira no mapa de 480 px;
   - `CircleMarker` com raio ∝ √total, entre 3 e 40 px;
   - o `path` SVG de cada marcador recebe `tabindex`, `role="button"` e `aria-label`, e abre com Enter/Espaço.
+  - vista Cores (coroplético, 2026-11-25): controle "Marcadores | Cores" no mapa, em `?view=choropleth` (sem o parâmetro, marcadores; trocar não cria passo no histórico e os links de volta ao mapa mantêm a vista). Os polígonos são pintados pelo total absoluto da métrica na data de referência (D-07) em 5 faixas logarítmicas por década, terminando na potência de 10 acima do máximo (`choropleth-scale.ts`); sem dados → cinza "Sem dados". Rampas clara e escura em `map-colors.ts`. Os marcadores viram pontos de raio fixo, ainda focáveis, com tooltip, popup e minigráfico; a legenda mostra as faixas.
 - **Testes:**
   - Vitest + Testing Library + MSW, com fixtures inventadas, porque os termos da fonte proíbem armazenar os dados;
   - nas páginas, o mapa é trocado por um stub;
@@ -31,5 +32,5 @@ A F4 cria o primeiro front do Mapp. Ele precisa falar com a API da F3 com tipos 
 ## Consequências
 
 - Mudou um schema da API? Rode `npm run openapi -w api` e `npm run api:types -w web`; os dois testes de atualização apontam o esquecimento.
-- O coroplético pode reaproveitar a camada de polígonos e a regra do soberano.
+- O coroplético reaproveita a camada de polígonos e a regra do soberano: um território herda a cor do soberano.
 - O `overrides` sai quando o `openapi-typescript` aceitar o TS 6.
